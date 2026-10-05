@@ -7,7 +7,9 @@ never rewrite it.
 ## Layer 1: the bare loop (no frameworks)  <- WE ARE HERE
 
 - [x] Step 1: plain API call; show the model is stateless; print token cost per turn
-- [ ] Step 2: define one tool; inspect the raw `tool_use` response and `stop_reason`
+- [x] Step 2: define one tool; inspect the raw `tool_use` response and `stop_reason`
+  - [ ] Once it works: remind Liam to skim the tool-use docs
+        (https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview)
 - [ ] Step 3: the loop: branch on `stop_reason`, handle `max_tokens`, iteration cap
 - [ ] Step 4: second tool; several tool calls in one response (one `tool_result` each)
 - [ ] Step 5: break a tool on purpose; return an error `tool_result`; watch recovery
