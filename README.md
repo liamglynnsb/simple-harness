@@ -32,8 +32,9 @@ cp .env.example .env
 ## Run
 
 `.env` is found next to `client.py`, so scripts can be run from any folder. Each
-step is its own script so earlier steps stay readable:
+step is its own script so earlier steps stay readable. Scripts are named
+`l<layer>s<step>_<topic>.py`, so `l1s1_stateless.py` is Layer 1, Step 1:
 
 ```bash
-python step1_stateless.py
+python l1s1_stateless.py
 ```
