@@ -1,0 +1,82 @@
+# Learnings ledger
+
+Concepts we've worked through, in my own words, with corrections noted. Only
+things I've actually explained back go in the main list. Newest at the bottom.
+
+## 2026-10-05 · Layer 1, setup
+
+**Terminal app.** A program that gives you a text window and runs a shell
+inside it.
+- Correction: not "any program that runs a shell". Claude's Bash tool and a
+  Python script can start a shell without giving you a window.
+
+**Shell vs. terminal app.** zsh is the shell that runs inside whichever terminal
+app I open (Ghostty, Terminal.app, Cursor's panel). The terminal app only draws
+text and relays keystrokes. The shell reads what I type and starts programs.
+- Correction: I first said "the shell is the terminal window". Also, "terminal
+  editor" should be "terminal app"; an editor is something like nano or Cursor.
+
+**Exported variables are inherited.** A variable I export in a shell is visible
+to programs started from that shell, but not to another terminal tab.
+- Correction: it's inherited by any child process (Python, git, ls), not just
+  child shells.
+
+**`export` is what makes it inheritable.** Without `export`, a variable stays
+inside that shell and a program started from it won't see it.
+
+**`.env` is just a file.** It's useful because I can load it into the shell's
+environment.
+- Correction: the file does nothing by itself. Something has to read it, e.g.
+  `source`, to put its contents into the environment.
+
+## 2026-10-05 · Layer 1, Step 1 (stateless calls and token cost)
+
+**The model is stateless.** It has no memory between calls. Each call is one
+request and one response, and the server forgets it afterward.
+- The "conversation" is only the `messages` list I send each time. To make the
+  model know my name, I had to include the earlier turns myself.
+- My first attempt had the order backwards and ended on an `assistant` entry, so
+  the model continued its own message instead of answering. The list is taken as
+  the true record, so it must read like the real conversation, in order.
+
+**Input tokens grow because of the history.** Each turn's input is roughly the
+old input + the most recent output + the new question.
+- Correction: I first predicted both input and output tokens would keep rising.
+
+**Output tokens depend on the reply, not the history.** A reply's length is
+decided by what was asked, so output tokens jump around instead of climbing.
+
+**`max_tokens` caps output only, and a cut-off reply is not a simpler one.**
+With `max_tokens=5` the model said "Hi, how are you" and stopped mid-sentence.
+- Correction: I first read that as "less complex". The proof is `stop_reason`:
+  `end_turn` means the model finished; `max_tokens` means it was cut off.
+
+## 2026-10-05 · Layer 1, Step 2 (defining a tool, reading the raw reply)
+
+**A tool is a name, a description, and an input schema.** The schema is JSON
+Schema: an object with named properties, each with a type, plus a `required`
+list. `enum` means the listed values are the only allowed ones.
+- The model never runs the tool. It reads the definitions as part of its prompt
+  and writes a JSON object shaped like the schema when it wants one used.
+
+**The raw reply changes shape when the model wants a tool.** Instead of a text
+block, `content` holds a `tool_use` block, with the tool's name and the inputs in
+the format we defined. The inputs are an object with named fields, not a list of
+values.
+
+**The tool's name is the `"name"` field, not my Python variable.** The variable
+(`calculator_tool`) exists only in my script. Only the dictionary's contents are
+sent, so the model sees `calculator`.
+
+**`stop_reason` tells me what to do next.** `end_turn`: the model finished.
+`max_tokens`: it was cut off. `tool_use`: the turn is paused, and it's on me to
+run the tool and send back the result.
+- Correction: the model stopping isn't "done". The question isn't answered yet;
+  the result of the calculation still has to come from my code.
+
+## Explained to me, not yet said back in my own words
+
+- `os.environ["X"]` is a lookup in the environment the process was started with.
+  It doesn't read `.env`.
+- Why `client.py` has `api_key="dummy"` plus an `x-gateway-key` header: the
+  SDK requires an `api_key`, and the real key the gateway checks is the header.

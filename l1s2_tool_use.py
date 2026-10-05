@@ -4,7 +4,7 @@ client = make_client()
 
 calculator_tool = {
     "name": "calculator",
-    "description": "Do basic artithmetic on two numbers",
+    "description": "Do basic arithmetic on two numbers",
     "input_schema": {
         "type": "object",
         "properties": {
