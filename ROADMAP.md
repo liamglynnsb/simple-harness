@@ -6,7 +6,7 @@ never rewrite it.
 
 ## Layer 1: the bare loop (no frameworks)  <- WE ARE HERE
 
-- [ ] Step 1: plain API call; show the model is stateless; print token cost per turn
+- [x] Step 1: plain API call; show the model is stateless; print token cost per turn
 - [ ] Step 2: define one tool; inspect the raw `tool_use` response and `stop_reason`
 - [ ] Step 3: the loop: branch on `stop_reason`, handle `max_tokens`, iteration cap
 - [ ] Step 4: second tool; several tool calls in one response (one `tool_result` each)
