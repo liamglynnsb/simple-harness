@@ -74,6 +74,28 @@ run the tool and send back the result.
 - Correction: the model stopping isn't "done". The question isn't answered yet;
   the result of the calculation still has to come from my code.
 
+## 2026-10-06 · Layer 1, Step 3 (the loop, in progress)
+
+**A tool has two halves that must agree.** The definition (name, description,
+schema) is what the model reads. The function is what actually runs. The
+schema's field names must match the function's parameter names.
+
+**`response.content` is a list of blocks, told apart by `type`.** The SDK turns
+the API's JSON into objects like `TextBlock` and `ToolUseBlock`. To find a tool
+request I go through the list and check `block.type == "tool_use"`. The reply can
+hold more than one kind of block.
+
+**`**` unpacks a dictionary into named arguments.** `calculator(**block.input)`
+means `calculator(operation=..., a=..., b=...)`. It works because the dict's
+keys match the function's parameter names. I use it so the loop stays general
+and doesn't spell out field names for every tool.
+- Correction: `block.input` is a dictionary (named fields), not a list.
+- Catch: if the model sends a field the function doesn't accept, Python errors.
+
+**The harness runs every tool I define.** The model only decides whether to use
+a tool, which one, and with what inputs. Server-side tools (web search, code
+execution) are the exception, and I'm not using them.
+
 ## Explained to me, not yet said back in my own words
 
 - `os.environ["X"]` is a lookup in the environment the process was started with.
