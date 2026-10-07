@@ -2,6 +2,14 @@ from client import make_client, model_name
 from tools import FUNCTIONS, CALCULATOR
 
 
+def collect_text(response):
+    parts = []
+    for block in response.content:
+        if block.type == "text":
+            parts.append(block.text)
+    return "\n".join(parts)
+
+
 def run_agent(client, messages, tools, max_loops=10):
     for _ in range(max_loops):
         tool_results = []
@@ -23,13 +31,10 @@ def run_agent(client, messages, tools, max_loops=10):
                     })
             messages.append({"role": "user", "content": tool_results})
         elif response.stop_reason == "end_turn":
-            return response.content[0].text
+            return collect_text(response)
         elif response.stop_reason == "max_tokens":
-            text_results = ""
             note = "Response stopped; max tokens reached"
-            for block in response.content:
-                if block.type == "text":
-                    text_results += block.text
+            text_results = collect_text(response)
             if text_results:
                 return text_results + "\n" + note
             return note

@@ -30,8 +30,8 @@ Whenever we split a step into pieces, record the pieces here as substeps (`1a`,
   - [x] 3d: handle `max_tokens` properly, add an iteration cap
         (also: `__main__` guard; final `else` for unexpected stop reasons)
   - [ ] Rebuild the loop from a blank file with nothing open (ownership test)
-  - [ ] Loose end: `end_turn` uses `content[0].text`; make it collect text blocks
-        like the `max_tokens` branch
+  - [x] Loose end: `end_turn` used `content[0].text`; both branches now use a
+        `collect_text` helper that joins text blocks with a newline
 - [ ] Step 4: second tool; several tool calls in one response (one `tool_result` each)
 - [ ] Step 5: break a tool on purpose; return an error `tool_result`; watch recovery
 
