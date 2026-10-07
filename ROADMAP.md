@@ -32,14 +32,14 @@ Whenever we split a step into pieces, record the pieces here as substeps (`1a`,
   - [ ] Rebuild the loop from a blank file with nothing open (ownership test)
   - [x] Loose end: `end_turn` used `content[0].text`; both branches now use a
         `collect_text` helper that joins text blocks with a newline
-- [ ] Step 4: second tool; several tool calls in one response (one `tool_result` each)
+- [x] Step 4: second tool; several tool calls in one response (one `tool_result` each)
   - [x] 4a: second tool `read_file` in `tools.py` (definition, function, `FUNCTIONS`
         entry) plus small files in `data/` for it to read
   - [x] 4b: one task needing both tools in sequence ("read numbers.txt, multiply the
         two numbers"); print each tool call (name, inputs) to watch the passes
   - [x] 4c: several tool calls in one reply ("read a.txt and b.txt, and compute
         12 x 12"); inspect the raw reply and check one `tool_result` per block, ids matched
-  - [ ] 4d: check the invariants: the shape of the `messages` list after a
+  - [x] 4d: check the invariants: the shape of the `messages` list after a
         multi-tool pass; leave a result out on purpose and read the API's complaint
 - [ ] Step 5: break a tool on purpose; return an error `tool_result`; watch recovery
 

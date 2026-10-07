@@ -20,11 +20,11 @@ def run_agent(client, messages, tools, max_loops=10):
             messages=messages,
         )
         messages.append({"role": "assistant", "content": response.content})
-        print("blocks this pass:", [b.type for b in response.content])
+        # print("blocks this pass:", [b.type for b in response.content])
         if response.stop_reason == "tool_use":
             for block in response.content:
                 if block.type == "tool_use":
-                    print("calling", block.name, "with input", block.input)
+                    # print("calling", block.name, "with input", block.input)
                     result = FUNCTIONS[block.name](**block.input)
                     tool_results.append({
                         "type": "tool_result",
@@ -48,4 +48,7 @@ def run_agent(client, messages, tools, max_loops=10):
 if __name__ == "__main__":
     client = make_client()
     messages = [{"role": "user", "content": "Read data/a.txt and data/b.txt, and also tell me what 12 times 12 is."}]
-    print(run_agent(client, messages, [CALCULATOR, READ_FILE]))
+    answer = run_agent(client, messages, [CALCULATOR, READ_FILE])
+    print(answer)
+    for m in messages:
+        print(m["role"], "->", m["content"] if isinstance(m["content"], str) else [getattr(b, "type", None) or b.get("type") for b in m["content"]])
