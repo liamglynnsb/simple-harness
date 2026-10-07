@@ -24,8 +24,17 @@ def run_agent(client, messages, tools, max_loops=10):
             messages.append({"role": "user", "content": tool_results})
         elif response.stop_reason == "end_turn":
             return response.content[0].text
+        elif response.stop_reason == "max_tokens":
+            text_results = ""
+            note = "Response stopped; max tokens reached"
+            for block in response.content:
+                if block.type == "text":
+                    text_results += block.text
+            if text_results:
+                return text_results + "\n" + note
+            return note
         else:
-            return "Error: " + response.stop_reason
+            return "Response stopped due to: " + response.stop_reason
     return "Error: Max loops reached"
 
 
