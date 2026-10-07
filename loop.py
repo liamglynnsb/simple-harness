@@ -1,5 +1,5 @@
 from client import make_client, model_name
-from tools import FUNCTIONS, CALCULATOR
+from tools import FUNCTIONS, CALCULATOR, READ_FILE
 
 
 def collect_text(response):
@@ -23,6 +23,7 @@ def run_agent(client, messages, tools, max_loops=10):
         if response.stop_reason == "tool_use":
             for block in response.content:
                 if block.type == "tool_use":
+                    print("calling", block.name, "with input", block.input)
                     result = FUNCTIONS[block.name](**block.input)
                     tool_results.append({
                         "type": "tool_result",
@@ -45,5 +46,5 @@ def run_agent(client, messages, tools, max_loops=10):
 
 if __name__ == "__main__":
     client = make_client()
-    messages = [{"role": "user", "content": "What is 1234 times 5678?"}]
-    print(run_agent(client, messages, [CALCULATOR]))
+    messages = [{"role": "user", "content": "Read data/numbers.txt and multiply the two numbers in it."}]
+    print(run_agent(client, messages, [CALCULATOR, READ_FILE]))
