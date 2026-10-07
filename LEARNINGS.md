@@ -141,6 +141,14 @@ send a list ending on the assistant's own turn.
 `model_context_window_exceeded`. A loop that treats "not `tool_use`" as "done"
 would report a refusal or a cut-off as a good answer.
 
+**`if __name__ == "__main__":` separates running a file from importing it.**
+Python runs a file's top-level lines whenever it loads it, including on `import`.
+`__name__` is `"__main__"` only when the file is run directly, so code under that
+guard runs when I run the script and is skipped when another file imports it.
+Definitions stay at the top level; the actions that call them go under the guard.
+- Correction: importing isn't "nothing". It still runs the imports and the `def`
+  lines. It just doesn't run the agent.
+
 ## Explained to me, not yet said back in my own words
 
 - `os.environ["X"]` is a lookup in the environment the process was started with.
