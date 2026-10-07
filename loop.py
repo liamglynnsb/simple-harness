@@ -2,8 +2,8 @@ from client import make_client, model_name
 from tools import FUNCTIONS, CALCULATOR
 
 
-def run_agent(client, messages, tools):
-    while True:
+def run_agent(client, messages, tools, max_loops=10):
+    for _ in range(max_loops):
         tool_results = []
         response = client.messages.create(
             model=model_name(),
@@ -26,6 +26,7 @@ def run_agent(client, messages, tools):
             return response.content[0].text
         else:
             return "Error: " + response.stop_reason
+    return "Error: Max loops reached"
 
 
 if __name__ == "__main__":
