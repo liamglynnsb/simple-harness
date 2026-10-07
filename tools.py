@@ -22,4 +22,20 @@ def calculator(operation, a, b):
     else:
         return a / b
 
-FUNCTIONS = {"calculator": calculator}
+READ_FILE = {
+    "name": "read_file",
+    "description": "Read a file and return its contents. The path is relative to the project's folder.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "path": {"type": "string"},
+        },
+        "required": ["path"],
+    }
+}
+
+def read_file(path):
+    with open(path) as f:
+        return f.read()
+
+FUNCTIONS = {"calculator": calculator, "read_file": read_file}

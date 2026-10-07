@@ -33,7 +33,7 @@ Whenever we split a step into pieces, record the pieces here as substeps (`1a`,
   - [x] Loose end: `end_turn` used `content[0].text`; both branches now use a
         `collect_text` helper that joins text blocks with a newline
 - [ ] Step 4: second tool; several tool calls in one response (one `tool_result` each)
-  - [ ] 4a: second tool `read_file` in `tools.py` (definition, function, `FUNCTIONS`
+  - [x] 4a: second tool `read_file` in `tools.py` (definition, function, `FUNCTIONS`
         entry) plus small files in `data/` for it to read
   - [ ] 4b: one task needing both tools in sequence ("read numbers.txt, multiply the
         two numbers"); print each tool call (name, inputs) to watch the passes
