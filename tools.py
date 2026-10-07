@@ -21,3 +21,5 @@ def calculator(operation, a, b):
         return a * b
     else:
         return a / b
+
+FUNCTIONS = {"calculator": calculator}

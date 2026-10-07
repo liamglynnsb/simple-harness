@@ -96,6 +96,51 @@ and doesn't spell out field names for every tool.
 a tool, which one, and with what inputs. Server-side tools (web search, code
 execution) are the exception, and I'm not using them.
 
+**One tool cycle, unrolled.** Ask, get `stop_reason: tool_use`, my code runs the
+function, I send a `tool_result`, the model finishes with `end_turn`. The number
+in the answer is the one my function computed; the model only wrote the sentence.
+
+**Why the block `id` is sent back.** Each `tool_use` block has its own unique id.
+My `tool_result` carries it as `tool_use_id`, so the model can match each answer
+to its request. This matters most when one reply holds several tool requests. The
+API rejects a `tool_use` with no matching `tool_result`.
+
+**Anthropic keeps no memory of tool calls.** The model sees its own `tool_use`
+blocks (in the assistant entry I appended) and my `tool_result` (in the user
+entry) because I send the whole record every time. That's why
+`messages.append({"role": "assistant", "content": response.content})` can't be
+skipped.
+
+**`while` controls the repeat; `append` only changes the data.** The loop goes
+round again when the body ends, unless something exits. A branch I want to
+continue (`tool_use`) just falls through. A branch that should stop (`end_turn`,
+an unexpected reason) must `return`. After one branch of an `if/elif/else` runs,
+the others are skipped.
+- Correction: I thought `messages.append()` ended the pass. It only adds an item
+  to a list. The next pass sends the updated list.
+
+**Indentation decides what's inside what.** `tool_results = []` goes at the top of
+each pass so old results don't pile up. The `messages.append(...)` for the
+results goes after the `for`, at the same level as it, so one entry holds all the
+results. Inside one block every line must be indented the same amount.
+
+**Two names for two audiences.** `CALCULATOR` is the definition (the menu): it
+goes to the model as `tools=[...]`. `FUNCTIONS` maps a tool name to the real
+Python function (the kitchen): my loop uses it to run what the model asked for.
+The model needs the first to know what it can ask for; my code needs the second
+to do it.
+- Correction: `tools` must be a **list** of definitions, even for one tool, and
+  `FUNCTIONS` is a dict, so `FUNCTIONS[0]` is a `KeyError`; it's looked up by key.
+
+**`end_turn` needs no second call.** When `stop_reason` is `end_turn`, `response`
+already holds the final answer. Take the text and `return` it. A second call would
+send a list ending on the assistant's own turn.
+
+**`stop_reason` has seven values, not three.** `end_turn`, `max_tokens`,
+`tool_use`, `stop_sequence`, `pause_turn`, `refusal`,
+`model_context_window_exceeded`. A loop that treats "not `tool_use`" as "done"
+would report a refusal or a cut-off as a good answer.
+
 ## Explained to me, not yet said back in my own words
 
 - `os.environ["X"]` is a lookup in the environment the process was started with.
