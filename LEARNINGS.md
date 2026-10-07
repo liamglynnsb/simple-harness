@@ -49,6 +49,24 @@ can't change its parent's environment, but it can set its own.
 - Correction: `load_dotenv()` doesn't call Python; it is Python code running in
   the same process. And Python never reads `.env` unless something tells it to.
 
+**`api_key="dummy"` is a placeholder; the real key rides in a header.** The
+Anthropic SDK requires an `api_key`, so I pass `"dummy"`. The SDK sends it as an
+`x-api-key` header, which the gateway ignores. What the gateway actually checks is the
+`x-gateway-key` header, set through `default_headers`, which carries my real
+key from `os.environ`. Both headers go out on every request; only one matters.
+
+**`os.environ["X"]` is a lookup in a table the process filled.** `os` is part of
+Python's standard library (nothing to install). `os.environ` holds the name/value
+pairs Python received at startup, plus whatever was added since. In this project
+`load_dotenv()` reads `.env` and adds its pairs to that table, so
+`os.environ["ANTHROPIC_API_KEY"]` finds the key there. A missing name is a
+`KeyError`.
+- Correction: I first said it "pulls the value from the shell". It isn't a live
+  link to the shell; it's a snapshot taken at startup, and here the values mostly
+  come from `.env` through `load_dotenv()`. The lookup reads the table; it doesn't
+  call `load_dotenv`.
+- `load_dotenv()` doesn't overwrite a variable that's already set in the shell.
+
 **The word "client" and the word "inheritance" each mean two things.** `client.py`
 is my own file; `client = make_client()` is a variable holding the SDK's object.
 `from client import ...` is an import, not inheritance. Class inheritance
@@ -224,9 +242,3 @@ would add a huge amount of input every time and make the model worse at choosing
 Nothing filters automatically; options are routing a short list, on-demand tool
 search, or grouping behind a subagent. With a handful of tools, send them all.
 
-## Explained to me, not yet said back in my own words
-
-- `os.environ["X"]` is a lookup in the environment the process was started with.
-  It doesn't read `.env`.
-- Why `client.py` has `api_key="dummy"` plus an `x-gateway-key` header: the
-  SDK requires an `api_key`, and the real key the gateway checks is the header.
