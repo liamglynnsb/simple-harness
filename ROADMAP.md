@@ -4,17 +4,31 @@ Read this first at the start of every session. Tick items off as we finish them.
 Rule: don't build ahead of the step we're on. Later layers wrap the loop; they
 never rewrite it.
 
+Whenever we split a step into pieces, record the pieces here as substeps (`1a`,
+`1b`, ...) with the file each one produced, so the shape of the build is on record.
+
 ## Layer 1: the bare loop (no frameworks)  <- WE ARE HERE
 
 - [x] Step 1: plain API call; show the model is stateless; print token cost per turn
+  - [x] 1a: repo, venv, README, ROADMAP, `.gitignore`
+  - [x] 1b: config via environment variables and `.env` (key never in the repo)
+  - [x] 1c: `client.py`, the one module that knows about the gateway
+  - [x] 1d: first plain call; read the raw `Message` (content, stop_reason, usage)
+  - [x] 1e: two calls prove statelessness; fix by re-sending history in order
+  - [x] 1f: loop over turns, printing input/output tokens per turn
+        (`l1s1_stateless.py`)
 - [x] Step 2: define one tool; inspect the raw `tool_use` response and `stop_reason`
+  - [x] 2a: the tool definition: name, description, JSON-schema `input_schema`
+  - [x] 2b: call with `tools=[...]`; read the raw `tool_use` block and
+        `stop_reason: tool_use` before parsing anything (`l1s2_tool_use.py`)
   - [ ] Once it works: remind Liam to skim the tool-use docs
         (https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview)
 - [x] Step 3: the loop: branch on `stop_reason`, handle `max_tokens`, iteration cap
-  - [x] 3a: real calculator function in `tools.py`
+  - [x] 3a: real calculator function in `tools.py`, plus the `FUNCTIONS` lookup
   - [x] 3b: one tool request handled by hand (`l1s3_one_tool_call.py`)
   - [x] 3c: the loop in `loop.py` (`tool_use` and `end_turn` branches, `else` stopgap)
   - [x] 3d: handle `max_tokens` properly, add an iteration cap
+        (also: `__main__` guard; final `else` for unexpected stop reasons)
   - [ ] Rebuild the loop from a blank file with nothing open (ownership test)
   - [ ] Loose end: `end_turn` uses `content[0].text`; make it collect text blocks
         like the `max_tokens` branch

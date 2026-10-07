@@ -23,6 +23,8 @@ first, not a code-delivery project.
   loose wording precisely.
 - Don't build ahead of the current step in `ROADMAP.md`.
 - Step scripts are named `l<layer>s<step>_<topic>.py` (e.g. `l1s1_stateless.py`).
+- When a step is split into pieces, record them in `ROADMAP.md` as substeps
+  (`3a`, `3b`, ...) with the file each produced, and tick them as they finish.
 
 ## Keeping the ledger
 
