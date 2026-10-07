@@ -29,6 +29,37 @@ environment.
 - Correction: the file does nothing by itself. Something has to read it, e.g.
   `source`, to put its contents into the environment.
 
+**A virtual environment (`.venv`) is a private shelf of packages for this
+project.** `pip install` puts packages there instead of in the system Python.
+Running `.venv/bin/python script.py` starts that specific Python, which notices
+its `pyvenv.cfg` and looks for imports on its own shelf. Anyone can rebuild it
+from `requirements.txt`, so the folder itself is git-ignored.
+- Correction: the shell knows nothing about virtual environments. I first said it
+  "tells the terminal" what to launch; the shell just runs the program at that
+  path, and the venv-awareness is inside Python.
+
+**Reading `.env` into `os.environ` is Python's job, not the shell's.** A manual
+`source .env` step isn't repeatable: in six months I wouldn't remember it, and
+someone cloning the repo wouldn't know. So `client.py` calls `load_dotenv()`,
+which reads `.env` and fills this process's own `os.environ`. A child process
+can't change its parent's environment, but it can set its own.
+- `.env` is found next to `client.py`, not in the current folder (except under
+  `python -c`). `.env` is git-ignored, so a committed `.env.example` with
+  placeholder values documents what's needed, and the README says to copy it.
+- Correction: `load_dotenv()` doesn't call Python; it is Python code running in
+  the same process. And Python never reads `.env` unless something tells it to.
+
+**The word "client" and the word "inheritance" each mean two things.** `client.py`
+is my own file; `client = make_client()` is a variable holding the SDK's object.
+`from client import ...` is an import, not inheritance. Class inheritance
+(`class B(A)`) is about classes; environment variables are "inherited" by child
+processes. Neither applies to importing.
+
+**Git's letters in Cursor.** `M` modified, `U` untracked, `A` staged, `D` deleted.
+
+**One editor per file.** If I edit a file while Cursor has a different copy open,
+one of us overwrites the other. This happened to `loop.py` twice.
+
 ## 2026-10-05 · Layer 1, Step 1 (stateless calls and token cost)
 
 **The model is stateless.** It has no memory between calls. Each call is one
@@ -74,7 +105,7 @@ run the tool and send back the result.
 - Correction: the model stopping isn't "done". The question isn't answered yet;
   the result of the calculation still has to come from my code.
 
-## 2026-10-06 · Layer 1, Step 3 (the loop, in progress)
+## 2026-10-06 · Layer 1, Step 3 (the loop)
 
 **A tool has two halves that must agree.** The definition (name, description,
 schema) is what the model reads. The function is what actually runs. The
@@ -148,6 +179,50 @@ guard runs when I run the script and is skipped when another file imports it.
 Definitions stay at the top level; the actions that call them go under the guard.
 - Correction: importing isn't "nothing". It still runs the imports and the `def`
   lines. It just doesn't run the agent.
+
+**The iteration cap uses `for _ in range(max_loops)`.** `range(n)` yields `0` to
+`n-1`: it starts at 0 and the upper bound is excluded, so `range(10)` is exactly 10
+passes. The `for` takes the next number each pass and ends when they run out.
+`max_loops=10` in the `def` is a default: used when the caller passes nothing,
+replaced when the caller passes a value. Defaults go after required parameters.
+- Every normal exit inside the loop is a `return`, so the line **after** the loop
+  is reachable only if all passes were used with no answer. That's where the
+  "max loops reached" message goes, with no flag or counter to manage.
+- The cap check is a separate question from the `stop_reason` chain ("how many
+  passes?" vs "what do I do with this reply?"). Tested with `max_loops=1`: the
+  tool runs on pass 1, but its result is never sent back, so the cap message
+  returns.
+
+**The `max_tokens` branch: the loop collects, the decision comes after.** Set the
+empty string before the loop, add each text block's text inside it, then decide
+after it: text plus a note on a new line, or the note alone if there was no text.
+- Don't `return` inside the collecting loop (it stops at the first block) and
+  don't reset the string inside it (it forgets earlier text). Don't index
+  `content[0].text`: a cut-off reply may not start with a text block, and a
+  truncated tool request must never be run.
+- `if text_results:` is true when the string is non-empty. Empty strings, lists,
+  dicts, `0` and `None` are falsy.
+- The other block types (thinking, server-side tool results) don't appear in this
+  setup, so checking `block.type == "text"` and ignoring the rest is safe.
+
+**A final `else` stops unexpected stop reasons from looping.** An `else` belongs
+to whichever `if` it lines up with, by indentation. Without one on the stop-reason
+chain, a `refusal` would match nothing, the loop would re-send the same messages
+every pass, and I'd pay for each call until the cap hit, with a misleading message.
+
+**The model decides when it's done; the harness reads the signal.** Nothing in my
+code says "stop after the calculation". After the tool result comes back, the model
+writes its answer and emits an end-of-turn marker, which the API reports as
+`stop_reason: end_turn`. The model could equally ask for another tool, so it
+controls how many passes happen.
+- Division of labor: the model decides what to do next; the harness executes it,
+  feeds results back, and enforces limits (cap, `max_tokens`, unexpected reasons).
+
+**Tool definitions cost tokens on every call, so the harness chooses what to send.**
+Like the history, definitions are re-sent each request (stateless). A thousand tools
+would add a huge amount of input every time and make the model worse at choosing.
+Nothing filters automatically; options are routing a short list, on-demand tool
+search, or grouping behind a subagent. With a handful of tools, send them all.
 
 ## Explained to me, not yet said back in my own words
 

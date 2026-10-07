@@ -10,12 +10,14 @@ never rewrite it.
 - [x] Step 2: define one tool; inspect the raw `tool_use` response and `stop_reason`
   - [ ] Once it works: remind Liam to skim the tool-use docs
         (https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview)
-- [ ] Step 3: the loop: branch on `stop_reason`, handle `max_tokens`, iteration cap
+- [x] Step 3: the loop: branch on `stop_reason`, handle `max_tokens`, iteration cap
   - [x] 3a: real calculator function in `tools.py`
   - [x] 3b: one tool request handled by hand (`l1s3_one_tool_call.py`)
   - [x] 3c: the loop in `loop.py` (`tool_use` and `end_turn` branches, `else` stopgap)
-  - [ ] 3d: handle `max_tokens` properly, add an iteration cap
-  - [ ] After 3d: rebuild the loop from a blank file with nothing open
+  - [x] 3d: handle `max_tokens` properly, add an iteration cap
+  - [ ] Rebuild the loop from a blank file with nothing open (ownership test)
+  - [ ] Loose end: `end_turn` uses `content[0].text`; make it collect text blocks
+        like the `max_tokens` branch
 - [ ] Step 4: second tool; several tool calls in one response (one `tool_result` each)
 - [ ] Step 5: break a tool on purpose; return an error `tool_result`; watch recovery
 
