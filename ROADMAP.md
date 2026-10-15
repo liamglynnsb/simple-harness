@@ -62,8 +62,7 @@ are required and built in below at the point each is needed; the reasons are in
 PLAN.md section 1, and details for every step are in PLAN.md section 3.
 
 - [ ] Step 0: before building anything new
-  - [ ] 0a: rotate the the gateway key and update `.env` (H5). New key is in `.env`; still to do: confirm a real call works,
-        then revoke the old key
+  - [x] 0a: rotate the the gateway key and update `.env` (H5). Done: new key in `.env`, a real call worked, old key revoked.
   - [x] 0b: the model changed from Haiku 4.5 to Haiku 5.5 (`HARNESS_MODEL`). Run the
         loop once to confirm the slug works through the gateway; check whether
         thinking tokens eat into `max_tokens=300` (empty or cut-off replies); then
