@@ -391,6 +391,22 @@ request gets an answer, flagged `is_error`.
   path matters. Two styles have names: "look before you leap" (check first) and "easier
   to ask forgiveness than permission" (try it and catch).
 
+**Thinking tokens count against `max_tokens`, and a description can be enough to trigger a skill.**
+Running the expense question three times with `max_tokens=300`: every run called
+`load_skill("expense-policy")`, and every run was cut off ("Response stopped; max tokens
+reached"). The blocks showed why: `['thinking', 'tool_use']`, then `['thinking', 'text']`
+or, in one run, only `['thinking']`. Haiku 5.5 thinks by default, and that thinking uses
+the budget. The `max_tokens` branch handled the no-text case as designed (it returned just
+the note). I raised the limit to 1000; making it a parameter is step 3a.
+- Correction: I predicted the model might not load the policy unless I said I was from
+  Fernbrook. It loaded it every time: the first clause of the description ("whether
+  something can be expensed or reimbursed") was enough. The answers quoted the $37 cap, a
+  number it couldn't have guessed, which shows the skill was used.
+- For small talk, three runs made no tool calls (no false alarm), but the replies
+  described the skills ("arithmetic with checks", "Fernbrook Co. expense policy"). The
+  menu is visible to the model on every request, so it shapes answers even when nothing
+  loads. Anything in a description is effectively public to the model.
+
 **Python I used while building it.** `Path(folder).glob("*.md")` finds files, in no
 guaranteed order (use `sorted(...)` for a stable menu). `text.partition("\n---\n")`
 returns three pieces (I keep the first and last; `_` takes the middle).

@@ -67,8 +67,9 @@ PLAN.md section 1, and details for every step are in PLAN.md section 3.
         loop once to confirm the slug works through the gateway; check whether
         thinking tokens eat into `max_tokens=300` (empty or cut-off replies); then
         update `.env.example`, `CLAUDE.md`, and the ledger's model notes (done; the run
-        worked). Still unmeasured: how many thinking tokens a reply uses; Step 1a will
-        show it in `output_tokens`. Everything measured in Steps 1-5 was on Haiku 4.5.
+        worked). Found in 1d: thinking tokens do count against `max_tokens`; at 300, three
+        expense-policy runs were cut off (one had only a thinking block), so it was
+        raised to 1000. Everything measured in Steps 1-5 was on Haiku 4.5.
 - [ ] Step 1: a skill file as a tool (`skills/`, `layer2/l2s1_skill.py`)
   - [x] 1a: measure what tool definitions cost: the same prompt with and without
         `tools`, compare `input_tokens` (H3); this is the baseline for 1e
