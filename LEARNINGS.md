@@ -367,10 +367,6 @@ These came up along the way. I haven't restated them, so they stay here until I 
   `git restore <file>` throws away uncommitted edits to one file (I used it to undo
   an experiment); a pattern like `.env.*` in `.gitignore` also hides `.env.example`,
   so it needs a `!.env.example` line.
-- **Terminal quirk, unresolved.** Cmd+C printing `9;9u` and Cmd+V adding odd
-  characters inside herdr inside Ghostty look like the terminal's keyboard and paste
-  protocols being passed to the wrong program. I only have a hypothesis (Shift while
-  selecting; test in a plain Ghostty tab) and never confirmed it.
 
 ## Open items
 
