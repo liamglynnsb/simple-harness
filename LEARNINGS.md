@@ -423,6 +423,56 @@ loaded only the decoy.
   without saying how, and one run used `## Added` while two used plain `Added`. To get
   identical output, be exact.
 
+### 1e: Upfront vs Fetch, the token comparison (worked numbers)
+
+The question: is it cheaper to carry every skill's instructions in every request (**Upfront**,
+no `load_skill` tool), or to carry only a short menu and load a body when the model asks
+(**Fetch**, what I built)?
+
+| | **Upfront** | **Fetch** (`load_skill`) |
+|---|---|---|
+| In every request | all 3 skill bodies, about 800 tokens | the menu only, about 144 tokens |
+| How the model gets the instructions | already there | it calls `load_skill` (an extra pass) |
+
+Unit: input-token equivalents, where 1 input token = 1 and 1 output token = 5 (output costs
+about five times as much, per the price list). Thinking and tool calls are output.
+
+**One request:**
+
+| Request type | Upfront | Fetch |
+|---|---|---|
+| doesn't need a skill | 800 | 144 |
+| needs a skill (100 thinking tokens on the loading pass) | 800 | 1,255 (605 input + 650 for the extra pass's thinking and tool call) |
+
+**100 requests, three skills, 100 thinking tokens:**
+
+| Requests needing a skill | Upfront | Fetch | Cheaper |
+|---|---|---|---|
+| 10% | 80,000 | 25,510 | Fetch by 68% |
+| 30% | 80,000 | 47,730 | Fetch by 40% |
+| 60% | 80,000 | 81,060 | about equal |
+| 80% | 80,000 | 103,280 | Upfront by 23% |
+
+With 300 thinking tokens the crossover drops to about 30%. **The thinking on the loading pass is
+the swing factor.**
+
+**20 skills (menu 1,040 tokens, bodies 5,400), 300 thinking tokens:** Fetch is cheaper at every
+usage level (by 64% at 30% use, 47% at 60%, 25% at 100%).
+
+Takeaways:
+1. Fetch saves nearly everything on requests that don't need a skill.
+2. With three small skills it's close, and Upfront can win if most requests need a skill and the
+   loading pass thinks a lot.
+3. With a big library, Fetch wins everywhere. That is the real reason skills load on demand.
+
+Assumptions: sizes are estimated (characters / 4); the thinking amount is a guess, not
+measured; one skill per request. Prompt caching (Layer 5 Step 4) could make Upfront much
+cheaper, because cached input costs about a tenth. Passes multiply both designs: every
+pass re-sends what's in the request.
+- Correction: my first version of the comparison forgot the passes and mixed input and output
+  tokens as if they cost the same. I also left "on-demand" undefined in the first table,
+  which confused the comparison; "Upfront" and "Fetch" are clearer names.
+
 **Python I used while building it.** `Path(folder).glob("*.md")` finds files, in no
 guaranteed order (use `sorted(...)` for a stable menu). `text.partition("\n---\n")`
 returns three pieces (I keep the first and last; `_` takes the middle).

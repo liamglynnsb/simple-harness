@@ -84,7 +84,8 @@ PLAN.md section 1, and details for every step are in PLAN.md section 3.
   - [x] 1d: run tasks, three times each: an expense question (loads the policy), an
         arithmetic question (loads verify-arithmetic; the trace shows an extra inverse
         call), small talk (loads nothing), release notes (loads only the decoy)
-  - [ ] 1e: token cost over a mixed workload, not one task: on-demand adds a round
+  - [x] 1e (done as a worked analysis; see LEARNINGS.md; thinking tokens per pass still
+        unmeasured, Layer 5 tracing will give them): token cost over a mixed workload, not one task: on-demand adds a round
         trip whenever a skill is used, so work out the break-even share of requests
         that need a skill
   - [ ] 1f: break it on purpose: a vague description, and watch the skill never load
