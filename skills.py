@@ -10,3 +10,6 @@ def read_skills(folder="skills"):
         description = lines[1].split(": ", 1)[1]
         skills[name] = {"description": description, "body": body}
     return skills   
+
+if __name__ == "__main__":
+    print(read_skills())
