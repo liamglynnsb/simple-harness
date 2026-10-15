@@ -47,7 +47,7 @@ def run_agent(client, messages, tools, max_loops=10):
 
 if __name__ == "__main__":
     client = make_client()
-    messages = [{"role": "user", "content": "Read data/a.txt and data/b.txt, and also tell me what 12 times 12 is."}]
+    messages = [{"role": "user", "content": "Read data/missing.txt and tell me what is in it."}]
     answer = run_agent(client, messages, [CALCULATOR, READ_FILE])
     print(answer)
     for m in messages:

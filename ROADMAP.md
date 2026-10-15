@@ -42,7 +42,7 @@ Whenever we split a step into pieces, record the pieces here as substeps (`1a`,
   - [x] 4d: check the invariants: the shape of the `messages` list after a
         multi-tool pass; leave a result out on purpose and read the API's complaint
 - [ ] Step 5: break a tool on purpose; return an error `tool_result`; watch recovery
-  - [ ] 5a: let a tool fail with nothing protecting the loop ("read
+  - [x] 5a: let a tool fail with nothing protecting the loop ("read
         data/missing.txt"); see what the unprotected loop does
   - [ ] 5b: catch the exception around the tool call; return a `tool_result` with
         `is_error: true` and the error text; watch the model recover
