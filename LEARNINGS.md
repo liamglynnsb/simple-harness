@@ -242,3 +242,40 @@ would add a huge amount of input every time and make the model worse at choosing
 Nothing filters automatically; options are routing a short list, on-demand tool
 search, or grouping behind a subagent. With a handful of tools, send them all.
 
+## 2026-10-06 · Layer 1, Step 4 (a second tool, several calls in one reply)
+
+**Adding a tool touches `tools.py` and the call site, not the loop.** A tool is a
+definition, a function, and a `FUNCTIONS` entry. `run_agent` takes whatever tools
+it's given, so only the place that calls it changes (`[CALCULATOR, READ_FILE]`).
+The schema's property name, its `required` list, and the function's parameter
+must all agree. A mismatched `required` list was caught while adding `read_file`.
+
+**The model got the file path from my question.** Nothing in the code names the
+`data` folder. A relative path is resolved from the folder the script is run in,
+not from where `loop.py` lives (unlike `.env`, which is found next to
+`client.py`). Searching for files needs another tool (like `list_files`), not a
+change to the loop: the tool supplies the capability, the model the judgment.
+
+**Whether the model batches tool calls depends on whether one needs another's
+result.** In 4b the calculator's numbers had to come from the file, so it took
+separate passes (read, then calculate, then answer). In 4c ("read a.txt and
+b.txt, and also compute 12 x 12") the jobs were independent, so one reply held
+three `tool_use` blocks and the whole thing took two passes.
+- Correction: I predicted the reads together, then the calculation. I had assumed
+  the calculation needed numbers from the files; it didn't.
+- Batching is the model's choice, not a guarantee. Fewer passes means fewer tokens,
+  since every pass re-sends the history.
+
+**Every `tool_use` needs its own `tool_result`, and the API checks.** The message
+list alternates: user question, assistant with N `tool_use` blocks, user with N
+`tool_result` blocks, assistant text. The ids pair them. When I sent back only one
+of three, the next call failed with a 400 that named the two unanswered ids.
+- My loop didn't fail by itself; the server validated the list on the next call.
+- A 400 `BadRequestError` means the request is invalid, so retrying changes
+  nothing. A timeout (`APITimeoutError`) is a network problem, so retrying can help.
+  Neither is a `stop_reason`; both raise exceptions.
+
+**Python bits.** `print("a", x, y)` prints its arguments separated by spaces.
+`[b.type for b in response.content]` is a list comprehension: `b` is an arbitrary
+name for each item in turn, and the result is a list of the types.
+

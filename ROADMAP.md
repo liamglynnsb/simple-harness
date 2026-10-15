@@ -42,6 +42,14 @@ Whenever we split a step into pieces, record the pieces here as substeps (`1a`,
   - [x] 4d: check the invariants: the shape of the `messages` list after a
         multi-tool pass; leave a result out on purpose and read the API's complaint
 - [ ] Step 5: break a tool on purpose; return an error `tool_result`; watch recovery
+  - [ ] 5a: let a tool fail with nothing protecting the loop ("read
+        data/missing.txt"); see what the unprotected loop does
+  - [ ] 5b: catch the exception around the tool call; return a `tool_result` with
+        `is_error: true` and the error text; watch the model recover
+  - [ ] 5c: garbage without an exception (a tool returns nonsense or `None`); see
+        how the model copes, and why `is_error` doesn't help here
+  - [ ] 5d: other failure kinds the loop should survive: an unknown tool name,
+        bad arguments; what makes an error message useful for recovery
 
 ## Layer 2: extensions
 
