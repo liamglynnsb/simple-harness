@@ -29,7 +29,8 @@ cp .env.example .env
 `client.py` loads `.env` itself, so there is no `source` step. Never commit
 `.env` or put keys in code.
 
-Tests need one more package: `.venv/bin/pip install -r requirements-dev.txt`.
+The tests (added in Layer 2, Step 2, under `tests/`) need one more package:
+`.venv/bin/pip install -r requirements-dev.txt`.
 
 ## Run
 
@@ -40,19 +41,27 @@ commands call the virtual environment's Python directly (`.venv/bin/python`); if
 activate it first with `source .venv/bin/activate`, plain `python` works too:
 
 ```bash
-.venv/bin/python -m layer1.l1s1_stateless      # Step 1: stateless calls, token cost per turn
-.venv/bin/python -m layer1.l1s2_tool_use       # Step 2: define a tool, read the raw tool_use reply
-.venv/bin/python -m layer1.l1s3_one_tool_call  # Step 3b: one tool request handled by hand
-.venv/bin/python loop.py                       # Steps 3-5: the agent loop with two tools
+.venv/bin/python -m layer1.l1s1_stateless      # L1 Step 1: stateless calls, token cost per turn
+.venv/bin/python -m layer1.l1s2_tool_use       # L1 Step 2: define a tool, read the raw tool_use reply
+.venv/bin/python -m layer1.l1s3_one_tool_call  # L1 Step 3b: one tool request handled by hand
+.venv/bin/python -m layer2.l2s1_tool_cost      # L2 Step 1a: what tool definitions cost in tokens
+.venv/bin/python loop.py                       # the agent loop (see below)
 ```
+
+`loop.py` runs **one hard-coded question** from its `__main__` block, with three tools
+(calculator, read_file, load_skill). Edit the `messages = [...]` line to try other questions.
 
 ## What's here
 
 - `client.py`: the only file that knows about the gateway (base URL, headers, `.env`)
-- `tools.py`: tool definitions (`CALCULATOR`, `READ_FILE`), their functions, and
+- `tools.py`: tool definitions (`CALCULATOR`, `READ_FILE`, `LOAD_SKILL`), their functions, and
   `FUNCTIONS`, the name-to-function lookup
-- `loop.py`: `run_agent`, the loop. It branches on `stop_reason`, answers every
-  `tool_use` with a `tool_result` (errors flagged `is_error`), and caps its passes
+- `skills.py`: reads the files in `skills/` into a dict (name -> description and body)
+- `skills/`: markdown skill files: a `name:` line, a `description:` line, a `---` line, then
+  the instructions. The model sees only names and descriptions until it asks for a skill
+- `loop.py`: `run_agent`, the loop. It branches on `stop_reason`, answers every `tool_use`
+  with a `tool_result` (errors flagged `is_error`), and caps its passes
 - `data/`: small text files for the `read_file` tool
 - `layer1/`, `layer2/`, ...: the step scripts for each layer
-- `ROADMAP.md`: layers and steps, with substeps; `LEARNINGS.md`: what I've learned
+- `ROADMAP.md`: layers and steps, with substeps; `PLAN.md`: the reasoning behind the plan;
+  `LEARNINGS.md`: what I've learned; `CLAUDE.md`: how Claude Code works with me on this repo
