@@ -368,9 +368,30 @@ These came up along the way. I haven't restated them, so they stay here until I 
   an experiment); a pattern like `.env.*` in `.gitignore` also hides `.env.example`,
   so it needs a `!.env.example` line.
 
+## From the tool-use docs (skimmed)
+
+- **Claude retries only because the harness sent the error back.** The docs say to
+  continue the conversation with a `tool_result` flagged `is_error: true`, and
+  Claude will try the tool again; for an invalid request (like a missing
+  parameter) it retries a couple of times before apologizing. My `try`/`except`
+  is what makes that possible. Without it, the model never sees the failure.
+  - My `data/missing.txt` case was a valid request for a file that wasn't there, so
+    the model reported it and didn't retry (it had nothing else to try).
+- **`strict: true` on a tool definition** guarantees the inputs match the schema,
+  which would prevent missing or mistyped parameters (the `TypeError` cases). It
+  doesn't help when the tool itself fails, so `try`/`except` is still needed.
+- **`tool_choice`** defaults to `auto` (the model decides each turn);
+  `disable_parallel_tool_use: true` inside it limits the model to one tool call per
+  turn, which would switch off the batching from Step 4. A system prompt can nudge
+  how eagerly the model uses tools.
+- **Tool definitions cost tokens on every request**, plus a hidden tool-use system
+  prompt (about 496 tokens for Haiku 4.5 with `auto`), which is why a call with tools
+  has far more input tokens than a plain one. Properties can carry their own
+  `description` too, which mine don't yet.
+- The SDK's **Tool Runner** runs this whole loop for you; I wrote it by hand.
+
 ## Open items
 
-- Skim the tool-use docs, including how `tool_result` and `is_error` are described.
 - Rebuild `run_agent` from a blank file with nothing open (the ownership test).
 - Add a `list_files` tool someday and watch the model recover from a wrong path.
 - Layer 5 ideas from this ledger: retries for timeouts, tracing every tool call and

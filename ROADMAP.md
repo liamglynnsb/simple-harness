@@ -21,7 +21,7 @@ Whenever we split a step into pieces, record the pieces here as substeps (`1a`,
   - [x] 2a: the tool definition: name, description, JSON-schema `input_schema`
   - [x] 2b: call with `tools=[...]`; read the raw `tool_use` block and
         `stop_reason: tool_use` before parsing anything (`l1s2_tool_use.py`)
-  - [ ] Once it works: remind Liam to skim the tool-use docs
+  - [x] Once it works: remind Liam to skim the tool-use docs
         (https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview)
 - [x] Step 3: the loop: branch on `stop_reason`, handle `max_tokens`, iteration cap
   - [x] 3a: real calculator function in `tools.py`, plus the `FUNCTIONS` lookup
