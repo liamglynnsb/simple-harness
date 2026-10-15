@@ -84,9 +84,12 @@ From the official feature-availability table (Amazon Bedrock column), checked on
   Layer 5 Step 1 replaces the guess with measurements. It has a 1M-token context window,
   adaptive thinking at `medium` effort by default, and (docs) 286 tokens of tool-use
   system prompt with `auto`. **Thinking tokens count against `max_tokens`.**
-- **Possible limits of the newer models (not yet checked for Haiku 5.5).** Some
-  current models reject a forced `tool_choice` and a non-default `temperature`. We use
-  neither today. Probe before relying on either (see sections 5 and 6).
+- **Haiku 5.5 behaviour, from the docs' "Define tools" page.** Thinking is **on by
+  default** (so thinking tokens count against `max_tokens`). Forced `tool_choice`
+  (`any` / `tool`) is **accepted**, though a forced call skips thinking and the model
+  can't write text before the tool call; Opus 5.5 and Sonnet 5.5 reject forced tool use,
+  so code that depends on it won't survive a model swap. Still unchecked: whether it
+  rejects a non-default `temperature` (the Layer 4 judge plan allows for that).
 - **The gateway** may enforce its own rules on requests (for example required labels). If we ever change
   how requests are built, check that they still pass.
 
@@ -235,8 +238,9 @@ loop's shape, so last).
   and watch `cache_read_input_tokens`. Something as small as a timestamp in the prefix
   silently breaks it. This directly attacks the cost growth you measured in Step 1.
 - **Step 5, structured output.** A final-answer tool whose input schema is the output
-  schema, validated in code, with one retry that sends the validation error back. Don't force the call with
-  `tool_choice`: some newer models reject it, so ask for it in the prompt and check.
+  schema, validated in code, with one retry that sends the validation error back. Forcing the call with `tool_choice`
+  works on Haiku 5.5 (a forced call skips thinking) but is rejected on Opus 5.5 and
+  Sonnet 5.5, so prefer asking in the prompt and checking.
   Probe native structured outputs afterwards.
 - **Steps 6-7, injection then guardrails.** Attack first, so the guardrails are justified
   by evidence: plant instructions inside files and see whether the model obeys them
@@ -282,8 +286,8 @@ that `is_error` exists on tool results (inspected the SDK); the MCP stdio framin
 spec's note about the dropped handshake (from the spec page).
 
 Not verified (each has a probe or a read built into the plan): whether Haiku 5.5
-rejects a forced `tool_choice` or a non-default `temperature`; whether it thinks by
-default through the gateway and how much that eats of `max_tokens`; whether the gateway passes
+rejects a non-default `temperature`; how much default thinking eats of `max_tokens`
+through the gateway; whether the gateway passes
 caching, structured-output and streaming parameters through; which Bedrock API the gateway
 uses; whether the SDK client is thread-safe; what retry and fallback options your
 the gateway workspace has; exact MCP message shapes in the newest revision; Haiku 4.5's

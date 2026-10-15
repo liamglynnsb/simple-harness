@@ -359,6 +359,14 @@ These came up along the way. I haven't restated them, so they stay here until I 
   `input_tokens` and `output_tokens`, the `model`, and an `id`. `messages` is a list
   of dictionaries, each with a `role` and `content`. Lists count from 0, so
   `content[0]` is the first block.
+- **The tool-use prompt isn't mysterious, only partly unpublished.** With `tools`,
+  the API builds a system prompt: a fixed instruction text, then my tool definitions
+  as JSON Schema, then any system prompt I add, then the tool configuration. The
+  fixed text is the hidden overhead (docs: 286 tokens for Haiku 5.5 with `auto`, 406
+  with `any` or `tool`); its exact wording isn't published. My two definitions are
+  526 characters (about 130 to 175 tokens), and I measured about 500 extra input
+  tokens, which fits. `tool_choice`: `auto` lets the model decide, `any` forces some
+  tool, `tool` forces a named one, `none` forbids tools. Forced use skips thinking.
 - **The tool description is the model's only guide.** It reads the description to
   decide when a tool applies and how to fill the inputs (it repeated my
   "relative to the project's folder" wording back to me). Worth writing carefully.
