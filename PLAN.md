@@ -125,6 +125,21 @@ signature of `run_agent`), **hook** (restructures its tool-running code), **MCP*
   result, the same channel a poisoned file would use, which Layer 5 returns to. The model
   varies from run to run, so run each task about three times (Layer 4 does this properly).
   *Explain back:* why the description, not the body, costs tokens on every call.
+  **Specs for the three skills (you write the content).** File format: a `name:` line,
+  a `description:` line, a line with `---`, then the instructions.
+  - `verify-arithmetic` (behaviour). After every calculation done with the calculator
+    tool, run the inverse operation with the calculator, compare, and report "verified"
+    or "mismatch". The final answer has a fixed form such as
+    `expression = result (verified)`. It must cover all four operations. The description
+    must make the model load it for any request that involves arithmetic.
+  - `expense-policy` (knowledge). For an invented company. At least eight specific,
+    arbitrary rules with numbers and made-up approval codes (meals, flights, hotels,
+    approvals, receipts), none of which matches real-world norms, so they can't be
+    guessed. At least about 1,000 characters, so 1e shows a visible difference. The
+    description says plainly when to use it.
+  - `release-notes-format` (decoy). A short, unrelated formatting rule, with a
+    description that clearly isn't about expenses or arithmetic.
+
 - **Step 2, tests (H1).** A fake client that returns scripted replies lets you test every
   branch of the loop with no API calls: free, instant and deterministic. Cover the plain
   finish, one and several tool calls, the three failure kinds from 5d, `max_tokens` with
