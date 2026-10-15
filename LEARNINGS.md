@@ -347,7 +347,8 @@ Forced use skips thinking.
 
 **A skill is a header and a body.** The header (a name and a one-line description) is
 cheap and always visible; the body loads only when the model asks for it. The
-**description is the trigger**: it has to say *when* to use the skill, not what it does.
+**name and description together are the trigger** (the menu entry is `name: description`): they have to
+say *when* to use the skill, not what it does. Either half can carry it, as 1f showed.
 My first description for `verify-arithmetic` said what it does ("verifies any arithmetic
 by solving the inverse"), so the model had nothing to match a request against.
 - Three skills, three jobs: `verify-arithmetic` changes *behaviour* (the model already
@@ -472,6 +473,28 @@ pass re-sends what's in the request.
 - Correction: my first version of the comparison forgot the passes and mixed input and output
   tokens as if they cost the same. I also left "on-demand" undefined in the first table,
   which confused the comparison; "Upfront" and "Fetch" are clearer names.
+
+**1f: breaking discovery on purpose. A miss looks fluent.** Two experiments on `release-notes-format`:
+
+| Name | Description | What the model did |
+|---|---|---|
+| `release-notes-format` | clear | loaded it |
+| `release-notes-format` | "skill file" (vague) | **still loaded it** (the name carried the signal) |
+| `skill-file-test` | "skill file" (vague) | **never loaded it** (blocks: `['text']`, no tool call) |
+| vague | clear | not tested; I'd expect it to load |
+
+With both halves vague, the answer ignored the skill: "Here are release notes for the update:" instead of
+a one-line summary, `**New Features**` / `**Bug Fixes**` / `**Other Changes**` instead of Added / Changed /
+Fixed, an invented "Other Changes" filler and a made-up version number (it admitted both), and extra text
+after the last bullet. Nothing crashed and nothing was flagged. Only checking the output against the skill's
+rules reveals a miss, which is the case for Layer 4 verifiers.
+- Correction: I said "the description is the trigger". It's the name and description together; either can
+  carry it. Make both say what the skill is for.
+- Correction: when it answered without the skill I called that "its own thinking". It used its general
+  habits; that run had no thinking block at all. Thinking is the separate scratch-space feature.
+- A comment in a skill's *header* is silently ignored (my reader takes only the first two header lines); a
+  comment in the *body* would be sent to the model and paid for. To switch a skill off, move it out of
+  `skills/` or rename it so it doesn't end in `.md`.
 
 **Python I used while building it.** `Path(folder).glob("*.md")` finds files, in no
 guaranteed order (use `sorted(...)` for a stable menu). `text.partition("\n---\n")`

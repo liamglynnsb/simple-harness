@@ -113,7 +113,7 @@ signature of `run_agent`), **hook** (restructures its tool-running code), **MCP*
   is cheap and always visible; the body loads only when needed ("progressive
   disclosure"). We build `load_skill(name)` and put the names and descriptions in its
   description. What the step should teach, and how each skill is chosen to show it:
-  the description is the trigger (1f breaks it on purpose); a skill can carry knowledge
+  the name and description are the trigger (1f breaks them on purpose); a skill can carry knowledge
   the model can't have (`expense-policy` holds made-up rules, so a right answer proves it
   was loaded); a skill can change behaviour (`verify-arithmetic`, chosen because the
   model already uses the calculator without being told, so "use the calculator" would

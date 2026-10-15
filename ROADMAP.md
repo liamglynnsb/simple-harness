@@ -70,7 +70,7 @@ PLAN.md section 1, and details for every step are in PLAN.md section 3.
         worked). Found in 1d: thinking tokens do count against `max_tokens`; at 300, three
         expense-policy runs were cut off (one had only a thinking block), so it was
         raised to 1000. Everything measured in Steps 1-5 was on Haiku 4.5.
-- [ ] Step 1: a skill file as a tool (`skills/`, `layer2/l2s1_skill.py`)
+- [x] Step 1: a skill file as a tool (`skills/`, `layer2/l2s1_skill.py`)
   - [x] 1a: measure what tool definitions cost: the same prompt with and without
         `tools`, compare `input_tokens` (H3); this is the baseline for 1e
   - [x] 1b: you write three skill files in `skills/` (specs in PLAN.md), each a name, a one-line
@@ -88,7 +88,7 @@ PLAN.md section 1, and details for every step are in PLAN.md section 3.
         unmeasured, Layer 5 tracing will give them): token cost over a mixed workload, not one task: on-demand adds a round
         trip whenever a skill is used, so work out the break-even share of requests
         that need a skill
-  - [ ] 1f: break it on purpose: a vague description, and watch the skill never load
+  - [x] 1f: break it on purpose: a vague description, and watch the skill never load
 - [ ] Step 2: tests for the loop with a scripted fake model (`tests/`) (H1), the
       safety net before `run_agent` is changed
   - [ ] 2a: a fake client that returns scripted replies, with no API calls
