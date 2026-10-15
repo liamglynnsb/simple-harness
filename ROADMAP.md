@@ -7,7 +7,7 @@ never rewrite it.
 Whenever we split a step into pieces, record the pieces here as substeps (`1a`,
 `1b`, ...) with the file each one produced, so the shape of the build is on record.
 
-## Layer 1: the bare loop (no frameworks)  (one item left: the rebuild test)
+## Layer 1: the bare loop (no frameworks)  (the rebuild test is scheduled at the Layer 2 checkpoint)
 
 - [x] Step 1: plain API call; show the model is stateless; print token cost per turn
   - [x] 1a: repo, venv, README, ROADMAP, `.gitignore`
@@ -51,64 +51,79 @@ Whenever we split a step into pieces, record the pieces here as substeps (`1a`,
   - [x] 5d: other failure kinds the loop should survive: an unknown tool name,
         bad arguments; what makes an error message useful for recovery
 
-- [ ] Layer 1 hardening (found in a review of Layer 1; reasons in PLAN.md). Not
-      required by the original brief, but cheap, and worth doing before the loop is
-      restructured in Layer 2 Step 3:
-  - [ ] H1: tests with a scripted fake model in `tests/` (end_turn, several tool
-        calls, unknown tool, tool error, max_tokens, unexpected stop_reason, max_loops)
-  - [ ] H2: watch a real recovery: give the model a way to fix its own failure (a
-        `list_files` tool after a wrong path) and see a retry succeed
-  - [ ] H3: measure what tool definitions cost: same prompt with and without `tools`,
-        compare `input_tokens`
-  - [ ] H4: make `max_tokens` a parameter of `run_agent` instead of a fixed 300
-  - [ ] H5: rotate the the gateway key
-
 ## Layer 2: extensions  <- WE ARE HERE
 
-Order is deliberate (easier concepts first, the biggest last): skill, subagent, hook,
-MCP. Skill and subagent only add tools; the hook restructures the loop's tool-running
-code; MCP is a separate program plus a protocol whose spec recently changed.
-Scripts are `l2s<step>_<topic>.py`. Details and pitfalls for every step are in PLAN.md.
+Order is deliberate: housekeeping, then the skill (it only adds a tool), then tests
+(the safety net, before `run_agent` is changed), then the subagent (changes
+`run_agent`'s signature), then the hook (restructures the tool-running code), and MCP
+last (a separate program plus a protocol whose spec recently changed).
+Scripts are `l2s<step>_<topic>.py`. The five findings from the Layer 1 review (H1-H5)
+are required and built in below at the point each is needed; the reasons are in
+PLAN.md section 1, and details for every step are in PLAN.md section 3.
 
+- [ ] Step 0: before building anything new
+  - [ ] 0a: rotate the the gateway key and update `.env` (H5)
 - [ ] Step 1: a skill file as a tool (`skills/`, `l2s1_skill.py`)
-  - [ ] 1a: write two skills: a text file each, with a name, a one-line description,
+  - [ ] 1a: measure what tool definitions cost: the same prompt with and without
+        `tools`, compare `input_tokens` (H3); this is the baseline for 1e
+  - [ ] 1b: write two skills: a text file each, with a name, a one-line description,
         and instructions whose effect is checkable (a required answer format)
-  - [ ] 1b: a `load_skill` tool that returns a skill's instructions; the tool's
+  - [ ] 1c: a `load_skill` tool that returns a skill's instructions; the tool's
         description lists only the skills' names and descriptions
-  - [ ] 1c: a task where the model chooses to load a skill, then follows it
-  - [ ] 1d: compare token cost: skill loaded on demand vs always included
-- [ ] Step 2: a subagent with scoped tools (`l2s2_subagent.py`)
-  - [ ] 2a: add an optional system prompt to `run_agent` (first use of `system`)
-  - [ ] 2b: a `delegate` tool: runs a fresh `run_agent` with its own history and a
+  - [ ] 1d: a task where the model chooses to load a skill, then follows it
+  - [ ] 1e: compare token cost: skill loaded on demand vs always included
+- [ ] Step 2: tests for the loop with a scripted fake model (`tests/`) (H1), the
+      safety net before `run_agent` is changed
+  - [ ] 2a: a fake client that returns scripted replies, with no API calls
+  - [ ] 2b: tests: a plain finish; one tool call; several tool calls in one reply
+        with the ids matched
+  - [ ] 2c: tests: unknown tool, a tool that raises, bad arguments; each gives a
+        flagged error result
+  - [ ] 2d: tests: `max_tokens` with and without text, an unexpected `stop_reason`,
+        the pass cap reached
+  - [ ] 2e: one command runs them all; break the loop on purpose and watch the right
+        test fail (a test that can't fail proves nothing)
+- [ ] Step 3: a subagent with scoped tools (`l2s3_subagent.py`)
+  - [ ] 3a: make `max_tokens` a parameter of `run_agent` instead of a fixed 300 (H4);
+        the tests stay green
+  - [ ] 3b: add an optional system prompt to `run_agent` (first use of `system`)
+  - [ ] 3c: a `delegate` tool: runs a fresh `run_agent` with its own history and a
         short list of tools, and returns only its final text
-  - [ ] 2c: see the isolation: the parent's `messages` never contain the child's turns;
-        compare token cost of parent and child
-  - [ ] 2d: scoping: the child lacks a tool, asks for it anyway, and fails the way 5d
+  - [ ] 3d: see the isolation: the parent's `messages` never contain the child's
+        turns; write a fake-model test that proves it; compare token cost
+  - [ ] 3e: scoping: the child lacks a tool, asks for it anyway, and fails the way 5d
         taught (unknown tool)
-  - [ ] 2e: limits: the child hits its own `max_loops` or errors; what the parent sees
-  - [ ] 2f: is it worth it? same task with and without the subagent
-- [ ] Step 3: a hook around tool calls (`hooks.py`, `l2s3_hooks.py`)
-  - [ ] 3a: pull the tool-running code out of the loop into `execute_tool`; the H1
-        tests must still pass
-  - [ ] 3b: before-hooks: a list of functions called before each tool; first one logs
-        the call (replaces the trace print)
-  - [ ] 3c: a blocking hook: `read_file` only inside `data/`, returning a flagged error
-        result; then try to get around your own rule (`..`, absolute path, symlink)
-  - [ ] 3d: after-hooks: see or change a result (truncate, redact); observing vs changing
-  - [ ] 3e: a hook that itself fails: fail open or fail closed, and why
-  - [ ] 3f (optional): command hooks that read the call as JSON on stdin, like Claude Code
-- [ ] Step 4: a tiny MCP server with one tool (`mcp_client.py`, `l2s4_mcp.py`)
-  - [ ] 4a: read the current spec's stdio page; decide official Python SDK vs a
+  - [ ] 3f: limits: the child hits its own `max_loops` or errors; what the parent sees
+  - [ ] 3g: is it worth it? the same task with and without the subagent
+- [ ] Step 4: a hook around tool calls (`hooks.py`, `l2s4_hooks.py`)
+  - [ ] 4a: pull the tool-running code out of the loop into `execute_tool`; every
+        test must still pass
+  - [ ] 4b: before-hooks: a list of functions called before each tool; the first one
+        logs the call (replaces the trace print)
+  - [ ] 4c: a blocking hook: `read_file` only inside `data/`, returning a flagged
+        error result; then try to get around your own rule (`..`, absolute path,
+        symlink) and turn each attempt into a test
+  - [ ] 4d: watch a real recovery (H2): add a `list_files` tool held to the same
+        rule, ask for a wrong path, and see the model list the folder and retry
+        successfully; compare with what 5b showed
+  - [ ] 4e: after-hooks: see or change a result (truncate, redact); observing vs
+        changing
+  - [ ] 4f: a hook that itself fails: fail open or fail closed, and why
+  - [ ] 4g (optional): command hooks that read the call as JSON on stdin, like
+        Claude Code
+- [ ] Step 5: a tiny MCP server with one tool (`mcp_client.py`, `l2s5_mcp.py`)
+  - [ ] 5a: read the current spec's stdio page; decide official Python SDK vs a
         hand-written server; write down what changed from the older handshake
-  - [ ] 4b: a minimal server exposing one tool; talk to it by hand in the terminal
+  - [ ] 5b: a minimal server exposing one tool; talk to it by hand in the terminal
         (pipe JSON lines in) to see the protocol
-  - [ ] 4c: harness side: start the server, list its tools, convert them to the
+  - [ ] 5c: harness side: start the server, list its tools, convert them to the
         `tools` format, route calls by name
-  - [ ] 4d: one task using a local tool and the MCP tool; failures (server dies, bad
+  - [ ] 5d: one task using a local tool and the MCP tool; failures (server dies, bad
         reply) come back as `is_error` results; shut the process down cleanly
-  - [ ] 4e: compare in-process tools with MCP: what you gain, what it costs
+  - [ ] 5e: compare in-process tools with MCP: what you gain, what it costs
 - [ ] Layer 2 checkpoint: explain each of the four extensions back; rebuild the hook
-      mechanism from a blank file
+      mechanism from a blank file; and do the pending Layer 1 rebuild (`run_agent`
+      from a blank file, nothing open)
 
 ## Layer 3: multi-agent  (builds on the Layer 2 subagent; `orchestrator.py`)
 
