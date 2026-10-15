@@ -1,5 +1,5 @@
 from client import make_client, model_name
-from tools import FUNCTIONS, CALCULATOR, READ_FILE
+from tools import FUNCTIONS, CALCULATOR, READ_FILE, LOAD_SKILL
 
 
 def collect_text(response):
@@ -15,7 +15,7 @@ def run_agent(client, messages, tools, max_loops=10):
         tool_results = []
         response = client.messages.create(
             model=model_name(),
-            max_tokens=300,
+            max_tokens=1000,
             tools=tools,
             messages=messages,
         )
@@ -24,8 +24,7 @@ def run_agent(client, messages, tools, max_loops=10):
         if response.stop_reason == "tool_use":
             for block in response.content:
                 if block.type == "tool_use":
-                    print("calling", block.name, "with input", block.input)
-                    # the above fn helps for traceability
+                    print("calling", block.name, "with input", block.input) # helps with traceability
                     try:
                         result = FUNCTIONS[block.name](**block.input)
                     except Exception as e:
@@ -61,8 +60,8 @@ def run_agent(client, messages, tools, max_loops=10):
 
 if __name__ == "__main__":
     client = make_client()
-    messages = [{"role": "user", "content": "What is 1234 times 5678?"}]
-    answer = run_agent(client, messages, [CALCULATOR, READ_FILE])
+    messages = [{"role": "user", "content": "Write release notes for a release that added dark mode and fixed a login bug."}]
+    answer = run_agent(client, messages, [CALCULATOR, READ_FILE, LOAD_SKILL])
     print(answer)
     # for traceability, print the messages
     for m in messages:

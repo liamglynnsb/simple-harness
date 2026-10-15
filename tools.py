@@ -58,7 +58,7 @@ LOAD_SKILL = {
 
 def load_skill(name):
     if name not in skills_dict:
-        raise ValueError(f"Skill {name} not found. Please choose a valid skill from the following list: {list(skills_dict.keys())}")
+        raise ValueError(f"Skill {name} not found. Please choose a valid skill from the following list: {sorted(skills_dict.keys())}")
     return skills_dict[name]["body"]
 
 
