@@ -72,7 +72,7 @@ PLAN.md section 1, and details for every step are in PLAN.md section 3.
 - [ ] Step 1: a skill file as a tool (`skills/`, `layer2/l2s1_skill.py`)
   - [x] 1a: measure what tool definitions cost: the same prompt with and without
         `tools`, compare `input_tokens` (H3); this is the baseline for 1e
-  - [ ] 1b: you write three skill files in `skills/` (specs in PLAN.md), each a name, a one-line
+  - [x] 1b: you write three skill files in `skills/` (specs in PLAN.md), each a name, a one-line
         description, then instructions: `verify-arithmetic` (behaviour: re-check every
         calculation with the inverse operation), `expense-policy` (knowledge: made-up
         rules the model can't guess; long on purpose) and a decoy `release-notes-format`
