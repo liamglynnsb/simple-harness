@@ -62,7 +62,13 @@ are required and built in below at the point each is needed; the reasons are in
 PLAN.md section 1, and details for every step are in PLAN.md section 3.
 
 - [ ] Step 0: before building anything new
-  - [ ] 0a: rotate the the gateway key and update `.env` (H5)
+  - [ ] 0a: rotate the the gateway key and update `.env` (H5). New key is in `.env`; still to do: confirm a real call works,
+        then revoke the old key
+  - [ ] 0b: the model changed from Haiku 4.5 to Haiku 5.5 (`HARNESS_MODEL`). Run the
+        loop once to confirm the slug works through the gateway; check whether
+        thinking tokens eat into `max_tokens=300` (empty or cut-off replies); then
+        update `.env.example`, `CLAUDE.md`, and the ledger's model notes. Everything
+        measured so far (Steps 1-5) was on Haiku 4.5 and may differ.
 - [ ] Step 1: a skill file as a tool (`skills/`, `l2s1_skill.py`)
   - [ ] 1a: measure what tool definitions cost: the same prompt with and without
         `tools`, compare `input_tokens` (H3); this is the baseline for 1e
