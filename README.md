@@ -29,6 +29,8 @@ cp .env.example .env
 `client.py` loads `.env` itself, so there is no `source` step. Never commit
 `.env` or put keys in code.
 
+Tests need one more package: `.venv/bin/pip install -r requirements-dev.txt`.
+
 ## Run
 
 `.env` is found next to `client.py`. Step scripts live in a folder per layer
