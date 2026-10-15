@@ -7,7 +7,7 @@ never rewrite it.
 Whenever we split a step into pieces, record the pieces here as substeps (`1a`,
 `1b`, ...) with the file each one produced, so the shape of the build is on record.
 
-## Layer 1: the bare loop (no frameworks)  <- WE ARE HERE
+## Layer 1: the bare loop (no frameworks)  (one item left: the rebuild test)
 
 - [x] Step 1: plain API call; show the model is stateless; print token cost per turn
   - [x] 1a: repo, venv, README, ROADMAP, `.gitignore`
@@ -51,14 +51,30 @@ Whenever we split a step into pieces, record the pieces here as substeps (`1a`,
   - [x] 5d: other failure kinds the loop should survive: an unknown tool name,
         bad arguments; what makes an error message useful for recovery
 
-## Layer 2: extensions
+## Layer 2: extensions  <- WE ARE HERE
 
 - [ ] (idea, once more comfortable) a shell/terminal tool. Powerful and risky: the
       model could run arbitrary commands, so plan permissions or a sandbox first.
-- [ ] A skill file exposed as a tool the loop can call
-- [ ] A tiny MCP server exposing one tool
-- [ ] A subagent with scoped tools
-- [ ] A hook that runs around tool calls
+Order chosen on purpose (easier concepts first, the biggest last): skill, subagent,
+hook, MCP. The first two only add tools to `tools.py`; the hook is the first time we
+touch the loop's tool-running code since Layer 1; MCP is a separate program and a
+protocol, and its spec recently changed, so it goes last.
+
+- [ ] Step 1: a skill file exposed as a tool the loop can call (`l2s1_...`)
+  - [ ] 1a: make a skill: a text file with a name, a one-line description, and
+        instructions, in a `skills/` folder
+  - [ ] 1b: a `load_skill` tool that returns a skill's instructions on demand; the
+        tool's description lists the available skills (names + descriptions only)
+  - [ ] 1c: a task where the model chooses to load the skill, then follows it
+  - [ ] 1d: compare token cost with the skill loaded on demand vs always included
+- [ ] Step 2: a subagent with scoped tools: a tool that runs a fresh `run_agent`
+      with its own history and only some of the tools
+- [ ] Step 3: a hook that runs around tool calls (before: log or block; after: see
+      or change the result); the loop's tool-running code gets restructured
+- [ ] Step 4: a tiny MCP server exposing one tool, run as a separate process that
+      the harness talks to. Before starting: read the current spec's stdio page and
+      decide between the official Python SDK and a hand-written server (the protocol
+      dropped its old `initialize` handshake in the newest revision).
 
 ## Layer 3: multi-agent
 
