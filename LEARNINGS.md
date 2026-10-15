@@ -407,6 +407,22 @@ the note). I raised the limit to 1000; making it a parameter is step 3a.
   menu is visible to the model on every request, so it shapes answers even when nothing
   loads. Anything in a description is effectively public to the model.
 
+**Skill selection worked, but a skill advises; it doesn't enforce (1d).** Four tasks, three
+runs each, 12 of 12 correct: the expense question loaded `expense-policy`, arithmetic loaded
+`verify-arithmetic` and then called the calculator twice (the inverse check, where before it
+made one call) in the exact two-line format, small talk loaded nothing, and release notes
+loaded only the decoy.
+- The route varied. In two arithmetic runs the model asked for the skill and the first
+  multiplication in the *same* reply, so it started calculating before reading the skill; in
+  one it went skill first. For this skill the order doesn't matter. For a rule that must hold
+  it would, so: soft guidance is words in the description or skill; hard guarantees are code
+  (a hook that refuses a call until the skill is loaded, or `disable_parallel_tool_use` in
+  `tool_choice`, which limits the model to one tool call per reply). Ask: what happens if the
+  model ignores it?
+- Where a skill leaves room, the output varies. The release-notes skill said "headings"
+  without saying how, and one run used `## Added` while two used plain `Added`. To get
+  identical output, be exact.
+
 **Python I used while building it.** `Path(folder).glob("*.md")` finds files, in no
 guaranteed order (use `sorted(...)` for a stable menu). `text.partition("\n---\n")`
 returns three pieces (I keep the first and last; `_` takes the middle).

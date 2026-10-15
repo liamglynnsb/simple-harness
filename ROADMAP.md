@@ -81,7 +81,7 @@ PLAN.md section 1, and details for every step are in PLAN.md section 3.
         description and the body comes back on demand. Look the name up in a dict of
         known skills; never build a file path from the model's text. An unknown name
         returns an error that lists the real ones
-  - [ ] 1d: run tasks, three times each: an expense question (loads the policy), an
+  - [x] 1d: run tasks, three times each: an expense question (loads the policy), an
         arithmetic question (loads verify-arithmetic; the trace shows an extra inverse
         call), small talk (loads nothing), release notes (loads only the decoy)
   - [ ] 1e: token cost over a mixed workload, not one task: on-demand adds a round
