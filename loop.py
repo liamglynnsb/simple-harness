@@ -24,13 +24,23 @@ def run_agent(client, messages, tools, max_loops=10):
         if response.stop_reason == "tool_use":
             for block in response.content:
                 if block.type == "tool_use":
-                    # print("calling", block.name, "with input", block.input)
-                    result = FUNCTIONS[block.name](**block.input)
-                    tool_results.append({
-                        "type": "tool_result",
-                        "tool_use_id": block.id,
-                        "content": str(result),
-                    })
+                    print("calling", block.name, "with input", block.input)
+                    # the above fn helps for traceability
+                    try:
+                        result = FUNCTIONS[block.name](**block.input)
+                    except Exception as e:
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": block.id,
+                            "content": str(e),
+                            "is_error": True,
+                        })
+                    else:
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": block.id,
+                            "content": str(result),
+                        })
             messages.append({"role": "user", "content": tool_results})
         elif response.stop_reason == "end_turn":
             return collect_text(response)
