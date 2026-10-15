@@ -76,7 +76,7 @@ PLAN.md section 1, and details for every step are in PLAN.md section 3.
         description, then instructions: `verify-arithmetic` (behaviour: re-check every
         calculation with the inverse operation), `expense-policy` (knowledge: made-up
         rules the model can't guess; long on purpose) and a decoy `release-notes-format`
-  - [ ] 1c: a `load_skill` tool: the names and descriptions go in the tool's
+  - [x] 1c: a `load_skill` tool: the names and descriptions go in the tool's
         description and the body comes back on demand. Look the name up in a dict of
         known skills; never build a file path from the model's text. An unknown name
         returns an error that lists the real ones
