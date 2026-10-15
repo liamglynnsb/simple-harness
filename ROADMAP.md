@@ -70,7 +70,7 @@ PLAN.md section 1, and details for every step are in PLAN.md section 3.
         worked). Still unmeasured: how many thinking tokens a reply uses; Step 1a will
         show it in `output_tokens`. Everything measured in Steps 1-5 was on Haiku 4.5.
 - [ ] Step 1: a skill file as a tool (`skills/`, `layer2/l2s1_skill.py`)
-  - [ ] 1a: measure what tool definitions cost: the same prompt with and without
+  - [x] 1a: measure what tool definitions cost: the same prompt with and without
         `tools`, compare `input_tokens` (H3); this is the baseline for 1e
   - [ ] 1b: write two skills: a text file each, with a name, a one-line description,
         and instructions whose effect is checkable (a required answer format)
