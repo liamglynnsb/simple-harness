@@ -236,6 +236,20 @@ controls how many passes happen.
 - Division of labor: the model decides what to do next; the harness executes it,
   feeds results back, and enforces limits (cap, `max_tokens`, unexpected reasons).
 
+**A finished reply could in principle contain no text.** Reasons I know of: only
+non-text blocks (thinking, server tools; not in this setup), or an empty reply
+right after tool results (a known quirk, seen when extra text is added next to the
+`tool_result` blocks; I send only the results). I haven't seen it happen here.
+To diagnose, print `response.stop_reason`, the list of block types, and
+`response.usage.output_tokens`, and look at the last messages sent. How to handle
+it (retry, message, error) is a Layer 5 decision.
+
+**Text blocks are joined with a newline, in one helper.** `+=` glues blocks together
+with no separator ("done.Next..."). `collect_text` gathers each text block into a
+list and returns `"\n".join(parts)`, which puts separators only between items and
+returns `""` for no text. Both `end_turn` and `max_tokens` use it, and neither
+assumes the first block is text.
+
 **Tool definitions cost tokens on every call, so the harness chooses what to send.**
 Like the history, definitions are re-sent each request (stateless). A thousand tools
 would add a huge amount of input every time and make the model worse at choosing.
@@ -278,4 +292,92 @@ of three, the next call failed with a 400 that named the two unanswered ids.
 **Python bits.** `print("a", x, y)` prints its arguments separated by spaces.
 `[b.type for b in response.content]` is a list comprehension: `b` is an arbitrary
 name for each item in turn, and the result is a list of the types.
+
+## 2026-10-15 · Layer 1, Step 5 (when tools fail)
+
+**An unprotected tool failure takes down the whole run.** Asking for a missing file
+made `open()` raise `FileNotFoundError`. Nothing caught it, so it travelled up
+through `run_agent` to the top of the script and the program died, and the model
+never learned what happened. Reading a traceback: start at the bottom line, then
+find the last line that points into my own files.
+
+**Catch the failure and send it back as an error result.** `try` wraps only the one
+risky call, `except Exception as e` appends a `tool_result` with the matching id,
+the error text, and `"is_error": True`, and `else` appends the normal result.
+`is_error` is a real optional field on `tool_result` in the SDK. Sending an error
+result still answers the request, so the API's one-result-per-request rule holds.
+For a missing file the model reported the problem and asked for a path; it didn't
+retry because it has no tool for looking around.
+
+**An error in processing is different from an error in meaning.** With the
+calculator returning `"banana"` there was no exception, so `except` and `is_error`
+never ran: the harness can't tell nonsense from an answer.
+- Correction: I predicted the model would return "banana". It used its own
+  arithmetic instead. For 12 x 12 it said nothing about the broken tool; for
+  1234 x 5678 it said the calculator gave an unexpected result. Its handling isn't
+  consistent, and a silently broken tool can still produce a good-looking answer.
+  That's the case for tracing every tool call and result (Layer 5).
+
+**The error message is part of whether the model can recover.** An unknown tool
+name raises a `KeyError` whose text is just the name (`'weather'`). Bad arguments
+raise a `TypeError` that names the function and the problem, which is useful. So
+the harness checks for an unknown tool and sends `Unknown tool: X. Available tools:
+...`, and everything else sends `"Error: " + str(e)`, both flagged `is_error`.
+- When one line has two ways to fail (look up the function, then call it), split
+  it into two steps so each can be handled. A condition I expect can happen is
+  better tested directly than caught.
+- Mistake worth remembering: moving the unknown-tool check into the `except` left
+  `result` unassigned for every other failure, so it would have crashed or sent the
+  previous tool's result. Tracing one case by hand through the code caught it.
+
+## Explained to me, not yet said back in my own words
+
+These came up along the way. I haven't restated them, so they stay here until I do.
+
+- **Why Haiku 4.5.** It's the cheapest current Claude model ($1 / $5 per million
+  input / output tokens, against $2 / $10 for Sonnet 5.5) and plenty for learning the
+  loop mechanics, whose difficulty is in the harness, not the model. The model name
+  comes from `HARNESS_MODEL`, so switching is one line. Through the gateway the slug is
+  `us.anthropic.claude-haiku-4-5-20251001-v1:0`: `` picks the
+  provider, `us.` the region profile. A catalog listing doesn't prove my key can call
+  a model; only a call does.
+- **The gateway.** the gateway sits between my code and Bedrock. The request goes to
+  `https://your-gateway.example.com` in the Anthropic Messages format. the gateway also adds its
+  own `extra fields` (a guardrail check) to the reply object; I can ignore it.
+- **Tokens and the context window.** A token is a chunk of text, roughly three
+  quarters of a word. `max_tokens` caps one reply. The context window (about 200,000
+  tokens for Haiku 4.5) caps everything in one call: the whole `messages` list plus
+  the reply. A conversation is limited by size, not by the number of exchanges, and
+  re-sending history is why long conversations get expensive.
+- **The shape of a reply.** `messages.create` returns one `Message` with a `content`
+  list of blocks, a `role` of `assistant`, a `stop_reason`, a `usage` with
+  `input_tokens` and `output_tokens`, the `model`, and an `id`. `messages` is a list
+  of dictionaries, each with a `role` and `content`. Lists count from 0, so
+  `content[0]` is the first block.
+- **The tool description is the model's only guide.** It reads the description to
+  decide when a tool applies and how to fill the inputs (it repeated my
+  "relative to the project's folder" wording back to me). Worth writing carefully.
+- **Reading a network failure.** A timeout traceback ends with
+  `APITimeoutError`; the deeper lines (a TLS handshake timeout) show the cause, and
+  the SDK had already retried a couple of times. A plain `curl` to the host, with a
+  timeout, separates "my connection" from "my code".
+- **Small Python and git points.** Trailing commas after the last argument are
+  allowed and tidy up diffs; `enumerate(items, start=1)` gives a counter; f-strings
+  put values in text; `git mv` keeps a file's history through a rename;
+  `git restore <file>` throws away uncommitted edits to one file (I used it to undo
+  an experiment); a pattern like `.env.*` in `.gitignore` also hides `.env.example`,
+  so it needs a `!.env.example` line.
+- **Terminal quirk, unresolved.** Cmd+C printing `9;9u` and Cmd+V adding odd
+  characters inside herdr inside Ghostty look like the terminal's keyboard and paste
+  protocols being passed to the wrong program. I only have a hypothesis (Shift while
+  selecting; test in a plain Ghostty tab) and never confirmed it.
+
+## Open items
+
+- Skim the tool-use docs, including how `tool_result` and `is_error` are described.
+- Rebuild `run_agent` from a blank file with nothing open (the ownership test).
+- Add a `list_files` tool someday and watch the model recover from a wrong path.
+- Layer 5 ideas from this ledger: retries for timeouts, tracing every tool call and
+  result, deciding what to do about an empty reply, and which tools to send when
+  there are many.
 

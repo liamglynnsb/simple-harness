@@ -36,5 +36,18 @@ step is its own script so earlier steps stay readable. Scripts are named
 `l<layer>s<step>_<topic>.py`, so `l1s1_stateless.py` is Layer 1, Step 1:
 
 ```bash
-python l1s1_stateless.py
+python l1s1_stateless.py      # Step 1: stateless calls, token cost per turn
+python l1s2_tool_use.py       # Step 2: define a tool, read the raw tool_use reply
+python l1s3_one_tool_call.py  # Step 3b: one tool request handled by hand
+python loop.py                # Steps 3-5: the agent loop with two tools
 ```
+
+## What's here
+
+- `client.py`: the only file that knows about the gateway (base URL, headers, `.env`)
+- `tools.py`: tool definitions (`CALCULATOR`, `READ_FILE`), their functions, and
+  `FUNCTIONS`, the name-to-function lookup
+- `loop.py`: `run_agent`, the loop. It branches on `stop_reason`, answers every
+  `tool_use` with a `tool_result` (errors flagged `is_error`), and caps its passes
+- `data/`: small text files for the `read_file` tool
+- `ROADMAP.md`: layers and steps, with substeps; `LEARNINGS.md`: what I've learned
