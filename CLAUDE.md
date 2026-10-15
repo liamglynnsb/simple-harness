@@ -25,7 +25,8 @@ first, not a code-delivery project.
 - Step scripts live in `layer<N>/` and are named `l<layer>s<step>_<topic>.py` (e.g.
   `layer1/l1s1_stateless.py`). Shared code (`client.py`, `tools.py`, `loop.py`, `data/`)
   stays at the root. Run a step script as a module from the project root:
-  `python -m layer1.l1s1_stateless`.
+  `.venv/bin/python -m layer1.l1s1_stateless`
+  (the venv is not activated, so a bare `python` doesn't exist).
 - When a step is split into pieces, record them in `ROADMAP.md` as substeps
   (`3a`, `3b`, ...) with the file each produced, and tick them as they finish.
 

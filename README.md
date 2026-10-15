@@ -33,13 +33,15 @@ cp .env.example .env
 
 `.env` is found next to `client.py`. Step scripts live in a folder per layer
 (`layer1/`, `layer2/`, ...) and are named `l<layer>s<step>_<topic>.py`. Run them as
-modules **from the project root**, so they can import `client` and `tools`:
+modules **from the project root**, so they can import `client` and `tools`. These
+commands call the virtual environment's Python directly (`.venv/bin/python`); if you
+activate it first with `source .venv/bin/activate`, plain `python` works too:
 
 ```bash
-python -m layer1.l1s1_stateless      # Step 1: stateless calls, token cost per turn
-python -m layer1.l1s2_tool_use       # Step 2: define a tool, read the raw tool_use reply
-python -m layer1.l1s3_one_tool_call  # Step 3b: one tool request handled by hand
-python loop.py                       # Steps 3-5: the agent loop with two tools
+.venv/bin/python -m layer1.l1s1_stateless      # Step 1: stateless calls, token cost per turn
+.venv/bin/python -m layer1.l1s2_tool_use       # Step 2: define a tool, read the raw tool_use reply
+.venv/bin/python -m layer1.l1s3_one_tool_call  # Step 3b: one tool request handled by hand
+.venv/bin/python loop.py                       # Steps 3-5: the agent loop with two tools
 ```
 
 ## What's here
