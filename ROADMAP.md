@@ -72,12 +72,21 @@ PLAN.md section 1, and details for every step are in PLAN.md section 3.
 - [ ] Step 1: a skill file as a tool (`skills/`, `layer2/l2s1_skill.py`)
   - [x] 1a: measure what tool definitions cost: the same prompt with and without
         `tools`, compare `input_tokens` (H3); this is the baseline for 1e
-  - [ ] 1b: write two skills: a text file each, with a name, a one-line description,
-        and instructions whose effect is checkable (a required answer format)
-  - [ ] 1c: a `load_skill` tool that returns a skill's instructions; the tool's
-        description lists only the skills' names and descriptions
-  - [ ] 1d: a task where the model chooses to load a skill, then follows it
-  - [ ] 1e: compare token cost: skill loaded on demand vs always included
+  - [ ] 1b: three skill files in `skills/` (written for you), each a name, a one-line
+        description, then instructions: `verify-arithmetic` (behaviour: re-check every
+        calculation with the inverse operation), `expense-policy` (knowledge: made-up
+        rules the model can't guess; long on purpose) and a decoy `release-notes-format`
+  - [ ] 1c: a `load_skill` tool: the names and descriptions go in the tool's
+        description and the body comes back on demand. Look the name up in a dict of
+        known skills; never build a file path from the model's text. An unknown name
+        returns an error that lists the real ones
+  - [ ] 1d: run tasks, three times each: an expense question (loads the policy), an
+        arithmetic question (loads verify-arithmetic; the trace shows an extra inverse
+        call), small talk (loads nothing), release notes (loads only the decoy)
+  - [ ] 1e: token cost over a mixed workload, not one task: on-demand adds a round
+        trip whenever a skill is used, so work out the break-even share of requests
+        that need a skill
+  - [ ] 1f: break it on purpose: a vague description, and watch the skill never load
 - [ ] Step 2: tests for the loop with a scripted fake model (`tests/`) (H1), the
       safety net before `run_agent` is changed
   - [ ] 2a: a fake client that returns scripted replies, with no API calls

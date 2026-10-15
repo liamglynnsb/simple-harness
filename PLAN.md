@@ -108,15 +108,23 @@ Order, and why: **housekeeping** (rotate the key), **skill** (it only adds a too
 signature of `run_agent`), **hook** (restructures its tool-running code), **MCP** last.
 
 - **Step 0, housekeeping.** Rotate the the gateway key (H5). Nothing else.
-- **Step 1, skill.** First measure what tool definitions cost (1a, H3): the same prompt
-  with and without `tools`, compare `input_tokens`. That number is the baseline for the
-  skill comparison in 1e. A skill is a text file with a name, a one-line description and
-  instructions. The description is cheap and always visible; the instructions load only
-  when needed ("progressive disclosure"). Build `load_skill(name)` and put the list of
-  names and descriptions in the tool's description. Make the skill's effect checkable (a
-  required answer format) so you can see whether the model followed it. *Pitfall:* a
-  vague description means the model never loads the skill. *Explain back:* why the
-  description, not the body, is what costs tokens on every call.
+- **Step 1, skill.** First measure what tool definitions cost (1a, H3; done). A skill
+  is a text file with a name, a one-line description and instructions. The description
+  is cheap and always visible; the body loads only when needed ("progressive
+  disclosure"). We build `load_skill(name)` and put the names and descriptions in its
+  description. What the step should teach, and how each skill is chosen to show it:
+  the description is the trigger (1f breaks it on purpose); a skill can carry knowledge
+  the model can't have (`expense-policy` holds made-up rules, so a right answer proves it
+  was loaded); a skill can change behaviour (`verify-arithmetic`, chosen because the
+  model already uses the calculator without being told, so "use the calculator" would
+  show no difference, whereas an inverse check adds a visible second call); and the model
+  must choose among skills or none (the decoy and small talk). *Traps:* on-demand loading
+  costs an extra round trip, so it only saves tokens on average; measure a mixed workload
+  and find the break-even share (1e). `load_skill` must look names up in a dict, not build
+  paths from the model's text (the `read_file` lesson). A skill body arrives as a tool
+  result, the same channel a poisoned file would use, which Layer 5 returns to. The model
+  varies from run to run, so run each task about three times (Layer 4 does this properly).
+  *Explain back:* why the description, not the body, costs tokens on every call.
 - **Step 2, tests (H1).** A fake client that returns scripted replies lets you test every
   branch of the loop with no API calls: free, instant and deterministic. Cover the plain
   finish, one and several tool calls, the three failure kinds from 5d, `max_tokens` with
