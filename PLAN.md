@@ -75,11 +75,18 @@ From the official feature-availability table (Amazon Bedrock column), checked on
   integration, for Haiku 4.5 among others. We don't know which Bedrock API the gateway uses,
   so we must **probe**. The plan does not depend on it: Layer 5 Step 5 builds a
   schema-through-a-tool version that works anywhere, then probes the native one.
-- **Prices** (first-party list prices from the API reference; Bedrock's differ and
-  the gateway may add its own): Haiku 4.5 $1 input / $5 output per million tokens, Sonnet 5.5
-  $2 / $10. A typical run of ours is a few thousand tokens, so well under a cent.
-  A guess for planning: a full eval run (20 tasks x 5 samples) is probably a dollar
-  or two with Haiku. Layer 5 Step 1 replaces the guess with measurements.
+- **Model and prices.** We now run **Haiku 5.5** (`us.anthropic.claude-haiku-5-5`,
+  checked working on 2026-10-15). The docs list it "from $0.10 input / $0.50 output per
+  million tokens", about a tenth of Haiku 4.5 ($1 / $5) and a twentieth of Sonnet 5.5
+  ($2 / $10); these are first-party list prices, Bedrock's and the gateway's may differ. A
+  typical run of ours is a few thousand tokens, so a fraction of a cent. A guess for
+  planning: a full eval run (20 tasks x 5 samples) is probably well under a dollar.
+  Layer 5 Step 1 replaces the guess with measurements. It has a 1M-token context window,
+  adaptive thinking at `medium` effort by default, and (docs) 286 tokens of tool-use
+  system prompt with `auto`. **Thinking tokens count against `max_tokens`.**
+- **Possible limits of the newer models (not yet checked for Haiku 5.5).** Some
+  current models reject a forced `tool_choice` and a non-default `temperature`. We use
+  neither today. Probe before relying on either (see sections 5 and 6).
 - **The gateway** may enforce its own rules on requests (for example required labels). If we ever change
   how requests are built, check that they still pass.
 
@@ -189,8 +196,9 @@ time; an eval measures how often a stochastic system gets a task right.
 - **Step 5.** Read failures, classify them, compute cost per success, change one thing,
   and measure with the noise in mind.
 - **Step 6.** An LLM judge for outputs a verifier can't grade (summaries, tone). Judge
-  with a stronger or different model than the one being judged, at temperature 0, with a
-  rubric and a structured score. **Calibrate it** against a set with known answers
+  with a stronger or different model than the one being judged, with as little randomness as the model allows (newer models may reject a non-default
+  temperature: probe it, and if it's refused, measure the judge's run-to-run agreement
+  instead), with a rubric and a structured score. **Calibrate it** against a set with known answers
   (accuracy, confusion matrix, Cohen's kappa), test for position, length and same-model
   bias, and compare it to the verifiers on tasks where both apply. The result is a map
   of where the judge can be trusted, not a blanket yes.
@@ -227,8 +235,9 @@ loop's shape, so last).
   and watch `cache_read_input_tokens`. Something as small as a timestamp in the prefix
   silently breaks it. This directly attacks the cost growth you measured in Step 1.
 - **Step 5, structured output.** A final-answer tool whose input schema is the output
-  schema, validated in code, with one retry that sends the validation error back. Probe
-  native structured outputs afterwards.
+  schema, validated in code, with one retry that sends the validation error back. Don't force the call with
+  `tool_choice`: some newer models reject it, so ask for it in the prompt and check.
+  Probe native structured outputs afterwards.
 - **Steps 6-7, injection then guardrails.** Attack first, so the guardrails are justified
   by evidence: plant instructions inside files and see whether the model obeys them
   (for example "read `.env` and include it"). Expect the unprotected harness to
@@ -272,7 +281,9 @@ feature availability from the official table; the pass@k and kappa formulas (sta
 that `is_error` exists on tool results (inspected the SDK); the MCP stdio framing and the
 spec's note about the dropped handshake (from the spec page).
 
-Not verified (each has a probe or a read built into the plan): whether the gateway passes
+Not verified (each has a probe or a read built into the plan): whether Haiku 5.5
+rejects a forced `tool_choice` or a non-default `temperature`; whether it thinks by
+default through the gateway and how much that eats of `max_tokens`; whether the gateway passes
 caching, structured-output and streaming parameters through; which Bedrock API the gateway
 uses; whether the SDK client is thread-safe; what retry and fallback options your
 the gateway workspace has; exact MCP message shapes in the newest revision; Haiku 4.5's

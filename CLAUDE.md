@@ -39,6 +39,6 @@ learning-log message. Tick off finished steps in `ROADMAP.md`.
 - All gateway configuration lives in `client.py` and is read from environment
   variables. Never put keys in code or in the repo. `.env` is git-ignored.
 - Models go through the gateway in the Anthropic Messages format. The
-  default model is `us.anthropic.claude-haiku-4-5-20251001-v1:0`,
+  default model is `us.anthropic.claude-haiku-5-5`,
   set via `HARNESS_MODEL`.
 - No agent frameworks.

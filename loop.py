@@ -64,5 +64,6 @@ if __name__ == "__main__":
     messages = [{"role": "user", "content": "What is 1234 times 5678?"}]
     answer = run_agent(client, messages, [CALCULATOR, READ_FILE])
     print(answer)
+    # for traceability, print the messages
     for m in messages:
         print(m["role"], "->", m["content"] if isinstance(m["content"], str) else [getattr(b, "type", None) or b.get("type") for b in m["content"]])
