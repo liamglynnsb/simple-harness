@@ -330,6 +330,76 @@ the harness checks for an unknown tool and sends `Unknown tool: X. Available too
   `result` unassigned for every other failure, so it would have crashed or sent the
   previous tool's result. Tracing one case by hand through the code caught it.
 
+## 2026-10-15 · Layer 2, Step 1 (a skill as a tool, in progress)
+
+**Tool definitions cost tokens, and the API adds a prompt of its own.** The same
+message with and without tools differed by about 500 input tokens (I guessed 100). My
+two definitions are about 130 to 175 tokens. The rest is a fixed tool-use system prompt
+that the API builds when `tools` isn't empty: fixed instructions, then my definitions
+as JSON Schema, then any system prompt, then the tool settings (docs: 286 tokens for
+Haiku 5.5 with `auto`, 406 with `any` or `tool`; its exact wording isn't published). It
+is paid on every request, because the API is stateless. `tool_choice`: `auto` lets the
+model decide, `any` forces some tool, `tool` forces a named one, `none` forbids tools.
+Forced use skips thinking.
+- Correction: it isn't just "appended"; the API assembles it. I call the model through
+  Bedrock, so I can't say which layer does the assembling, but the measured overhead
+  shows it happens.
+
+**A skill is a header and a body.** The header (a name and a one-line description) is
+cheap and always visible; the body loads only when the model asks for it. The
+**description is the trigger**: it has to say *when* to use the skill, not what it does.
+My first description for `verify-arithmetic` said what it does ("verifies any arithmetic
+by solving the inverse"), so the model had nothing to match a request against.
+- Three skills, three jobs: `verify-arithmetic` changes *behaviour* (the model already
+  used the calculator unprompted, so "use the calculator" would have shown nothing);
+  `expense-policy` carries *knowledge* the model can't guess (a right answer proves it
+  was loaded); `release-notes-format` is a decoy, to test that it picks the right skill or none.
+
+**Edge-case rules have to be right.** I wrote "if b is 0 the inverse can't be run", and
+that was too broad. Only multiplication breaks, because its inverse divides by `b`; the
+fix is to divide by the other factor, and dividing by zero is already an error in the
+original calculation. A model follows a wrong rule exactly as written, so one wrong edge
+case is worse than none.
+
+**One source of truth.** The tool's menu of skills is generated from the skill files, not
+typed by hand, so it can't drift out of date. Same idea as the definition and function
+agreeing on parameter names, and `.env.example` against the README.
+
+**Read once at startup; look up on demand.** `read_skills` runs once and builds a dict:
+name -> {description, body}. `load_skill(name)` only looks in that dict. The definition
+(with the menu) goes to the model on every request; the function runs only if the model
+asks for it. A missing or broken file therefore fails when the program starts, where I
+see it, not in the middle of a conversation.
+
+**Exceptions: the tool raises, the loop catches.** An exception is an error signal that
+travels up through whoever called the function until something catches it. `if` + `raise`
+*produces* the error (throwing); `try` / `except` *responds* to it (catching). In the
+harness: `load_skill` checks the name and raises with a message only it can write (it
+knows the valid names); the loop has one broad `try` / `except` that guarantees every
+request gets an answer, flagged `is_error`.
+- Why raise, not return a message: a returned string looks like data and gets no flag
+  (the banana problem in 5c). And an unhandled `KeyError` reaches the model as just
+  `Error: 'bogus-skill'`. Here the model already has the valid names (the menu and the
+  `enum`), so it would probably recover anyway; the clear message is a habit and a
+  judgment call, not a necessity for this one tool.
+- Correction: I first said the catch goes inside `load_skill`. It doesn't. The tool
+  raises; the loop catches. A `try` / `except` inside a tool would only be there to
+  translate an error, not to handle it.
+- Where to handle errors: check at the edges where outside input enters, raise where I
+  know the details, catch where I can do something useful. Never swallow an error
+  (`except: pass`). Weigh how likely a failure is and how bad it is: a rare `../.env`
+  path matters. Two styles have names: "look before you leap" (check first) and "easier
+  to ask forgiveness than permission" (try it and catch).
+
+**Python I used while building it.** `Path(folder).glob("*.md")` finds files, in no
+guaranteed order (use `sorted(...)` for a stable menu). `text.partition("\n---\n")`
+returns three pieces (I keep the first and last; `_` takes the middle).
+`line.split(": ", 1)` returns a *list*, so I take `[1]`; the `1` matters because
+descriptions contain colons. `.items()` hands out key and value together, and a `for`
+creates the names I use for them. `print(read_skills())` runs the inner call first.
+`pass` is a placeholder that does nothing. `python` isn't on the PATH unless the venv is
+activated, so I run `.venv/bin/python`, and step scripts as modules from the root.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.
@@ -359,14 +429,6 @@ These came up along the way. I haven't restated them, so they stay here until I 
   `input_tokens` and `output_tokens`, the `model`, and an `id`. `messages` is a list
   of dictionaries, each with a `role` and `content`. Lists count from 0, so
   `content[0]` is the first block.
-- **The tool-use prompt isn't mysterious, only partly unpublished.** With `tools`,
-  the API builds a system prompt: a fixed instruction text, then my tool definitions
-  as JSON Schema, then any system prompt I add, then the tool configuration. The
-  fixed text is the hidden overhead (docs: 286 tokens for Haiku 5.5 with `auto`, 406
-  with `any` or `tool`); its exact wording isn't published. My two definitions are
-  526 characters (about 130 to 175 tokens), and I measured about 500 extra input
-  tokens, which fits. `tool_choice`: `auto` lets the model decide, `any` forces some
-  tool, `tool` forces a named one, `none` forbids tools. Forced use skips thinking.
 - **The tool description is the model's only guide.** It reads the description to
   decide when a tool applies and how to fill the inputs (it repeated my
   "relative to the project's folder" wording back to me). Worth writing carefully.
