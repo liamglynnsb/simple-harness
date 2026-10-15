@@ -29,10 +29,14 @@ def run_agent(client, messages, tools, max_loops=10):
                     try:
                         result = FUNCTIONS[block.name](**block.input)
                     except Exception as e:
+                        if block.name not in FUNCTIONS:
+                            result = "Unknown tool: " + block.name + ". Available tools: " + ", ".join(FUNCTIONS.keys())
+                        else:
+                            result = "Error: " + str(e)
                         tool_results.append({
                             "type": "tool_result",
                             "tool_use_id": block.id,
-                            "content": str(e),
+                            "content": str(result),
                             "is_error": True,
                         })
                     else:
