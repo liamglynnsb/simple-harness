@@ -496,6 +496,47 @@ rules reveals a miss, which is the case for Layer 4 verifiers.
   comment in the *body* would be sent to the model and paid for. To switch a skill off, move it out of
   `skills/` or rename it so it doesn't end in `.md`.
 
+### Tools vs skills, and which extension for which job (decision guide)
+
+One sentence each: a **tool** is code the harness runs, and it *does* something (computes,
+fetches, writes, checks). A **skill** is text the model reads, and it teaches the model *how*.
+In my harness the line is easy to miss because `load_skill` is itself a tool: the skill is
+delivered through a tool but is data, not code.
+
+| | **Tool** | **Skill** |
+|---|---|---|
+| Who does the work | my code, identical every time | the model, applying the text with judgment |
+| Reliability | deterministic; a tested function is right | probabilistic; usually followed, can be skipped or misread |
+| Can it change the world? | yes (runs real code) | no, it only advises |
+| Can a rule be enforced? | yes, the harness can refuse or validate | no, it's a request |
+| Who can edit it | a programmer | anyone who can write text |
+| Cost | the definition on every request, plus a pass per call | the menu on every request, plus the body when loaded |
+| Best at | exactness, data, side effects | judgment, procedures, style, domain know-how |
+
+Rules of thumb:
+1. If a correct answer can be *computed*, use a tool (a calculator beats a skill saying "multiply
+   carefully").
+2. If it needs *judgment guided by know-how* (a house style, a workflow, a policy to interpret),
+   use a skill.
+3. If a rule must *never* be broken, don't use a skill. Use code: a tool that refuses, or a hook.
+   A skill asks, and the model can race ahead of it (seen in 1d).
+4. They combine: `verify-arithmetic` told the model how to use the calculator. Tools are the
+   verbs, skills are the playbooks.
+
+The whole Layer 2 map:
+
+| Job | Use |
+|---|---|
+| act or compute exactly | tool |
+| teach a procedure or supply know-how | skill |
+| enforce a rule | hook (code) |
+| keep a messy subtask out of the main conversation | subagent |
+| reach a capability that lives in another program | MCP |
+
+Why it matters: a wrong choice fails quietly. A policy written as a skill can be misapplied while
+sounding sure; a tool with a huge description inflates every request; a "must never" rule written
+as advice is a hole. My own experiments showed each of these.
+
 **Python I used while building it.** `Path(folder).glob("*.md")` finds files, in no
 guaranteed order (use `sorted(...)` for a stable menu). `text.partition("\n---\n")`
 returns three pieces (I keep the first and last; `_` takes the middle).
@@ -504,6 +545,24 @@ descriptions contain colons. `.items()` hands out key and value together, and a 
 creates the names I use for them. `print(read_skills())` runs the inner call first.
 `pass` is a placeholder that does nothing. `python` isn't on the PATH unless the venv is
 activated, so I run `.venv/bin/python`, and step scripts as modules from the root.
+
+## 2026-10-15 · Layer 2, Step 2 (tests with a scripted fake model, in progress)
+
+**Why test the loop with a fake model, not the real one.** (1) I can't control what the real model
+replies, so a test can't depend on it (non-determinism, variation and unpredictability are one
+problem). (2) I can't reach the rare branches on demand (an unexpected `stop_reason`, the pass
+cap). (3) Every real run costs money and time. A fake returns exactly the replies I script, in
+order: free, instant, identical every time.
+- The limit: a fake model tells me whether *my code* handles each situation correctly. It can't
+  tell me how the *real model* behaves (does it pick the right skill, follow the rules, recover
+  from an error). That is what evals measure in Layer 4. Fakes test the harness; evals measure the
+  model inside it.
+- Correction: I said "we still need to test the client side". The harness *is* the client (the
+  program that sends requests); the model is the server. What the fake can't cover is the
+  *server* side, the model's behaviour.
+- What the loop needs from a client: a `messages.create(...)` method, and from each reply
+  `stop_reason`, `content`, and per block `type`, `text`, `name`, `input` and `id`. A fake only
+  has to look like that.
 
 ## Explained to me, not yet said back in my own words
 
