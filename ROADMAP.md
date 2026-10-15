@@ -16,16 +16,16 @@ Whenever we split a step into pieces, record the pieces here as substeps (`1a`,
   - [x] 1d: first plain call; read the raw `Message` (content, stop_reason, usage)
   - [x] 1e: two calls prove statelessness; fix by re-sending history in order
   - [x] 1f: loop over turns, printing input/output tokens per turn
-        (`l1s1_stateless.py`)
+        (`layer1/l1s1_stateless.py`)
 - [x] Step 2: define one tool; inspect the raw `tool_use` response and `stop_reason`
   - [x] 2a: the tool definition: name, description, JSON-schema `input_schema`
   - [x] 2b: call with `tools=[...]`; read the raw `tool_use` block and
-        `stop_reason: tool_use` before parsing anything (`l1s2_tool_use.py`)
+        `stop_reason: tool_use` before parsing anything (`layer1/l1s2_tool_use.py`)
   - [x] Once it works: remind Liam to skim the tool-use docs
         (https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview)
 - [x] Step 3: the loop: branch on `stop_reason`, handle `max_tokens`, iteration cap
   - [x] 3a: real calculator function in `tools.py`, plus the `FUNCTIONS` lookup
-  - [x] 3b: one tool request handled by hand (`l1s3_one_tool_call.py`)
+  - [x] 3b: one tool request handled by hand (`layer1/l1s3_one_tool_call.py`)
   - [x] 3c: the loop in `loop.py` (`tool_use` and `end_turn` branches, `else` stopgap)
   - [x] 3d: handle `max_tokens` properly, add an iteration cap
         (also: `__main__` guard; final `else` for unexpected stop reasons)
@@ -69,7 +69,7 @@ PLAN.md section 1, and details for every step are in PLAN.md section 3.
         update `.env.example`, `CLAUDE.md`, and the ledger's model notes (done; the run
         worked). Still unmeasured: how many thinking tokens a reply uses; Step 1a will
         show it in `output_tokens`. Everything measured in Steps 1-5 was on Haiku 4.5.
-- [ ] Step 1: a skill file as a tool (`skills/`, `l2s1_skill.py`)
+- [ ] Step 1: a skill file as a tool (`skills/`, `layer2/l2s1_skill.py`)
   - [ ] 1a: measure what tool definitions cost: the same prompt with and without
         `tools`, compare `input_tokens` (H3); this is the baseline for 1e
   - [ ] 1b: write two skills: a text file each, with a name, a one-line description,
@@ -89,7 +89,7 @@ PLAN.md section 1, and details for every step are in PLAN.md section 3.
         the pass cap reached
   - [ ] 2e: one command runs them all; break the loop on purpose and watch the right
         test fail (a test that can't fail proves nothing)
-- [ ] Step 3: a subagent with scoped tools (`l2s3_subagent.py`)
+- [ ] Step 3: a subagent with scoped tools (`layer2/l2s3_subagent.py`)
   - [ ] 3a: make `max_tokens` a parameter of `run_agent` instead of a fixed 300 (H4);
         the tests stay green
   - [ ] 3b: add an optional system prompt to `run_agent` (first use of `system`)
@@ -101,7 +101,7 @@ PLAN.md section 1, and details for every step are in PLAN.md section 3.
         taught (unknown tool)
   - [ ] 3f: limits: the child hits its own `max_loops` or errors; what the parent sees
   - [ ] 3g: is it worth it? the same task with and without the subagent
-- [ ] Step 4: a hook around tool calls (`hooks.py`, `l2s4_hooks.py`)
+- [ ] Step 4: a hook around tool calls (`hooks.py`, `layer2/l2s4_hooks.py`)
   - [ ] 4a: pull the tool-running code out of the loop into `execute_tool`; every
         test must still pass
   - [ ] 4b: before-hooks: a list of functions called before each tool; the first one
@@ -117,7 +117,7 @@ PLAN.md section 1, and details for every step are in PLAN.md section 3.
   - [ ] 4f: a hook that itself fails: fail open or fail closed, and why
   - [ ] 4g (optional): command hooks that read the call as JSON on stdin, like
         Claude Code
-- [ ] Step 5: a tiny MCP server with one tool (`mcp_client.py`, `l2s5_mcp.py`)
+- [ ] Step 5: a tiny MCP server with one tool (`mcp_client.py`, `layer2/l2s5_mcp.py`)
   - [ ] 5a: read the current spec's stdio page; decide official Python SDK vs a
         hand-written server; write down what changed from the older handshake
   - [ ] 5b: a minimal server exposing one tool; talk to it by hand in the terminal

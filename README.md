@@ -31,15 +31,15 @@ cp .env.example .env
 
 ## Run
 
-`.env` is found next to `client.py`, so scripts can be run from any folder. Each
-step is its own script so earlier steps stay readable. Scripts are named
-`l<layer>s<step>_<topic>.py`, so `l1s1_stateless.py` is Layer 1, Step 1:
+`.env` is found next to `client.py`. Step scripts live in a folder per layer
+(`layer1/`, `layer2/`, ...) and are named `l<layer>s<step>_<topic>.py`. Run them as
+modules **from the project root**, so they can import `client` and `tools`:
 
 ```bash
-python l1s1_stateless.py      # Step 1: stateless calls, token cost per turn
-python l1s2_tool_use.py       # Step 2: define a tool, read the raw tool_use reply
-python l1s3_one_tool_call.py  # Step 3b: one tool request handled by hand
-python loop.py                # Steps 3-5: the agent loop with two tools
+python -m layer1.l1s1_stateless      # Step 1: stateless calls, token cost per turn
+python -m layer1.l1s2_tool_use       # Step 2: define a tool, read the raw tool_use reply
+python -m layer1.l1s3_one_tool_call  # Step 3b: one tool request handled by hand
+python loop.py                       # Steps 3-5: the agent loop with two tools
 ```
 
 ## What's here
@@ -50,4 +50,5 @@ python loop.py                # Steps 3-5: the agent loop with two tools
 - `loop.py`: `run_agent`, the loop. It branches on `stop_reason`, answers every
   `tool_use` with a `tool_result` (errors flagged `is_error`), and caps its passes
 - `data/`: small text files for the `read_file` tool
+- `layer1/`, `layer2/`, ...: the step scripts for each layer
 - `ROADMAP.md`: layers and steps, with substeps; `LEARNINGS.md`: what I've learned

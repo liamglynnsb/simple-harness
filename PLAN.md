@@ -14,8 +14,8 @@ compare, you explain the idea back, the ledger gets an entry, a small commit goe
 
 | Brief | Where |
 |---|---|
-| plain call; model is stateless; re-send history; token cost per turn | `l1s1_stateless.py` |
-| one tool; raw `tool_use`; `stop_reason` inspected before parsing | `l1s2_tool_use.py` |
+| plain call; model is stateless; re-send history; token cost per turn | `layer1/l1s1_stateless.py` |
+| one tool; raw `tool_use`; `stop_reason` inspected before parsing | `layer1/l1s2_tool_use.py` |
 | loop on `stop_reason`; `tool_result` per call; `end_turn` stops; `max_tokens`; iteration cap | `loop.py` |
 | second tool; both used in one task; several calls in one response | `tools.py`, 4b, 4c |
 | break a tool (raise, garbage); error `tool_result` flagged; watch recovery | 5a-5d |

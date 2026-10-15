@@ -22,7 +22,10 @@ first, not a code-delivery project.
 - When they explain something back, check it against what's true and correct
   loose wording precisely.
 - Don't build ahead of the current step in `ROADMAP.md`.
-- Step scripts are named `l<layer>s<step>_<topic>.py` (e.g. `l1s1_stateless.py`).
+- Step scripts live in `layer<N>/` and are named `l<layer>s<step>_<topic>.py` (e.g.
+  `layer1/l1s1_stateless.py`). Shared code (`client.py`, `tools.py`, `loop.py`, `data/`)
+  stays at the root. Run a step script as a module from the project root:
+  `python -m layer1.l1s1_stateless`.
 - When a step is split into pieces, record them in `ROADMAP.md` as substeps
   (`3a`, `3b`, ...) with the file each produced, and tick them as they finish.
 
