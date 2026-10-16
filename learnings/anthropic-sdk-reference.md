@@ -137,6 +137,39 @@ version the signature has no `temperature`, `top_p` or `top_k`.
 | `TextBlockParam` | `text`, `type` | a text block when `content` is a list |
 | `ToolUseBlockParam` | `id`, `input`, `name`, `type` | what a tool request looks like as input; the SDK also accepts the `ToolUseBlock` object itself |
 
+### What I send, as one picture
+
+Everything I send is plain dicts and lists. This is the request for the second call of a tool round
+trip (the arguments of `client.messages.create(...)`):
+
+```
+create( ... )
+|- model        "..."                                   required
+|- max_tokens   1000                                    required
+|- tools        [ ToolParam, ... ]                      optional; a list of dicts
+|- messages     [ ... ]                                 required; a list of MessageParam dicts
+|     |- {role "user",      content "What is 12 times 12?"}                   content is a STRING
+|     |- {role "assistant", content [ThinkingBlock, ToolUseBlock]}            content is a LIST (what came back)
+|     \- {role "user",      content [ {type "tool_result", tool_use_id, content "144"} ]}   a LIST
+\- system, tool_choice, thinking ...                   optional
+```
+
+**When a message's `content` is a string and when it's a list.** A string means exactly one piece of
+plain text; the API treats it as shorthand for `[{"type": "text", "text": "..."}]`. It must be a list
+of blocks whenever the message has anything a single string can't hold:
+
+| what I'm sending | `content` is | why |
+|---|---|---|
+| one plain question | a string | one piece of text |
+| tool results | a list of `tool_result` dicts | each carries a `tool_use_id`, so it must be a block |
+| text plus a tool result, or several texts | a list | more than one block |
+| an image or a document | a list | each is its own block type |
+| a block with settings (prompt caching, Layer 5) | a list | the setting sits on the block |
+
+The assistant's turns are always lists, because I append `response.content` as it came back; I never
+choose that form. `system` follows the same rule as a user message: a string, or a list of text blocks
+when a block needs settings.
+
 A tool definition (`ToolParam`) is a dict that nests a JSON Schema; this is `CALCULATOR` in `tools.py`:
 
 ```
