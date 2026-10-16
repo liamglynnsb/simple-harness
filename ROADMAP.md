@@ -1,6 +1,7 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 2 (tests), substep 2b: the first test, `test_plain_finish` (in `tests/test_loop.py`).
+**Where we are:** Layer 2, Step 2 (tests), substep 2b: two of three tests written and passing (`test_plain_finish`, `test_tool_finish` in
+`tests/test_loop.py`); next is several tool calls in one reply.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first

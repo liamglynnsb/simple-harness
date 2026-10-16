@@ -15,8 +15,8 @@ def test_tool_finish():
     messages = [{"role": "user", "content": "What is 2 + 2?"}]
     answer = run_agent(client, messages, [CALCULATOR])
     assert messages[2]["content"][0]["tool_use_id"] == "id1"
-    assert messages[2]["content"][0]["result"] == 4
-    assert messages[2]["content"][0]["is_error"] == False
+    assert messages[2]["content"][0]["content"] == "4"
+    assert "is_error" not in messages[2]["content"][0]
     assert answer == "The result is 4"
     assert len(messages) == 4
     assert len(client.calls) == 2
