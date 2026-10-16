@@ -72,6 +72,39 @@ The assistant's turns are always lists, because I append `response.content` as i
 choose that form. `system` follows the same rule as a user message: a string, or a list of text blocks
 when a block needs settings.
 
+### My real call, matched to the picture
+
+This is the call in `run_agent` (`loop.py`). Each argument is on the left; where it comes from is on the right:
+
+```
+response = client.messages.create(
+    model=model_name(),         <- the model slug from HARNESS_MODEL (client.py)
+    max_tokens=max_tokens,      <- run_agent's parameter: the limit on one reply
+    tools=tools,                <- run_agent's parameter: the list of tool DEFINITIONS (ToolParam dicts)
+    messages=messages,          <- run_agent's parameter: THE CONVERSATION, a list of message dicts
+)
+```
+
+`messages` is the argument that holds every `role` and `content` I send. The variable `messages` in my
+code is that list, and it is the same list in every layer: the test builds it, passes it into
+`run_agent`, the loop sends it on each pass, and the loop appends to it between passes. So the
+`role`/`content` dicts are never arguments of `create` themselves. They are the *items* of the list
+passed as `messages=`:
+
+```
+client.messages.create(
+    ...,
+    messages = [                                        <- the argument
+        {"role": "user",      "content": "What is 2 + 2?"},          <- item 0: a message
+        {"role": "assistant", "content": [...blocks...]},            <- item 1: a message
+        {"role": "user",      "content": [{"type": "tool_result", ...}]},   <- item 2: a message
+    ],
+)
+```
+
+Each pass sends the whole list again, longer by what the loop appended (the API remembers nothing
+between calls, Layer 1 Step 1).
+
 ### One message (`MessageParam`): `role` and `content`
 
 Every item in `messages` is a dict with exactly these two keys, and both are required:
