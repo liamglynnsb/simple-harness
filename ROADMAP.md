@@ -257,6 +257,14 @@ stream last because it changes the loop's shape.
 - [ ] Layer 5 checkpoint: explain each production concern back; rebuild the run
       wrapper (retry, trace, guardrail) from a blank file
 
+## Backlog (wanted, not yet scheduled)
+
+- [ ] A separate markdown reference of the Anthropic SDK's data structures, so I can see how
+      they fit together: `Message` and its `content` blocks (text, thinking, tool_use), how
+      `usage` relates to a reply, what `stop_reason` holds, and what the matching request
+      shapes are (`messages`, `tool_result`, `tools`). Idea: generate it from the installed
+      SDK's own types so it stays accurate, and keep my own notes beside it.
+
 ## Parking lot (not planned; revisit after Layer 5)
 
 - [ ] a shell/terminal tool (powerful and risky: plan permissions or a sandbox first)
