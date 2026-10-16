@@ -13,6 +13,8 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **assistant** One of the two roles in a conversation: the messages written by the model. The other is `user`.
 
+**attribute** A named piece of data on an object, read with a dot: `block.name`. Compare with a *key* on a dict, read with brackets.
+
 **Bedrock** Amazon's service that hosts Claude models. My calls reach it through the gateway.
 
 **block (content block)** One piece of a reply or of a message's content: a text block, a thinking block, a tool request (`tool_use`), and so on. A reply's `content` is a list of blocks. See `anthropic-sdk-reference.md`.
@@ -57,11 +59,15 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **hook** *(planned, Layer 2 Step 4)* A function that runs automatically before or after a tool call and can log it, block it, or change the result.
 
+**index** A position in a list, counting from 0: `messages[2]` is the third item.
+
 **input_schema** The JSON Schema inside a tool definition that describes the inputs the tool takes.
 
 **is_error** A flag on a `tool_result` saying the tool failed, so the model reads the content as an error message and not as data.
 
 **JSON / JSON Schema** JSON is a text format for structured data (dicts, lists, strings, numbers). JSON Schema is a standard way of describing the shape of some JSON; tool inputs are described with it.
+
+**key** The name that labels a value in a dict, read with brackets: `block_dict["tool_use_id"]`. Missing keys raise a `KeyError`.
 
 **kwargs** In a function definition, `**kwargs` collects all named arguments into one dict. In a call, `**some_dict` spreads a dict out into named arguments (the opposite). See `code.md`.
 

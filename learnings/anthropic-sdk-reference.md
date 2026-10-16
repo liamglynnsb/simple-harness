@@ -172,6 +172,8 @@ messages = [
   {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "toolu_01...", "content": "144"}]},
 ]
 # 4. next call returns Message(stop_reason="end_turn", content=[TextBlock(text="12 times 12 is 144")])
+#    and the loop appends that too, as a fourth message, BEFORE it returns the text (loop.py appends
+#    response.content on every pass, whatever the stop_reason)
 ```
 
 Every `tool_use` block needs a `tool_result` with its `id` in the **next** message, or the API
@@ -189,6 +191,38 @@ messages  (list)
       \- dict  type "tool_result"   tool_use_id "toolu_01..."   content "144"
                                               ^ same string as the ToolUseBlock's id
 ```
+
+When the run ends there is a fourth entry: `dict  role "assistant"  content [TextBlock]`, the final
+reply. So a run with one tool call ends with four messages (user, assistant, user, assistant).
+
+### Reading a nested structure: dots, brackets, and the two `content`s
+
+**Dot or bracket?** Ask what the thing is. An *object* (a reply, a block, a `SimpleNamespace`) is read
+with a dot: `block.name`. A *dict* is read by key with brackets: `message["content"]`. A *list* is read
+by position with brackets: `messages[2]`. In the loop, what comes back from the SDK is objects and what
+I build is dicts and lists, so both appear in the same code (compare `block.id` with the dict that has
+the key `"tool_use_id"`).
+
+**Why a message's `content` can be a list.** A message's `content` is a string (plain text) or a list of
+blocks. A `tool_result` is a block, so it goes in a list. One assistant reply can request several tools,
+and every request needs its own result in the *next* user message, so the loop collects them in a list
+(`tool_results = []`, `loop.py`) and sends the list as that message's `content`. With one tool call the
+list has one item. It is still a list.
+
+**Two different `content` keys.** The word appears at two levels and holds a different thing at each:
+
+```
+messages[2]                       a dict: the user message the loop built
+  ["content"]                     a LIST of tool_result dicts            <- the message's content
+    [0]                           the first tool_result, a dict
+      ["tool_use_id"]             "id1"
+      ["content"]                 "4"   a STRING: the tool's result      <- the tool_result's content
+```
+
+Read a path one step at a time, asking "what is this?" before each `[...]`. When a test fails with
+`TypeError: list indices must be integers`, it indexed a list with a string key, so a `[0]` is missing.
+A `KeyError` means the dict has no such key: for example `"is_error"` is only written when a tool
+fails, so on success check `"is_error" not in the_dict` instead of reading it.
 
 ## 8. Where each piece appears in my code
 
