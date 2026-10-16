@@ -49,6 +49,18 @@ hold:
 The other fields (`stop_details`, `stop_sequence`, `container`, `diagnostics`) are optional and
 don't come up for us yet; the appendix lists them.
 
+As a tree (a reply that asks for a tool; objects, so read with dots):
+
+```
+Message                              response
+|- stop_reason  "tool_use"           response.stop_reason
+|- content      [ ... ]              response.content          a list, in the order produced
+|     |- ThinkingBlock               response.content[0]
+|     \- ToolUseBlock                response.content[1]
+|- usage                             response.usage            one per reply
+\- id, type, role, model             not used by the loop
+```
+
 ## 3. `content`: a list of blocks
 
 A reply is not a string. It is a list of **blocks**, and each block has a `type` that says what it
@@ -65,6 +77,16 @@ the thinking before them. That is why the loop checks `block.type` on every bloc
 assuming a position, and why a one-block reply is still a list of one. Other kinds of block exist
 (server tools, redacted thinking, and so on; the appendix lists them all) but need features I'm not
 using.
+
+Each block kind has its own fields (read with a dot, `block.name`):
+
+```
+ThinkingBlock             TextBlock                ToolUseBlock
+|- type  "thinking"       |- type  "text"          |- type   "tool_use"
+|- thinking  "..."        \- text  "..."           |- id     "toolu_01..."   links to its tool_result
+\- signature  "..."                                |- name   "calculator"    key into FUNCTIONS
+                                                   \- input  {"a": 12, ...}  dict: calculator(**input)
+```
 
 ## 4. `usage`: how it connects to the blocks
 
@@ -115,6 +137,23 @@ version the signature has no `temperature`, `top_p` or `top_k`.
 | `TextBlockParam` | `text`, `type` | a text block when `content` is a list |
 | `ToolUseBlockParam` | `id`, `input`, `name`, `type` | what a tool request looks like as input; the SDK also accepts the `ToolUseBlock` object itself |
 
+A tool definition (`ToolParam`) is a dict that nests a JSON Schema; this is `CALCULATOR` in `tools.py`:
+
+```
+ToolParam  (dict)
+|- name         "calculator"
+|- description  "Do basic arithmetic on two numbers"
+\- input_schema  (dict, a JSON Schema)
+      |- type  "object"
+      |- properties
+      |     |- operation   {"type": "string", "enum": ["add", ...]}
+      |     |- a           {"type": "number"}
+      |     \- b           {"type": "number"}
+      \- required   ["operation", "a", "b"]
+```
+
+The model's `input` must fit `properties`, and the function's parameter names must match them.
+
 ## 7. A whole tool round trip, as data
 
 This is the `messages` list for "What is 12 times 12?" at each step, with who creates each piece:
@@ -138,6 +177,19 @@ messages = [
 Every `tool_use` block needs a `tool_result` with its `id` in the **next** message, or the API
 rejects the request (Layer 1 Step 4d). The roles alternate, user and assistant.
 
+The same list as a tree, so the nesting is visible (`dict` = I built it, `object` = it came from the SDK):
+
+```
+messages  (list)
+|- dict    role "user"        content "What is 12 times 12?"             (a string)
+|- dict    role "assistant"   content (list of OBJECTS: response.content)
+|     |- ThinkingBlock
+|     \- ToolUseBlock         id "toolu_01..."   name   input
+\- dict    role "user"        content (list of DICTS I built)
+      \- dict  type "tool_result"   tool_use_id "toolu_01..."   content "144"
+                                              ^ same string as the ToolUseBlock's id
+```
+
 ## 8. Where each piece appears in my code
 
 | piece | file | what happens |
@@ -149,6 +201,18 @@ rejects the request (Layer 1 Step 4d). The roles alternate, user and assistant.
 | tool definitions (`ToolParam`) | `tools.py` (`CALCULATOR`, `READ_FILE`, `LOAD_SKILL`) | passed as `tools=[...]` |
 | `response.usage` | not read in the loop yet | Layer 5 tracing; printed in `layer1/` and `layer2/` scripts |
 | a fake `Message` | `tests/fake_client.py` (`text_reply`) | `SimpleNamespace` with `stop_reason` and `content` |
+
+A fake reply keeps only the attributes the loop reads (Layer 2 Step 2). The same shape, trimmed:
+
+```
+SimpleNamespace  (the fake Message)
+|- stop_reason  "tool_use"
+\- content  [ SimpleNamespace  (a fake ToolUseBlock) ]
+                 |- type "tool_use"
+                 |- id
+                 |- name
+                 \- input
+```
 
 ## 9. Ways to explore this yourself
 
