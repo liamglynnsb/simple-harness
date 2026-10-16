@@ -4,7 +4,8 @@ What I've learned about how an agent harness works: tool use, tokens and cost, t
 design, errors and recovery, skills versus tools, the experiments I ran, and why the loop is
 tested the way it is. Each entry is in my own words, with corrections noted. The Python and
 tooling side is in [code.md](code.md); the index and open items are in [../LEARNINGS.md](../LEARNINGS.md).
-The SDK's data structures are in [anthropic-sdk-reference.md](anthropic-sdk-reference.md).
+The SDK's data structures are in [anthropic-sdk-reference.md](anthropic-sdk-reference.md), and the
+meaning of every term in [glossary.md](glossary.md).
 Newest at the bottom of each section.
 
 ## 2026-10-05 · Layer 1, setup
@@ -229,7 +230,7 @@ the harness checks for an unknown tool and sends `Unknown tool: X. Available too
   `result` unassigned for every other failure, so it would have crashed or sent the
   previous tool's result. Tracing one case by hand through the code caught it.
 
-## 2026-10-15 · Layer 2, Step 1 (a skill as a tool, in progress)
+## 2026-10-15 · Layer 2, Step 1 (a skill as a tool)
 
 **Tool definitions cost tokens, and the API adds a prompt of its own.** The same
 message with and without tools differed by about 500 input tokens (I guessed 100). My

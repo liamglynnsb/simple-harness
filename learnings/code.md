@@ -5,7 +5,8 @@ What I've learned about the code and the tools around it: Python mechanics (`sel
 software-design principles. Each entry is in my own words, with corrections noted. The theory of
 how the harness works is in [harness.md](harness.md); the index and open items are in
 [../LEARNINGS.md](../LEARNINGS.md).
-The SDK's data structures are in [anthropic-sdk-reference.md](anthropic-sdk-reference.md). Newest at the bottom of each section.
+The SDK's data structures are in [anthropic-sdk-reference.md](anthropic-sdk-reference.md), and the
+meaning of every term in [glossary.md](glossary.md). Newest at the bottom of each section.
 
 ## 2026-10-05 · Layer 1, setup
 
@@ -118,7 +119,7 @@ assumes the first block is text.
 `[b.type for b in response.content]` is a list comprehension: `b` is an arbitrary
 name for each item in turn, and the result is a list of the types.
 
-## 2026-10-15 · Layer 2, Step 1 (a skill as a tool, in progress)
+## 2026-10-15 · Layer 2, Step 1 (a skill as a tool)
 
 **One source of truth.** The tool's menu of skills is generated from the skill files, not
 typed by hand, so it can't drift out of date. Same idea as the definition and function

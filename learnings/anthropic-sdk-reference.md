@@ -5,7 +5,7 @@ connect (for example, how `usage` relates to the text blocks). It is a companion
 learnings, not a replacement for Anthropic's docs. The facts here were checked against the
 installed SDK (`anthropic` 1.11.0). The field tables in the appendix are **generated from the SDK
 itself**, and `scripts/gen_sdk_reference.py --check` asserts the specific claims in the text, so
-an SDK upgrade that changes one of them is caught. Index: [../LEARNINGS.md](../LEARNINGS.md).
+an SDK upgrade that changes one of them is caught. Index: [../LEARNINGS.md](../LEARNINGS.md); terms: [glossary.md](glossary.md).
 
 ## 1. The big picture
 

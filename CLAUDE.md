@@ -7,8 +7,9 @@ first, not a code-delivery project.
 ## At the start of every session
 
 1. Read `ROADMAP.md` and tell the user which layer and step we're on.
-2. Read `LEARNINGS.md` (the index) and the two files it points to, `learnings/harness.md` (theory) and
+2. Read `LEARNINGS.md` (the index) and the ledgers it points to, `learnings/harness.md` (theory) and
    `learnings/code.md` (code and tooling), so you know what they have and haven't understood yet.
+   `learnings/glossary.md` defines every term; `learnings/anthropic-sdk-reference.md` is a lookup, not a ledger.
 
 ## How to work
 
@@ -42,6 +43,20 @@ wording, with any correction noted, and show it to them before saving. Only add
 what they have actually explained back. Commit each entry with a small
 learning-log message. Tick off finished steps in `ROADMAP.md`.
 
+## Documentation standard
+
+The user may put this project down for a month, so every document must make sense cold and agree with
+the others. When you add or change anything:
+
+- One home per fact; link to it elsewhere. Theory goes in `learnings/harness.md`, code and tooling in
+  `learnings/code.md`, SDK shapes in `learnings/anthropic-sdk-reference.md`.
+- Every new term goes in `learnings/glossary.md` in the same commit.
+- Say "Layer 2 Step 1", not a bare "Step 1". No counts, no "currently"; update the
+  "Where we are" line in `ROADMAP.md` whenever a substep is ticked.
+- A new tool, script, folder or command is added to the README's "What's here" / "Run" sections.
+- Run `.venv/bin/python scripts/check_docs.py` before committing any change to docs, scripts, tools or
+  paths, and fix what it reports. At each layer checkpoint, also reread everything as if returning cold.
+
 ## Conventions
 
 - Python 3.12 in `.venv`; install from `requirements.txt`.
@@ -54,3 +69,5 @@ learning-log message. Tick off finished steps in `ROADMAP.md`.
 - `learnings/anthropic-sdk-reference.md` is a reference for the SDK's data structures (not a ledger).
   Its tables are generated: after upgrading the SDK, run `.venv/bin/python scripts/gen_sdk_reference.py`
   (it re-checks the claims in the text first).
+- `scripts/check_docs.py` checks the documentation for broken links, undocumented tools, stale phrases and
+  roadmap inconsistencies. It reads only; run it with `.venv/bin/python scripts/check_docs.py`.

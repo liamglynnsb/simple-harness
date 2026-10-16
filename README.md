@@ -6,7 +6,7 @@ Messages format (`tool_use`, `tool_result`, `stop_reason`) sent through a
 the gateway to Claude on Bedrock.
 
 Progress lives in [ROADMAP.md](ROADMAP.md). Concepts learned along the way are
-in [LEARNINGS.md](LEARNINGS.md).
+in [LEARNINGS.md](LEARNINGS.md); unfamiliar word? See the [glossary](learnings/glossary.md).
 
 ## Setup
 
@@ -29,8 +29,9 @@ cp .env.example .env
 `client.py` loads `.env` itself, so there is no `source` step. Never commit
 `.env` or put keys in code.
 
-The tests (added in Layer 2, Step 2, under `tests/`) need one more package:
-`.venv/bin/pip install -r requirements-dev.txt`.
+The tests (Layer 2 Step 2, under `tests/`) need one more package:
+`.venv/bin/pip install -r requirements-dev.txt`. Run them with `.venv/bin/python -m pytest -q`
+(they use a scripted fake client, so no API calls and no cost).
 
 ## Run
 
@@ -63,8 +64,10 @@ activate it first with `source .venv/bin/activate`, plain `python` works too:
   with a `tool_result` (errors flagged `is_error`), and caps its passes
 - `data/`: small text files for the `read_file` tool
 - `layer1/`, `layer2/`, ...: the step scripts for each layer
-- `scripts/`: helper scripts; `gen_sdk_reference.py` regenerates the tables in
-  `learnings/anthropic-sdk-reference.md` from the installed SDK
+- `tests/`: `fake_client.py` (a scripted stand-in for the model) and `test_loop.py`
+- `scripts/`: `gen_sdk_reference.py` regenerates the tables in `learnings/anthropic-sdk-reference.md`
+  from the installed SDK; `check_docs.py` checks the documentation for drift
 - `ROADMAP.md`: layers and steps, with substeps; `PLAN.md`: the reasoning behind the plan;
   `LEARNINGS.md`: the index of what I've learned, with `learnings/harness.md` (the theory of the
-  harness) and `learnings/code.md` (the code and tooling); `CLAUDE.md`: how Claude Code works with me on this repo
+  harness) and `learnings/code.md` (the code and tooling), `learnings/anthropic-sdk-reference.md` (SDK data structures)
+  and `learnings/glossary.md` (every term); `CLAUDE.md`: how Claude Code works with me on this repo

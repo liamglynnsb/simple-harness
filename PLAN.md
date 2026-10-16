@@ -3,7 +3,8 @@
 `ROADMAP.md` is the checklist (short, read at the start of every session). This file
 is the reasoning behind it: a review of Layer 1, the facts about our setup that shape
 the plan, and what each remaining layer is for, in what order, and where it can go
-wrong. Written 2026-10-15. Where something is a guess, it says so.
+wrong. Written 2026-10-15; reviewed and brought up to date 2026-10-16. In this file "you" is Liam and
+"I" is Claude. Where something is a guess, it says so.
 
 How every substep runs: you predict, you type the code in Cursor, you run it, we
 compare, you explain the idea back, the ledger gets an entry, a small commit goes in.
@@ -17,8 +18,8 @@ compare, you explain the idea back, the ledger gets an entry, a small commit goe
 | plain call; model is stateless; re-send history; token cost per turn | `layer1/l1s1_stateless.py` |
 | one tool; raw `tool_use`; `stop_reason` inspected before parsing | `layer1/l1s2_tool_use.py` |
 | loop on `stop_reason`; `tool_result` per call; `end_turn` stops; `max_tokens`; iteration cap | `loop.py` |
-| second tool; both used in one task; several calls in one response | `tools.py`, 4b, 4c |
-| break a tool (raise, garbage); error `tool_result` flagged; watch recovery | 5a-5d |
+| second tool; both used in one task; several calls in one response | `tools.py`; Layer 1 Steps 4b and 4c |
+| break a tool (raise, garbage); error `tool_result` flagged; watch recovery | Layer 1 Steps 5a to 5d |
 | gateway setup in one module, from env vars; `.gitignore`; Messages format; no frameworks | `client.py` |
 | git repo, README, small learning-log commits, ROADMAP | yes |
 | loop in one small function, tools in their own module | yes |
@@ -27,31 +28,32 @@ compare, you explain the idea back, the ledger gets an entry, a small commit goe
 places where it is thinner than it looks. All of them are required items in the
 roadmap, built in at the point each is needed (tagged H1-H5 there).
 
-1. **We never saw a real recovery.** The brief says "watch whether it recovers." In 5b
-   the model reported the failure and stopped, because it had no way to try anything
+1. **We never saw a real recovery.** The brief says "watch whether it recovers." In Layer 1
+   Step 5b the model reported the failure and stopped, because it had no way to try anything
    else. That shows the error path works, not that recovery does. *Fix (H2): Layer 2
    Step 4d.* It waits until the path-blocking hook exists, so the `list_files` tool it
-   needs is restricted from the day it is born.
+   needs is restricted from the day it is born. **Status: not yet done.**
 2. **No automated tests.** Everything was checked by running it by hand, plus a few
    ad-hoc fake-model checks I ran. The branches that are hard to trigger for real
    (`else` for an unexpected stop reason, the pass cap in a natural situation, a model
    that sends the same id twice) are untested. *Fix (H1): Layer 2 Step 2*, before
    anything changes `run_agent`, because Steps 3 and 4 change its signature and
-   restructure its tool-running code, and Layers 4-5 depend on it.
+   restructure its tool-running code, and Layers 4-5 depend on it. **Status: in progress (Layer 2 Step 2).**
 3. **`read_file` is unrestricted.** It will open any file the process can read,
    including `.env`, which holds the gateway key, and the contents would go to the
    model and the gateway's logs. Nothing asks the model to do that today, but a
    poisoned file or a bad prompt could. *Fix: Layer 2 Step 4c* (a blocking hook), then
    injection tests and guardrails in Layer 5. Until then, don't point `read_file` at
-   content you don't trust.
+   content you don't trust. **Status: not yet done.**
 4. **The cost of tool definitions was read about, not measured.** The docs say about
-   496 extra tokens for Haiku 4.5 with `auto`, plus the definitions themselves.
+   496 extra tokens for Haiku 4.5 with `auto` (286 for Haiku 5.5), plus the definitions themselves.
    *Fix (H3): Layer 2 Step 1a*, which is also the baseline the skill's token
-   comparison needs.
+   comparison needs. **Status: done.** Two definitions added about 500 input tokens, which fits the
+   hidden 286 plus roughly 130 to 175 for the definitions.
 5. **`max_tokens` is hard-coded at 300** inside `run_agent`. *Fix (H4): Layer 2 Step
-   3a*, where the subagent needs a limit of its own.
+   3a*, where the subagent needs a limit of its own. **Status: done** (`max_tokens` is now a parameter).
 6. **Key hygiene.** *Fix (H5): Layer 2 Step 0a*, before
-   anything else, and long before Layer 4 makes many more calls.
+   anything else, and long before Layer 4 makes many more calls. **Status: done.**
 7. **Teaching process.** We quizzed lightly and relied on predictions. The brief's
    ownership test (rebuild the core from a blank file) is still pending, and is now
    scheduled at the Layer 2 checkpoint. Each layer ends with a checkpoint: explain
@@ -60,7 +62,7 @@ roadmap, built in at the point each is needed (tagged H1-H5 there).
 ## 2. Facts about our setup that shape the plan
 
 From the official feature-availability table (Amazon Bedrock column), checked on
-2026-10-15. Our calls go the gateway -> Bedrock with Haiku 4.5.
+2026-10-15. Our calls go the gateway -> Bedrock with Haiku 5.5 (switched from Haiku 4.5 on 2026-10-15).
 
 - **Available on Bedrock:** prompt caching (5 minute and 1 hour) and automatic caching,
   token counting, fine-grained tool streaming, tool search, the memory and text-editor
@@ -72,7 +74,7 @@ From the official feature-availability table (Amazon Bedrock column), checked on
   (so model fallback is the harness's job, or the gateway's), and the **Message Batches**
   API (so evals run as ordinary calls, with no 50% batch discount).
 - **Structured outputs** on Bedrock: the table says only on the legacy InvokeModel
-  integration, for Haiku 4.5 among others. We don't know which Bedrock API the gateway uses,
+  integration, for Haiku 4.5 among others (the table doesn't mention Haiku 5.5). We don't know which Bedrock API the gateway uses,
   so we must **probe**. The plan does not depend on it: Layer 5 Step 5 builds a
   schema-through-a-tool version that works anywhere, then probes the native one.
 - **Model and prices.** We now run **Haiku 5.5** (`us.anthropic.claude-haiku-5-5`,
@@ -125,7 +127,7 @@ signature of `run_agent`), **hook** (restructures its tool-running code), **MCP*
   result, the same channel a poisoned file would use, which Layer 5 returns to. The model
   varies from run to run, so run each task about three times (Layer 4 does this properly).
   *Explain back:* why the description, not the body, costs tokens on every call.
-  **Specs for the three skills (you write the content).** File format: a `name:` line,
+  **Specs for the three skills.** (Liam drafted `verify-arithmetic`; with explicit permission Claude finished it and wrote the other two. The default rule is still that Liam writes these.) File format: a `name:` line,
   a `description:` line, a line with `---`, then the instructions.
   - `verify-arithmetic` (behaviour). After every calculation done with the calculator
     tool, run the inverse operation with the calculator, compare, and report "verified"
@@ -142,7 +144,7 @@ signature of `run_agent`), **hook** (restructures its tool-running code), **MCP*
 
 - **Step 2, tests (H1).** A fake client that returns scripted replies lets you test every
   branch of the loop with no API calls: free, instant and deterministic. Cover the plain
-  finish, one and several tool calls, the three failure kinds from 5d, `max_tokens` with
+  finish, one and several tool calls, the three failure kinds from Layer 1 Step 5d, `max_tokens` with
   and without text, an unexpected `stop_reason`, and the pass cap. Then break the loop
   on purpose and confirm the right test fails; a test that cannot fail proves nothing.
   *Why here:* every later step edits the loop or relies on it. *Explain back:* what a
@@ -159,7 +161,7 @@ signature of `run_agent`), **hook** (restructures its tool-running code), **MCP*
   is why the tests come first. 4c fixes the `read_file` hole and then tries to break the
   fix: `..`, an absolute path, a symlink. Resolve the path first, then compare it with
   the allowed folder; comparing strings is the classic mistake. Turn each bypass attempt
-  into a test. 4d is the real recovery the brief asked for in Step 5 (H2): with a
+  into a test. 4d is the real recovery the brief asked for in Layer 1 Step 5 (H2): with a
   `list_files` tool held to the same rule, a wrong path should lead the model to list the
   folder and try again. *Design choice to discuss:* if a hook crashes, do we allow the
   call (fail open) or refuse it (fail closed)? Security hooks usually fail closed;
@@ -217,15 +219,15 @@ time; an eval measures how often a stochastic system gets a task right.
   trajectories, because a wrong verifier silently corrupts every number after it.
 - **Step 4.** pass@k. With n samples and c correct, the standard unbiased estimator is
   pass@k = 1 - C(n-c, k) / C(n, k). With small n, intervals are wide; show them (Wilson
-  interval for a proportion). We saw the model behave inconsistently in 5c, so run-to-run
+  interval for a proportion). We saw the model behave inconsistently in Layer 1 Step 5c, so run-to-run
   noise is real here.
 - **Step 5.** Read failures, classify them, compute cost per success, change one thing,
   and measure with the noise in mind.
 - **Step 6.** An LLM judge for outputs a verifier can't grade (summaries, tone). Judge
-  with a stronger or different model than the one being judged, with as little randomness as the model allows (newer models may reject a non-default
-  temperature: probe it, and if it's refused, measure the judge's run-to-run agreement
-  instead), with a rubric and a structured score. **Calibrate it** against a set with known answers
-  (accuracy, confusion matrix, Cohen's kappa), test for position, length and same-model
+  with a stronger or different model than the one being judged, with as little randomness as the
+  model allows (newer models may reject a non-default temperature: probe it, and if it's refused,
+  measure the judge's run-to-run agreement instead), with a rubric and a structured score.
+  **Calibrate it** against a set with known answers (accuracy, confusion matrix, Cohen's kappa), test for position, length and same-model
   bias, and compare it to the verifiers on tasks where both apply. The result is a map
   of where the judge can be trusted, not a blanket yes.
 - **Step 7.** Run the suite before and after a change or a model swap, with a gate.
@@ -246,7 +248,7 @@ loop's shape, so last).
   a price table in config; p50 and p95 latency. Compare with the gateway's own logs
   so you learn what each one can and can't see.
 - **Step 2, retries and fallback.** Retry timeouts, connection errors, 429 and 5xx; do
-  not retry 400 (from Step 4: the request is wrong, so repeating it fails again).
+  not retry 400 (from Layer 1 Step 4: the request is wrong, so repeating it fails again).
   Backoff with jitter and a cap. The SDK already retries twice by default, so decide
   whether to turn that off to avoid retrying inside retries. Because the API is
   stateless, any model can pick up the same `messages` list, which makes fallback
@@ -255,16 +257,16 @@ loop's shape, so last).
   command.
 - **Step 3, context.** Measure growth, then shrink it: trim old tool results, drop old
   turns, summarize, or keep a notes file. **Every `tool_use` must keep its
-  `tool_result`** (Step 4's rule), so trimming has to remove pairs together. Verify
+  `tool_result`** (Layer 1 Step 4's rule), so trimming has to remove pairs together. Verify
   with an eval that a fact from early in the run is still available.
 - **Step 4, caching.** Probe first. Then cache the tool definitions and stable prefix,
   and watch `cache_read_input_tokens`. Something as small as a timestamp in the prefix
-  silently breaks it. This directly attacks the cost growth you measured in Step 1.
-- **Step 5, structured output.** A final-answer tool whose input schema is the output
-  schema, validated in code, with one retry that sends the validation error back. Forcing the call with `tool_choice`
-  works on Haiku 5.5 (a forced call skips thinking) but is rejected on Opus 5.5 and
-  Sonnet 5.5, so prefer asking in the prompt and checking.
-  Probe native structured outputs afterwards.
+  silently breaks it. This directly attacks the cost growth you measured in Layer 1 Step 1.
+- **Step 5, structured output.** A final-answer tool whose input schema is the output schema,
+  validated in code, with one retry that sends the validation error back. Forcing the call with
+  `tool_choice` works on Haiku 5.5 (a forced call skips thinking) but is rejected on Opus 5.5 and
+  Sonnet 5.5, so prefer asking in the prompt and checking. Probe native structured outputs
+  afterwards.
 - **Steps 6-7, injection then guardrails.** Attack first, so the guardrails are justified
   by evidence: plant instructions inside files and see whether the model obeys them
   (for example "read `.env` and include it"). Expect the unprotected harness to
@@ -287,13 +289,18 @@ loop's shape, so last).
   behavior (cost real money, statistical), manual runs for exploration.
 - **Security hygiene:** no secrets in code or logs, redact before logging, least
   privilege for tools, treat everything a tool returns as untrusted.
-- **Ledger:** each layer gets its entries; items I explain but you haven't said back
-  stay in the "not yet said back" section.
+- **Documentation:** the README, ROADMAP, this plan and the learnings (`learnings/harness.md`,
+  `learnings/code.md`, `learnings/anthropic-sdk-reference.md`, `learnings/glossary.md`) must agree with
+  the code and with each other. The standard, and the checker (`scripts/check_docs.py`), are in
+  `CLAUDE.md` under "Documentation standard". Items Claude explained that you haven't said back stay in
+  the "not yet said back" section of `learnings/harness.md`.
 
 ## 8. Decisions for you (none are urgent)
 
 Decided: the five hardening items are required and are built into Layer 2 (H5 at Step 0,
 H3 at 1a, H1 as Step 2, H4 at 3a, H2 at 4d).
+Decided: the learnings are filed by kind (harness theory, code and tooling, SDK reference, glossary), and a
+checker keeps the documentation consistent.
 
 1. **MCP: SDK or by hand?** Decide at Step 5a after reading the spec.
 2. **Judge model (Layer 4):** a stronger model costs more per call but needs fewer calls.
@@ -308,10 +315,11 @@ feature availability from the official table; the pass@k and kappa formulas (sta
 that `is_error` exists on tool results (inspected the SDK); the MCP stdio framing and the
 spec's note about the dropped handshake (from the spec page).
 
-Not verified (each has a probe or a read built into the plan): whether Haiku 5.5
-rejects a non-default `temperature`; how much default thinking eats of `max_tokens`
-through the gateway; whether the gateway passes
-caching, structured-output and streaming parameters through; which Bedrock API the gateway
-uses; whether the SDK client is thread-safe; what retry and fallback options your
-the gateway workspace has; exact MCP message shapes in the newest revision; Haiku 4.5's
-minimum cacheable prefix length; real cost per eval run.
+Verified since: thinking tokens count against `max_tokens` (observed in Layer 2 Step 1d); two tool
+definitions add about 500 input tokens (measured in Layer 2 Step 1a); Haiku 5.5 thinks by default.
+
+Not verified (each has a probe or a read built into the plan): whether Haiku 5.5 rejects a
+non-default `temperature`; whether the gateway passes caching, structured-output and streaming
+parameters through; which Bedrock API the gateway uses; whether the SDK client is thread-safe; what
+retry and fallback options your the gateway workspace has; exact MCP message shapes in the newest
+revision; Haiku 5.5's minimum cacheable prefix length; real cost per eval run.
