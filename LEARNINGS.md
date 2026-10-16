@@ -564,6 +564,55 @@ order: free, instant, identical every time.
   `stop_reason`, `content`, and per block `type`, `text`, `name`, `input` and `id`. A fake only
   has to look like that.
 
+**A fake client is a script played back in order; the test supplies the intelligence.** The fake has
+no logic and never looks at the question. Each test writes its own tiny script (the replies the "model"
+gives in that scenario), and the fake hands them out one per call and logs what it was sent. The test
+then checks the log. The real loop runs unchanged; only the model's replies are dummies. Pairing is by
+order, not content. Standard practice: a queue of canned responses is the usual way to fake a
+sequential service; Python's own `unittest.mock.Mock(side_effect=[...])` does exactly this, and an
+iterator (`iter` / `next`), an index counter or `collections.deque` are equivalent ways to write it.
+- `self.replies.pop(0)` takes the **front** of the list (replies play in order); a bare `pop()` takes the
+  last one, which would play them backwards. The **log holds the inputs the loop sent**, not the replies.
+  When the script runs out, an extra call fails loudly (`IndexError`), which is a useful signal, and
+  after a test `client.replies == []` shows the whole script was used.
+- `self.replies = list(replies)` makes a copy, so the fake never empties the test's own list.
+- Correction: I first thought the fake needed logic to detect the question and choose a reply. It doesn't.
+- Correction: I said the log receives the replies as they are used; it records the arguments instead.
+
+**Classes, `self`, and the parentheses.** A class bundles state (the script, the log) with behaviour
+(`create`). Defining a class is not inheritance (`class B(A)`); I've used classes all along (the SDK's
+client and reply objects), I just hadn't defined one. `self` is written as the first parameter only when
+*defining* a method; when *calling* `obj.method(...)`, Python fills it in. A plain function has no
+`self`. `__init__` runs once when the object is created. `make_client()` is a plain function that
+*creates* an object; methods are *called on* objects.
+- `name` is the thing itself; `name()` runs it now. `SimpleNamespace(create=self._create)` stores the
+  method to run later; with parentheses it ran at setup and stored its result, so the loop later tried
+  to call a string (`'str' object is not callable`). Recipe card vs cooked meal.
+- `**kwargs` in a `def` collects all named arguments into one dict; `**something` in a *call* spreads a
+  dict out into named arguments (the opposite direction; I used it in `FUNCTIONS[...](**block.input)`).
+- `SimpleNamespace(a=1, b=2)` is a plain object whose attributes are the names given (read with a dot,
+  nests, no class to write). It is how the fake builds replies and blocks. `self.messages = self` is a
+  circular reference (an object pointing at itself), not recursion: nothing runs repeatedly, and it only
+  causes trouble if something tries to walk all of an object's contents (JSON conversion fails).
+
+**Why `content` is a list, and why a `text_reply` helper.** A real reply holds several blocks in order
+(thinking, text, tool requests), and the loop does `for block in response.content`, so even a one-block
+reply is a list of one. `text_reply(text)` builds the nested reply (`stop_reason` plus a `content` list
+with one text block) so tests stay short and the reply's shape lives in one place. The values are what
+the SDK hands the loop, not the raw JSON the model produces.
+
+**How tests are laid out and found.** The arrow goes from tests to the loop, never the reverse:
+`tests/test_loop.py` imports `run_agent` and the fake; production code never imports test code. This
+works because `run_agent` receives its `client` as an argument (dependency injection), so a fake can be
+passed in without changing the loop. A file name with a hyphen can't be imported (`test-client.py` is
+a syntax error), so use underscores. pytest finds tests by naming convention: files `test_*.py`,
+functions `test_*`; helpers like `fake_client.py` aren't collected; every matching file runs, each test
+independently, with one summary. `python -m pytest` runs the pytest in my venv and puts the project root
+on the import path; `-m` means "run a module by name" (Python's flag), `-q` means quiet and `-v`
+verbose (pytest's); `--collect-only` lists what it found without running it.
+- The limit: the fake shows whether *my code* handles each situation. How the real model behaves is the
+  server side, which evals measure in Layer 4.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.
