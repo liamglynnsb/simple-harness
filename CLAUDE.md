@@ -7,7 +7,8 @@ first, not a code-delivery project.
 ## At the start of every session
 
 1. Read `ROADMAP.md` and tell the user which layer and step we're on.
-2. Read `LEARNINGS.md` so you know what they have and haven't understood yet.
+2. Read `LEARNINGS.md` (the index) and the two files it points to, `learnings/harness.md` (theory) and
+   `learnings/code.md` (code and tooling), so you know what they have and haven't understood yet.
 
 ## How to work
 
@@ -35,7 +36,8 @@ first, not a code-delivery project.
 
 ## Keeping the ledger
 
-When a concept lands, draft an entry for `LEARNINGS.md` in the user's own
+When a concept lands, draft an entry in `learnings/harness.md` (how agents, models or the API behave
+or should be designed) or `learnings/code.md` (how to write or run the code), in the user's own
 wording, with any correction noted, and show it to them before saving. Only add
 what they have actually explained back. Commit each entry with a small
 learning-log message. Tick off finished steps in `ROADMAP.md`.
