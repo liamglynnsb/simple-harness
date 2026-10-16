@@ -28,8 +28,7 @@ is in my code.
 ```
 
 In the loop the two meet. After each reply I append `response.content`, a list of *objects*, straight
-into the next request's `messages`, next to dicts I built myself. The SDK accepts both. (That's also
-why a fake reply in a test is a `SimpleNamespace`: it only has to look like the object.)
+into the next request's `messages`, next to dicts I built myself. The SDK accepts both.
 
 ## 2. How to read the shapes
 
@@ -37,7 +36,7 @@ Everything here is one of three things, and the thing decides how I read inside 
 
 | it is a... | example | read inside it with | how |
 |---|---|---|---|
-| **object** | a reply, a block, a `SimpleNamespace` | a dot | `block.name` |
+| **object** | a reply (`Message`), a block (`TextBlock`, ...) | a dot | `block.name` |
 | **dict** | a message I build, a `tool_result` | square brackets and a key | `message["content"]` |
 | **list** | `messages`, `response.content` | square brackets and a position (from 0) | `messages[2]` |
 
@@ -104,10 +103,6 @@ What to take from it:
   one tool call the list has one item. It is still a list.
 - **The id links request to result.** Every `tool_use` block needs a `tool_result` with its `id` in the
   next message, or the API rejects the request (Layer 1 Step 4d).
-- **A test reads exactly this.** After `run_agent(client, messages, tools)` returns, the test's own
-  `messages` list has grown to this shape, because the loop appends to the same list it was passed
-  (lists are passed by reference, not copied). The `FakeClient` doesn't touch `messages`; it only logs
-  each call's arguments in `client.calls` and hands back the next scripted reply.
 
 ## 4. Reference: what I send
 
@@ -258,19 +253,6 @@ It is `None` only while a reply is still streaming (Layer 5).
 | `block.name`, `block.input`, `block.id` | `loop.py` | find and run the tool, label the result |
 | tool definitions (`ToolParam`) | `tools.py` (`CALCULATOR`, `READ_FILE`, `LOAD_SKILL`) | passed as `tools=[...]` |
 | `response.usage` | not read in the loop yet | Layer 5 tracing; printed in `layer1/` and `layer2/` scripts |
-| a fake `Message` | `tests/fake_client.py` (`text_reply`, `tool_reply`) | `SimpleNamespace` with `stop_reason` and `content` |
-
-A fake reply keeps only the attributes the loop reads (Layer 2 Step 2). The same shape, trimmed:
-
-```
-SimpleNamespace  (the fake Message)
-|- stop_reason  "tool_use"
-\- content  [ SimpleNamespace  (a fake ToolUseBlock) ]
-                 |- type "tool_use"
-                 |- id
-                 |- name
-                 \- input
-```
 
 ## 7. Ways to explore this yourself
 
@@ -286,6 +268,30 @@ To refresh the appendix after upgrading the SDK, or to re-verify the claims in t
 ```
 .venv/bin/python scripts/gen_sdk_reference.py          # rewrite the appendix (also runs the check)
 .venv/bin/python scripts/gen_sdk_reference.py --check  # only verify the claims
+```
+
+## 8. For tests only: imitating all this without calling the model
+
+Nothing in this section is how the harness talks to the real model. It is how `tests/` fakes the
+model, so the loop can be tested with no API calls (Layer 2 Step 2).
+
+- `FakeClient` (`tests/fake_client.py`) has a `messages.create` like the real client's. It does not
+  touch my `messages` list: it logs each call's arguments in `client.calls` and hands back the next
+  scripted reply.
+- `text_reply(...)` and `tool_reply(...)` build those scripted replies. They are not SDK functions.
+  A fake reply is a `SimpleNamespace`: it only has to have the attributes the loop reads, so it keeps
+  just those, and the real `Message` has many more.
+- The loop appends to the same `messages` list the test passes in (lists are passed by reference), so
+  after `run_agent` returns, a test can read the list and find the shape in section 3.
+
+```
+SimpleNamespace  (the fake Message)
+|- stop_reason  "tool_use"
+\- content  [ SimpleNamespace  (a fake ToolUseBlock) ]
+                 |- type "tool_use"
+                 |- id
+                 |- name
+                 \- input
 ```
 
 ## Appendix: field tables (generated from the SDK)
