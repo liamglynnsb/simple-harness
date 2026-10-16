@@ -20,3 +20,9 @@ class FakeClient:
         the loop passed (model, max_tokens, tools, messages) into one dict."""
         self.calls.append((kwargs))     # job 1: write down what we were sent
         return self.replies.pop(0)      # job 2: hand back the next scripted reply (the front of the list)
+
+def text_reply(text): #formats the text reply for the test in the same way that the model's answer is formatted
+    return SimpleNamespace(
+        stop_reason = "end_turn",
+        content = [SimpleNamespace(type="text", text=text)],
+    )
