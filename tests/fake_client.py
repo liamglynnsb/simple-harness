@@ -26,3 +26,9 @@ def text_reply(text): #formats the text reply for the test in the same way that 
         stop_reason = "end_turn",
         content = [SimpleNamespace(type="text", text=text)],
     )
+
+def tool_reply(tool_name, tool_input, tool_id):
+    return SimpleNamespace(
+        stop_reason = "tool_use",
+        content = [SimpleNamespace(type="tool_use", name=tool_name, input=tool_input, id = tool_id)]
+    )

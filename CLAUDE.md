@@ -53,6 +53,13 @@ the others. When you add or change anything:
 - Every new term goes in `learnings/glossary.md` in the same commit.
 - Say "Layer 2 Step 1", not a bare "Step 1". No counts, no "currently"; update the
   "Where we are" line in `ROADMAP.md` whenever a substep is ticked.
+- Keep **how the harness really works** apart from **how tests imitate it**. Explanations of the model,
+  the SDK and the loop describe only the real thing (real client, real replies, the dicts I send). The
+  fake client, `SimpleNamespace` replies and the `text_reply`/`tool_reply` helpers are explained only in
+  a section labelled "For tests only" (see `learnings/anthropic-sdk-reference.md`, section 8), and in
+  the code ledger's testing entries. Never explain a real structure by pointing at its fake.
+- When a structure is explained, show it once as a tree that says what each level is (object, dict or
+  list) and gives the path that reads it, and link to that tree from elsewhere instead of redrawing it.
 - A new tool, script, folder or command is added to the README's "What's here" / "Run" sections.
 - Run `.venv/bin/python scripts/check_docs.py` before committing any change to docs, scripts, tools or
   paths, and fix what it reports. At each layer checkpoint, also reread everything as if returning cold.

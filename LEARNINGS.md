@@ -25,7 +25,10 @@ the other file.
 3. Refer to a step with its layer ("Layer 2 Step 1"), never a bare "Step 4".
 4. Don't write counts ("47 entries"), dates for "now" or "in progress" markers that go stale; link instead.
 5. Link files that exist, by path. State each fact in one place and link to it from elsewhere.
-6. Before committing, run `.venv/bin/python scripts/check_docs.py` and fix what it reports.
+6. Keep the real harness and its test doubles apart: real behaviour is explained with the real
+   client, replies and dicts; the fake client and its helpers belong only in testing entries and in
+   the SDK reference's "For tests only" section.
+7. Before committing, run `.venv/bin/python scripts/check_docs.py` and fix what it reports.
 
 ## Open items
 

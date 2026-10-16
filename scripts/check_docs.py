@@ -18,6 +18,8 @@ prints one line per problem. Fix the docs, don't weaken the checker. What it che
  7. No duplicated ledger entry titles; no TODO/FIXME left behind; no known-stale phrases.
  8. The glossary's terms each have a definition.
  9. The SDK reference's claims still hold (runs scripts/gen_sdk_reference.py --check).
+10. The SDK reference keeps real-interaction material and test-only material apart: the fake client
+    and its helpers may appear only in the section titled "For tests only" and after it.
 """
 import argparse
 import ast
@@ -325,6 +327,26 @@ def check_sdk_reference(root, problems):
             problems.append("SDK reference: a claim in the text no longer holds: " + (r.stderr.strip().splitlines() or ["?"])[-1])
 
 
+TEST_ONLY_TERMS = ["FakeClient", "SimpleNamespace", "text_reply", "tool_reply", "fake_client"]
+
+
+def check_real_vs_test(root, problems):
+    """In the SDK reference, how the harness really talks to the model (everything before the
+    'For tests only' section) must not mention the test doubles."""
+    ref = root / "learnings" / "anthropic-sdk-reference.md"
+    if not ref.exists():
+        return
+    text = read(ref)
+    marker = text.find("For tests only")
+    if marker == -1:
+        problems.append("learnings/anthropic-sdk-reference.md: no 'For tests only' section found")
+        return
+    real_part = text[:text.rfind("\n", 0, marker)]
+    for term in TEST_ONLY_TERMS:
+        if term in real_part:
+            problems.append(f"learnings/anthropic-sdk-reference.md: test-only term {term!r} appears outside the 'For tests only' section")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default=str(pathlib.Path(__file__).resolve().parent.parent))
@@ -340,6 +362,7 @@ def main():
     check_text_hygiene(root, problems)
     check_glossary(root, problems)
     check_sdk_reference(root, problems)
+    check_real_vs_test(root, problems)
     if problems:
         print(f"{len(problems)} documentation problem(s):")
         for p in problems:
