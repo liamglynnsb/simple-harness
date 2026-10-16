@@ -101,7 +101,7 @@ PLAN.md section 1, and details for every step are in PLAN.md section 3.
   - [ ] 2e: one command runs them all; break the loop on purpose and watch the right
         test fail (a test that can't fail proves nothing)
 - [ ] Step 3: a subagent with scoped tools (`layer2/l2s3_subagent.py`)
-  - [ ] 3a: make `max_tokens` a parameter of `run_agent` instead of a fixed 300 (H4);
+  - [x] 3a: make `max_tokens` a parameter of `run_agent` instead of a fixed 300 (H4);
         the tests stay green
   - [ ] 3b: add an optional system prompt to `run_agent` (first use of `system`)
   - [ ] 3c: a `delegate` tool: runs a fresh `run_agent` with its own history and a
