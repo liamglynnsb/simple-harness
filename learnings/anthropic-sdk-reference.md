@@ -72,6 +72,34 @@ The assistant's turns are always lists, because I append `response.content` as i
 choose that form. `system` follows the same rule as a user message: a string, or a list of text blocks
 when a block needs settings.
 
+### One message (`MessageParam`): `role` and `content`
+
+Every item in `messages` is a dict with exactly these two keys, and both are required:
+
+```
+message  (a dict I build, or one the loop builds)
+|- "role"     who is speaking:  "user"  or  "assistant"      (only these two)
+\- "content"  what they said:   a STRING   or   a LIST of blocks
+
+   role "user"       = me: my question, and the tool results I send back
+   role "assistant"  = the model: its earlier replies, which I send back unchanged
+```
+
+The two forms of `content`:
+
+```
+{"role": "user", "content": "What is 2 + 2?"}                           <- string: plain text
+
+{"role": "user", "content": [                                           <- list: blocks
+    {"type": "tool_result", "tool_use_id": "id1", "content": "4"}       <- a block: its own "type"
+]}                                                                         and its own fields
+```
+
+`role` is the speaker, and the system prompt is not a message: it goes in the separate `system`
+argument. Roles alternate user, assistant, user, assistant. A `content` list holds blocks, and each
+block has a `"type"` that says which fields it has; a `tool_result` block has its own key named
+`"content"` (the tool's output), which is not the message's `content` (section 8).
+
 ### The pieces and their required keys
 
 | structure | required keys | notes |
