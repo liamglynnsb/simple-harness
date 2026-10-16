@@ -4,6 +4,7 @@ What I've learned about how an agent harness works: tool use, tokens and cost, t
 design, errors and recovery, skills versus tools, the experiments I ran, and why the loop is
 tested the way it is. Each entry is in my own words, with corrections noted. The Python and
 tooling side is in [code.md](code.md); the index and open items are in [../LEARNINGS.md](../LEARNINGS.md).
+The SDK's data structures are in [anthropic-sdk-reference.md](anthropic-sdk-reference.md).
 Newest at the bottom of each section.
 
 ## 2026-10-05 · Layer 1, setup

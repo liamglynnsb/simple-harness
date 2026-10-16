@@ -7,6 +7,9 @@ The ledger of what I've learned while building the harness, split in two:
   why the loop is tested the way it is.
 - **[learnings/code.md](learnings/code.md): the code itself.** Python mechanics, project and tooling
   habits (venv, `.env`, git, pytest), and software-design principles.
+- **[learnings/anthropic-sdk-reference.md](learnings/anthropic-sdk-reference.md): the SDK's data structures.**
+  What `Message`, content blocks and `usage` are and how they connect, the request shapes, and a whole
+  tool round trip as data. A reference to look things up in, not a ledger of what I've learned.
 
 Where to file a new entry: if it explains *how agents, models or the API behave or should be
 designed*, it goes in `harness.md`. If it explains *how to write or run the code*, it goes in

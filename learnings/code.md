@@ -4,7 +4,8 @@ What I've learned about the code and the tools around it: Python mechanics (`sel
 `partition`, `__main__`), project habits (virtual environment, `.env`, git, pytest), and
 software-design principles. Each entry is in my own words, with corrections noted. The theory of
 how the harness works is in [harness.md](harness.md); the index and open items are in
-[../LEARNINGS.md](../LEARNINGS.md). Newest at the bottom of each section.
+[../LEARNINGS.md](../LEARNINGS.md).
+The SDK's data structures are in [anthropic-sdk-reference.md](anthropic-sdk-reference.md). Newest at the bottom of each section.
 
 ## 2026-10-05 · Layer 1, setup
 

@@ -51,3 +51,6 @@ learning-log message. Tick off finished steps in `ROADMAP.md`.
   default model is `us.anthropic.claude-haiku-5-5`,
   set via `HARNESS_MODEL`.
 - No agent frameworks.
+- `learnings/anthropic-sdk-reference.md` is a reference for the SDK's data structures (not a ledger).
+  Its tables are generated: after upgrading the SDK, run `.venv/bin/python scripts/gen_sdk_reference.py`
+  (it re-checks the claims in the text first).

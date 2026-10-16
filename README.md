@@ -63,6 +63,8 @@ activate it first with `source .venv/bin/activate`, plain `python` works too:
   with a `tool_result` (errors flagged `is_error`), and caps its passes
 - `data/`: small text files for the `read_file` tool
 - `layer1/`, `layer2/`, ...: the step scripts for each layer
+- `scripts/`: helper scripts; `gen_sdk_reference.py` regenerates the tables in
+  `learnings/anthropic-sdk-reference.md` from the installed SDK
 - `ROADMAP.md`: layers and steps, with substeps; `PLAN.md`: the reasoning behind the plan;
   `LEARNINGS.md`: the index of what I've learned, with `learnings/harness.md` (the theory of the
   harness) and `learnings/code.md` (the code and tooling); `CLAUDE.md`: how Claude Code works with me on this repo

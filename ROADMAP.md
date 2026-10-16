@@ -259,11 +259,11 @@ stream last because it changes the loop's shape.
 
 ## Backlog (wanted, not yet scheduled)
 
-- [ ] A separate markdown reference of the Anthropic SDK's data structures, so I can see how
-      they fit together: `Message` and its `content` blocks (text, thinking, tool_use), how
-      `usage` relates to a reply, what `stop_reason` holds, and what the matching request
-      shapes are (`messages`, `tool_result`, `tools`). Idea: generate it from the installed
-      SDK's own types so it stays accurate, and keep my own notes beside it.
+- [x] A separate markdown reference of the Anthropic SDK's data structures: `learnings/anthropic-sdk-reference.md`
+      (how `Message`, its content blocks and `usage` fit together, the request shapes, a full tool round trip
+      as data). Its field tables are generated from the installed SDK, and
+      `.venv/bin/python scripts/gen_sdk_reference.py --check` verifies the claims in its text; rerun it after
+      upgrading the SDK.
 
 ## Parking lot (not planned; revisit after Layer 5)
 
