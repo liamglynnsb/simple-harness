@@ -433,7 +433,7 @@ Why it matters: a wrong choice fails quietly. A policy written as a skill can be
 sounding sure; a tool with a huge description inflates every request; a "must never" rule written
 as advice is a hole. My own experiments showed each of these.
 
-## 2026-10-15 · Layer 2, Step 2 (tests with a scripted fake model, in progress)
+## 2026-10-15 · Layer 2, Step 2 (tests with a scripted fake model)
 
 **Why test the loop with a fake model, not the real one.** (1) I can't control what the real model
 replies, so a test can't depend on it (non-determinism, variation and unpredictability are one
@@ -450,6 +450,17 @@ order: free, instant, identical every time.
 - What the loop needs from a client: a `messages.create(...)` method, and from each reply
   `stop_reason`, `content`, and per block `type`, `text`, `name`, `input` and `id`. A fake only
   has to look like that.
+
+**Assert the effects, not only the output (2e).** I broke the loop on purpose, with the cap one too low,
+and `test_max_loops_finish` still passed its check on the returned string (`"Error: Max loops reached"`),
+because the loop did still hit the cap, just earlier. It failed on `len(messages)` (5 instead of 7),
+since that count shows how many passes actually ran. Different bugs can give the same output, so a test
+should also assert the effects that tell the right behaviour from the likely wrong ones: the messages,
+the number of calls, and what's left of the script.
+- Correction: I first called this making the asserts "MECE". Assertions can overlap, and the call count
+  would have caught this bug too, so they needn't be mutually exclusive. They can't be exhaustive
+  either, because I can't list every failure mode. The practical rule is to think of the plausible
+  bugs and confirm that some assertion would catch each, then prove it by breaking the code on purpose.
 
 ## Explained to me, not yet said back in my own words
 
