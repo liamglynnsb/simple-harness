@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 3 (a subagent), substep 3d: isolation seen and proved with a fake-model test (`test_delegate_finish`); the token-cost comparison is next.
+**Where we are:** Layer 2, Step 3 (a subagent), substep 3e: scoping, so the loop refuses a tool the agent wasn't given.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -121,8 +121,10 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
   - [x] 3c: a `delegate` tool: runs a fresh `run_agent` with its own history and a
         short list of tools, and returns only its final text (`DELEGATE` and `delegate` in `tools.py`;
         the child gets `read_file`, the parent only `delegate`; `loop.py` run for real)
-  - [ ] 3d: see the isolation: the parent's `messages` never contain the child's
-        turns; write a fake-model test that proves it; compare token cost
+  - [x] 3d: see the isolation: the parent's `messages` never contain the child's
+        turns; write a fake-model test that proves it; compare token cost (seen in a real run; proved by
+        `test_delegate_finish`, checked by breaking `delegate`; the cost comparison was closed as a worked
+        analysis in `learnings/harness.md`, to be measured with Layer 5 tracing)
   - [ ] 3e: scoping: the child lacks a tool, asks for it anyway, and fails the way Layer 1 Step 5d
         taught (unknown tool)
   - [ ] 3f: limits: the child hits its own `max_loops` or errors; what the parent sees

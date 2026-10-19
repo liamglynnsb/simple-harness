@@ -462,6 +462,22 @@ the number of calls, and what's left of the script.
   either, because I can't list every failure mode. The practical rule is to think of the plausible
   bugs and confirm that some assertion would catch each, then prove it by breaking the code on purpose.
 
+## 2026-10-19 · Layer 2, Step 3 (a subagent)
+
+**When delegating pays off (3d, worked analysis, not measured).** The API is stateless, so everything in
+the parent's history is re-sent on every later pass. Delegating pays off when the main chat would otherwise
+carry a lot of tokens for something that is a one-off and won't be referenced again: the child reads the big
+file, and only its short answer enters the parent's history. If I'll keep referring to the content, or want
+it handy, I might as well keep it in the main chat, because delegating again would cost another full child
+run.
+- Explained to me, not yet said back: delegating has a fixed cost (the child's own calls, each with the
+  tool-use prompt and its tool definitions), so for a tiny file it costs more. The saving also compounds
+  only if the parent makes several more passes after the read; with an answer on the very next pass the
+  two setups cost about the same. And the parent receives only the child's answer, so detail it leaves out
+  has to be fetched with another delegation.
+- Not measured: the real totals. The cost part of 3d was closed as a worked analysis. Layer 5 tracing will
+  record `usage` per call, and then the comparison can be run from real runs.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.
