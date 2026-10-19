@@ -2,6 +2,11 @@ from client import make_client, model_name
 from tools import FUNCTIONS, CALCULATOR, READ_FILE, LOAD_SKILL, DELEGATE
 
 
+class AgentStopped(Exception):
+    """A run ended without a real final answer (pass limit, cut off, refusal...). Raised only when
+    run_agent is called with raise_on_failure=True, so a caller can't mistake the failure for an answer."""
+
+
 def collect_text(response):
     """Join the text blocks of a reply into one string (other block kinds, like thinking or
     tool requests, are skipped). Joined with newlines so separate blocks don't run together."""
@@ -12,7 +17,7 @@ def collect_text(response):
     return "\n".join(parts)
 
 
-def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = None):
+def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = None, raise_on_failure=False):
     """The agent loop. Ask the model; if it wants tools, run them, send the results back, ask
     again; stop when it finishes.
 
@@ -22,9 +27,18 @@ def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = N
     max_loops   -- the most passes allowed, so a stuck model can't loop (and spend) forever
     max_tokens  -- the limit on one reply; thinking tokens count against it
     system      -- the system message to use for the model
+    raise_on_failure -- if True, a run that ends without a real answer raises AgentStopped instead of
+                        returning a message (delegate uses this, so the parent sees an error)
     Returns the model's final text, or a message saying why it stopped early.
     """
     allowed = [t["name"] for t in tools]  # the tools THIS agent was given; FUNCTIONS holds every tool there is
+
+    def stopped(message, reason):
+        """The run is ending without a real answer: raise if the caller asked for that, else return the message."""
+        if raise_on_failure:
+            raise AgentStopped(reason)
+        return message
+
     for _ in range(max_loops):  # one pass = one call to the model
         tool_results = []  # reset every pass, so old results are never sent twice
         request = {
@@ -82,13 +96,13 @@ def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = N
             note = "Response stopped; max tokens reached"
             text_results = collect_text(response)
             if text_results:
-                return text_results + "\n" + note
-            return note
+                return stopped(text_results + "\n" + note, "it was cut off by max_tokens (partial text: " + text_results + ")")
+            return stopped(note, "it was cut off by max_tokens before writing any text")
         else:
             # Any other stop reason (e.g. a refusal): report it instead of looping on it.
-            return "Response stopped due to: " + response.stop_reason
+            return stopped("Response stopped due to: " + response.stop_reason, "it stopped due to: " + response.stop_reason)
     # Reached only if every pass was used without the model finishing.
-    return "Error: Max loops reached"
+    return stopped("Error: Max loops reached", "it reached its pass limit (max_loops=" + str(max_loops) + ")")
 
 
 if __name__ == "__main__":  # runs only when this file is run directly, not when it is imported

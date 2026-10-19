@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 3 (a subagent), substep 3f: limits, when the child hits its own `max_loops` or errors, and what the parent sees.
+**Where we are:** Layer 2, Step 3 (a subagent), substep 3g: is it worth it? (the worked analysis in `learnings/harness.md` may already cover it).
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -128,7 +128,9 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
   - [x] 3e: scoping: the child lacks a tool, asks for it anyway, and fails the way Layer 1 Step 5d
         taught (unknown tool). The loop now refuses any tool not in the agent's own `tools` list
         (`allowed` in `run_agent`); `test_tool_not_given_is_refused`, checked by removing the check
-  - [ ] 3f: limits: the child hits its own `max_loops` or errors; what the parent sees
+  - [x] 3f: limits: the child hits its own `max_loops` or errors; what the parent sees. A child that fails
+        raises (`AgentStopped` via `raise_on_failure`, rewrapped by `delegate`), so the parent gets a flagged
+        error and not text that looks like an answer (`test_failed_subagent_reaches_parent_as_an_error`)
   - [ ] 3g: is it worth it? the same task with and without the subagent
 - [ ] Step 4: a hook around tool calls (`hooks.py`, `layer2/l2s4_hooks.py`)
   - [ ] 4a: pull the tool-running code out of the loop into `execute_tool`; every

@@ -9,6 +9,8 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **agent loop** The code that repeatedly asks the model, runs any tools it requests, sends the results back, and stops when the model finishes. In this repo it is `run_agent` in `loop.py`.
 
+**AgentStopped** *(Layer 2 Step 3)* An exception raised when a run ends without a real answer (pass limit, cut off, refusal) and the caller asked for `raise_on_failure=True`. A class with a name and nothing else: it inherits everything from `Exception`, and the name lets a caller catch exactly this failure.
+
 **assert** A line in a test that must be true; if it isn't, the test fails. For example `assert result == "hello"`.
 
 **assistant** One of the two roles in a conversation: the messages written by the model. The other is `user`.

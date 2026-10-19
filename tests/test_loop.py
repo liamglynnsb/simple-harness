@@ -1,4 +1,5 @@
-from loop import run_agent
+import pytest
+from loop import run_agent, AgentStopped
 from fake_client import FakeClient, text_reply, tool_reply, tool_block
 from tools import CALCULATOR, DELEGATE
 from types import SimpleNamespace
@@ -173,4 +174,30 @@ def test_tool_not_given_is_refused():
     assert "banana" not in result["content"]            # the file was never read
     assert answer == "I can't read files."
     assert len(client.calls) == 2
+    assert client.replies == []
+
+def test_raise_on_failure_raises_instead_of_returning():
+    # one pass allowed, and the model keeps asking for a tool, so the pass limit is hit
+    client = FakeClient([tool_reply(tool_block("calculator", {"operation": "add", "a": 1, "b": 1}, "id1"))])
+    messages = [{"role": "user", "content": "keep adding"}]
+    with pytest.raises(AgentStopped, match="pass limit"):
+        run_agent(client, messages, [CALCULATOR], max_loops=1, raise_on_failure=True)
+
+
+def test_failed_subagent_reaches_parent_as_an_error(monkeypatch):
+    # the child never finishes: it asks for read_file on all 10 of its passes (the default pass limit)
+    child_passes = [tool_reply(tool_block("read_file", {"path": "data/a.txt"}, "c" + str(n))) for n in range(10)]
+    client = FakeClient(
+        [tool_reply(tool_block("delegate", {"task": "Read data/a.txt."}, "id1"))]   # parent, call 1
+        + child_passes                                                                # the child, 10 calls
+        + [text_reply("The helper failed.")]                                          # parent, call 2
+    )
+    monkeypatch.setattr("client.make_client", lambda: client)
+    messages = [{"role": "user", "content": "What does data/a.txt say?"}]
+    answer = run_agent(client, messages, [DELEGATE])
+    result = messages[2]["content"][0]
+    assert result["tool_use_id"] == "id1"
+    assert result["is_error"] == True                      # the parent is told it failed, not handed text as an answer
+    assert result["content"].startswith("Error: The subagent did not finish: it reached its pass limit")
+    assert answer == "The helper failed."
     assert client.replies == []

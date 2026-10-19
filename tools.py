@@ -111,10 +111,14 @@ def delegate(task, client=None):
         from client import make_client
         client = make_client()
     
-    from loop import run_agent # we need to import run agent here to make sure both files have been loaded and avoid circular imports
+    from loop import run_agent, AgentStopped # imported here so both files have been loaded (avoids a circular import)
     messages = [{"role": "user", "content": task}]
-    answer = run_agent(client, messages, [READ_FILE])  # the child's tools: fixed here, not chosen by the model
-    return answer
+    try:
+        # the child's tools are fixed here, not chosen by the model; a child that fails must raise, because
+        # the parent would take any returned text for a real answer
+        return run_agent(client, messages, [READ_FILE], raise_on_failure=True)
+    except AgentStopped as e:
+        raise RuntimeError("The subagent did not finish: " + str(e))
 
 # Name -> function. The loop looks up each tool request here: FUNCTIONS[block.name](**block.input).
 # A new tool needs both a definition above and an entry here.
