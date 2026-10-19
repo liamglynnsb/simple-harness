@@ -152,9 +152,17 @@ when a block needs settings.
 |---|---|---|
 | `MessageParam` | `role`, `content` | as above |
 | `ToolParam` (a tool definition) | `name`, `input_schema` | `description` is *optional in the SDK*, but the model relies on it, so always write one |
-| `ToolResultBlockParam` | `tool_use_id`, `type` | `content` and `is_error` are optional; `tool_use_id` must match the request's `id` |
+| `ToolResultBlockParam` | `tool_use_id`, `type` | `content` and `is_error` are optional; `tool_use_id` must match the request's `id`; **every** `tool_result`, error or not, needs it |
 | `TextBlockParam` | `text`, `type` | a text block when `content` is a list |
 | `ToolUseBlockParam` | `id`, `input`, `name`, `type` | what a tool request looks like as input; the SDK also accepts the `ToolUseBlock` object itself |
+
+### `is_error`: its possible values
+
+`is_error` is an optional `bool` on a `tool_result`: `True` (sent as JSON `true`) says the tool failed, so
+the model reads `content` as an error message and not as data; `False` says it didn't. Leaving it out
+means the same as `False`. My loop only ever writes `True` and writes nothing on success, so a test of a
+failure asserts `is_error` is `True`, and a test of a success asserts the key is absent. The `tool_use_id`
+is still required on an error result: the model asked, so it gets an answer carrying its id.
 
 ### A tool definition
 
