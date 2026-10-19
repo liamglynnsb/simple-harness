@@ -1,3 +1,4 @@
+import re
 from types import SimpleNamespace
 
 class FakeClient:
@@ -27,8 +28,11 @@ def text_reply(text): #formats the text reply for the test in the same way that 
         content = [SimpleNamespace(type="text", text=text)],
     )
 
-def tool_reply(tool_name, tool_input, tool_id):
+def tool_block(tool_name, tool_input, tool_id):
+    return SimpleNamespace(type="tool_use", name=tool_name, input=tool_input, id = tool_id)
+
+def tool_reply(*blocks):
     return SimpleNamespace(
-        stop_reason = "tool_use",
-        content = [SimpleNamespace(type="tool_use", name=tool_name, input=tool_input, id = tool_id)]
-    )
+            stop_reason = "tool_use",
+            content = list(blocks)
+        )

@@ -1,5 +1,5 @@
 from loop import run_agent
-from fake_client import FakeClient, text_reply, tool_reply
+from fake_client import FakeClient, text_reply, tool_reply, tool_block
 from tools import CALCULATOR
 
 def test_plain_finish():
@@ -11,7 +11,7 @@ def test_plain_finish():
     assert client.replies == []
 
 def test_tool_finish():
-    client = FakeClient([tool_reply("calculator", {"operation": "add", "a": 2, "b": 2}, "id1"), text_reply("The result is 4")])
+    client = FakeClient([tool_reply(tool_block("calculator", {"operation": "add", "a": 2, "b": 2}, "id1")), text_reply("The result is 4")])
     messages = [{"role": "user", "content": "What is 2 + 2?"}]
     answer = run_agent(client, messages, [CALCULATOR])
     assert messages[2]["content"][0]["tool_use_id"] == "id1"
