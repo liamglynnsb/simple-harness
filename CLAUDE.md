@@ -25,6 +25,10 @@ first, not a code-delivery project.
     throwaway measurement scripts), the code that carries out a decision they have made, docs, and
     commits. The user reads and reviews it; keep drawing structures as trees, and sometimes ask them to
     explain a snippet back so review doesn't become passive.
+  - **Every code change Claude makes comes with its diff and a plain explanation.** Show the diff (a
+    `diff` block of the real `git diff`), grouped by change, with a short "what this does and why" for
+    each, and say how to see it themselves (`git diff <file>` in the terminal, or the Source Control
+    panel in Cursor). Do this before committing, so the user reads what changed.
   - When a new Python idea first appears, give one sentence on it, not a lesson. Don't add ledger
     entries for pure Python mechanics unless asked.
   - The user runs scripts that call the real model themselves; Claude may run no-API tests and
