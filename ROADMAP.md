@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 2 (tests), substep 2e: one command runs every test, then break the loop on purpose and watch a test fail.
+**Where we are:** Layer 2, Step 3 (a subagent), substep 3b: an optional system prompt for `run_agent`.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -95,7 +95,7 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         analysis (`learnings/harness.md`, "1e: Upfront vs Fetch"); thinking tokens per pass are still
         unmeasured, and Layer 5 tracing will supply them
   - [x] 1f: break it on purpose: a vague description, and watch the skill never load
-- [ ] Step 2: tests for the loop with a scripted fake model (`tests/fake_client.py`, `tests/test_loop.py`)
+- [x] Step 2: tests for the loop with a scripted fake model (`tests/fake_client.py`, `tests/test_loop.py`)
       (H1), the safety net before `run_agent` is changed
   - [x] 2a: a fake client that returns scripted replies, with no API calls (`FakeClient`, plus a
         `text_reply` helper)
@@ -103,13 +103,15 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         with the ids matched (`test_plain_finish`, `test_tool_finish`, `test_multiple_tool_finish`;
         the helpers are `text_reply`, `tool_block` and `tool_reply` in `tests/fake_client.py`)
   - [x] 2c: tests: unknown tool, a tool that raises, bad arguments; each gives a
-        flagged error result (`test_unknown_tool_finish`, `test_tool_raise_finish`,
+        flagged error result (`test_unknown_tool_name_finish`, `test_tool_raise_finish`,
         `test_unknown_tool_argument_finish`)
   - [x] 2d: tests: `max_tokens` with and without text, an unexpected `stop_reason`,
         the pass cap reached (`test_max_tokens_reply_text_finish`, `test_max_tokens_reply_no_text_finish`,
         `test_other_stop_reason_finish`, `test_max_loops_finish`)
-  - [ ] 2e: one command runs them all; break the loop on purpose and watch the right
-        test fail (a test that can't fail proves nothing)
+  - [x] 2e: one command runs them all; break the loop on purpose and watch the right
+        test fail (a test that can't fail proves nothing). Broke it three ways: a wrong id in the error
+        branch, `is_error` removed, and the cap off by one in each direction; only the tests that run
+        the changed path failed, each in its own way
 - [ ] Step 3: a subagent with scoped tools (`layer2/l2s3_subagent.py`)
   - [x] 3a: make `max_tokens` a parameter of `run_agent` instead of a fixed 300 (H4);
         the tests stay green (done early, before the tests existed)

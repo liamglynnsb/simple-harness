@@ -38,7 +38,7 @@ def test_multiple_tool_finish():
     assert len(client.calls) == 2
     assert client.replies == []
 
-def test_unknown_tool_finish():
+def test_unknown_tool_name_finish():
     client = FakeClient([tool_reply(tool_block("unknown", {"operation": "add", "a": 2, "b": 2}, "id1")), text_reply("That tool doesn't exist.")])
     messages = [{"role": "user", "content": "What is 2 + 2?"}]
     answer = run_agent(client, messages, [CALCULATOR])
@@ -50,7 +50,7 @@ def test_unknown_tool_finish():
     assert len(client.calls) == 2
     assert client.replies == []
 
-def test_unknown_tool_name_finish():
+def test_tool_raise_finish():
     client = FakeClient([tool_reply(tool_block("calculator", {"operation": "divide", "a": 2, "b": 0}, "id1")), text_reply("I can't divide by zero.")])
     messages = [{"role": "user", "content": "What is 2 / 0?"}]
     answer = run_agent(client, messages, [CALCULATOR])
