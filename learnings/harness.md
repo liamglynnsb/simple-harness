@@ -478,6 +478,17 @@ run.
 - Not measured: the real totals. The cost part of 3d was closed as a worked analysis. Layer 5 tracing will
   record `usage` per call, and then the comparison can be run from real runs.
 
+**Getting lost in the details while building (noticed first-hand, Layer 2 Step 3).** I noticed that an LLM
+collaborator can get lost in the details and lose sight of the bigger picture, as we did here. Over the
+Layer 2 tests and the delegate step, the work drifted into Python mechanics (`*blocks`, `monkeypatch`,
+import cycles, dict syntax), while the goal was understanding the harness.
+- Explained to me, not yet said back: each step looked reasonable on its own, and the assistant follows the
+  current thread. Nothing in the process checked the work against the goal until I stopped and asked
+  whether it was still serving it. So the person directing the work has to do that check: now and then ask
+  "does this still serve the goal?" and write the goal where the assistant reads it (here, `CLAUDE.md`).
+  This matters for agents in general: a long task can drift in the same way, so a harness may need an
+  explicit check of progress against the goal. It is a Layer 5 item (Step 3, context and memory).
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.

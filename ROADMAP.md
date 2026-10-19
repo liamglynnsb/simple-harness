@@ -245,6 +245,9 @@ stream last because it changes the loop's shape.
   - [ ] 3c: summarize old history with a cheap call
   - [ ] 3d: a notes file the agent writes to and reads from
   - [ ] 3e: check with an eval that nothing important was lost
+  - [ ] 3f: keep the goal in view on a long task (noticed first-hand in Layer 2 Step 3): restate the goal
+        in the system prompt or re-inject it, add a periodic progress-against-goal check, and test with
+        an eval that a long task doesn't drift
 - [ ] Step 4: prompt caching
   - [ ] 4a: probe that the gateway passes `cache_control` through
   - [ ] 4b: cache the tool definitions and the stable prefix; watch
@@ -289,6 +292,8 @@ stream last because it changes the loop's shape.
       solution; the Python-mechanics entries in `learnings/code.md` as an appendix, not the main path;
       make the setup work with a plain Anthropic API key or any gateway; ask who the friends are and what Python
       they already know.
+      A lesson for it: working with an LLM, keep checking the work against the goal (see
+      `learnings/harness.md`, "Getting lost in the details").
 
 ## Parking lot (not planned; revisit after Layer 5)
 
