@@ -1,6 +1,7 @@
 from loop import run_agent
 from fake_client import FakeClient, text_reply, tool_reply, tool_block
 from tools import CALCULATOR
+from types import SimpleNamespace
 
 def test_plain_finish():
     client = FakeClient([text_reply("hello")])
@@ -77,6 +78,15 @@ def test_max_tokens_reply_text_finish():
     messages = [{"role": "user", "content": "hello"}]
     answer = run_agent(client, messages, [])
     assert answer == "h" + "\n" + "Response stopped; max tokens reached"
+    assert len(messages) == 2
+    assert len(client.calls) == 1
+    assert client.replies == []
+
+def test_max_tokens_reply_no_text_finish():
+    client = FakeClient([SimpleNamespace(stop_reason="max_tokens", content=[SimpleNamespace(type="thinking", thinking="")])])
+    messages = [{"role": "user", "content": "hello"}]
+    answer = run_agent(client, messages, [])
+    assert answer == "Response stopped; max tokens reached"
     assert len(messages) == 2
     assert len(client.calls) == 1
     assert client.replies == []
