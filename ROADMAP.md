@@ -280,6 +280,14 @@ stream last because it changes the loop's shape.
       `.venv/bin/python scripts/gen_sdk_reference.py --check` verifies the claims in its text; rerun it after
       upgrading the SDK.
 
+- [ ] **A follow-along course for friends**, made from these learnings once the build is done. Not started;
+      decide the shape when we get there. Notes for then: each layer as concept, then what to build (a spec),
+      then predict, run, compare, then break it on purpose; plumbing (fakes, helpers, test scaffolding)
+      given as starter code, with the harness-defining parts left for the learner; this repo as the worked
+      solution; the Python-mechanics entries in `learnings/code.md` as an appendix, not the main path;
+      make the setup work with a plain Anthropic API key or any gateway; ask who the friends are and what Python
+      they already know.
+
 ## Parking lot (not planned; revisit after Layer 5)
 
 - [ ] a shell/terminal tool (powerful and risky: plan permissions or a sandbox first)
