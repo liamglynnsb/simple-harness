@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 4 (a hook around tool calls), substep 4a: pull the tool-running code out of the loop into `execute_tool`.
+**Where we are:** Layer 2, Step 4 (a hook around tool calls), substep 4c: a blocking hook, `read_file` only inside `data/`.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -134,11 +134,12 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
   - [x] 3g: is it worth it? the same task with and without the subagent. Closed as the worked analysis in
         `learnings/harness.md`; the measurement moves to Layer 5 Step 1d (tracing)
 - [ ] Step 4: a hook around tool calls (`hooks.py`, `layer2/l2s4_hooks.py`)
-  - [ ] 4a: pull the tool-running code out of the loop into `execute_tool`; every
+  - [x] 4a: pull the tool-running code out of the loop into `execute_tool`; every
         test must still pass
-  - [ ] 4b: before-hooks: a list of functions called before each tool; the first one
-        logs the call (replaces the trace print)
-  - [ ] 4c: a blocking hook: `read_file` only inside `data/`, returning a flagged
+  - [x] 4b: before-hooks: a list of functions called before each tool; the first one
+        logs the call (replaces the trace print) (`hooks.py`, `BEFORE_HOOKS`; `test_before_hooks_run_before_each_tool_call`)
+  - [ ] 4c: a blocking hook (decided: one scope for the whole harness, just `data/`; narrowing it per agent
+        is a later option): `read_file` only inside `data/`, returning a flagged
         error result; then try to get around your own rule (`..`, absolute path,
         symlink) and turn each attempt into a test
   - [ ] 4d: watch a real recovery (H2): add a `list_files` tool held to the same

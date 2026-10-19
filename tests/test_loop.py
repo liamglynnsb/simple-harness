@@ -201,3 +201,17 @@ def test_failed_subagent_reaches_parent_as_an_error(monkeypatch):
     assert result["content"].startswith("Error: The subagent did not finish: it reached its pass limit")
     assert answer == "The helper failed."
     assert client.replies == []
+
+
+def test_before_hooks_run_before_each_tool_call(monkeypatch):
+    seen = []
+    monkeypatch.setattr("hooks.BEFORE_HOOKS", [lambda name, tool_input: seen.append((name, tool_input))])
+    client = FakeClient([
+        tool_reply(tool_block("calculator", {"operation": "add", "a": 2, "b": 2}, "id1"),
+                   tool_block("calculator", {"operation": "add", "a": 3, "b": 3}, "id2")),
+        text_reply("done"),
+    ])
+    messages = [{"role": "user", "content": "two sums"}]
+    run_agent(client, messages, [CALCULATOR])
+    assert seen == [("calculator", {"operation": "add", "a": 2, "b": 2}),
+                    ("calculator", {"operation": "add", "a": 3, "b": 3})]   # once per request, in order

@@ -1,3 +1,4 @@
+import hooks
 from client import make_client, model_name
 from tools import FUNCTIONS, CALCULATOR, READ_FILE, LOAD_SKILL, DELEGATE
 
@@ -15,6 +16,35 @@ def collect_text(response):
         if block.type == "text":
             parts.append(block.text)
     return "\n".join(parts)
+
+
+def execute_tool(block, allowed):
+    """Run ONE tool request and return the tool_result dict for it (flagged is_error if it failed).
+
+    Every tool call passes through here, so this is the one place where rules about tool calls
+    can be applied (hooks, in Layer 2 Step 4). `allowed` is the list of tool names this agent was given.
+    """
+    try:
+        # Before-hooks run first, for every request (see hooks.py). The first one logs the call.
+        for hook in hooks.BEFORE_HOOKS:
+            hook(block.name, block.input)
+        # Scoping: only run a tool this agent was given, even if FUNCTIONS has it. The model
+        # can ask for any name; the tools list only controls what it is shown.
+        if block.name not in allowed:
+            raise PermissionError(block.name)
+        # Look the tool up by name and call it with the model's inputs.
+        result = FUNCTIONS[block.name](**block.input)
+    except Exception as e:
+        # Anything a tool raises lands here: send it back flagged as an error, so the
+        # model still gets an answer and can recover. (A tool the agent wasn't given, or one
+        # that doesn't exist, is reported as unknown.)
+        if block.name not in allowed or block.name not in FUNCTIONS:
+            result = "Unknown tool: " + block.name + ". Available tools: " + ", ".join(allowed)
+        else:
+            result = "Error: " + str(e)
+        return {"type": "tool_result", "tool_use_id": block.id, "content": str(result), "is_error": True}
+    # No error: send the result back, matched to the request by its id.
+    return {"type": "tool_result", "tool_use_id": block.id, "content": str(result)}
 
 
 def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = None, raise_on_failure=False):
@@ -58,35 +88,7 @@ def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = N
             # The model wants tools run. Answer EVERY request in this reply, one result each.
             for block in response.content:
                 if block.type == "tool_use":
-                    print("calling", block.name, "with input", block.input) # helps with traceability
-                    try:
-                        # Scoping: only run a tool this agent was given, even if FUNCTIONS has it. The model
-                        # can ask for any name; the tools list only controls what it is shown.
-                        if block.name not in allowed:
-                            raise PermissionError(block.name)
-                        # Look the tool up by name and call it with the model's inputs.
-                        result = FUNCTIONS[block.name](**block.input)
-                    except Exception as e:
-                        # Anything a tool raises lands here: send it back flagged as an error, so the
-                        # model still gets an answer and can recover. (A tool the agent wasn't given, or one
-                        # that doesn't exist, is reported as unknown.)
-                        if block.name not in allowed or block.name not in FUNCTIONS:
-                            result = "Unknown tool: " + block.name + ". Available tools: " + ", ".join(allowed)
-                        else:
-                            result = "Error: " + str(e)
-                        tool_results.append({
-                            "type": "tool_result",
-                            "tool_use_id": block.id,
-                            "content": str(result),
-                            "is_error": True,
-                        })
-                    else:
-                        # No error: send the result back, matched to the request by its id.
-                        tool_results.append({
-                            "type": "tool_result",
-                            "tool_use_id": block.id,
-                            "content": str(result),
-                        })
+                    tool_results.append(execute_tool(block, allowed))
             # All the results go back together in ONE user message; the next pass sends them.
             messages.append({"role": "user", "content": tool_results})
         elif response.stop_reason == "end_turn":

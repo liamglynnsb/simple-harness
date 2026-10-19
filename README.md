@@ -61,6 +61,7 @@ are defined in `tools.py` but not used in this run. Edit the `messages = [...]` 
 - `skills.py`: reads the files in `skills/` into a dict (name -> description and body)
 - `skills/`: markdown skill files: a `name:` line, a `description:` line, a `---` line, then
   the instructions. The model sees only names and descriptions until it asks for a skill
+- `hooks.py`: hooks, small functions the harness runs around every tool call (so far one before-hook that logs the call)
 - `loop.py`: `run_agent`, the loop. It branches on `stop_reason`, answers every `tool_use`
   with a `tool_result` (errors flagged `is_error`), and caps its passes
 - `data/`: small text files for the `read_file` tool
