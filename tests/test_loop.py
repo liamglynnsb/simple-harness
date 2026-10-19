@@ -137,16 +137,23 @@ def test_system_prompt_finish():
     assert client.replies == []
 
 def test_delegate_finish(monkeypatch):
-    client = FakeClient([tool_reply(tool_block("delegate", {"task": "Read file data/a.txt and reply with the magic word."}, "id1")), tool_reply(tool_block("read_file", {"path": "data/a.txt"}, "id2")), text_reply("The magic word is banana."), text_reply("Banana")])
+    task = "Find the magic word."
+    client = FakeClient([
+        tool_reply(tool_block("delegate", {"task": task}, "id1")),   # parent, call 1: delegate
+        text_reply("The magic word is banana."),                     # child: answers at once, no tools
+        text_reply("Banana"),                                        # parent, call 2: its own final answer
+    ])
     # delegate() calls make_client() to get the child's client; make it return the fake, so no real API call
     monkeypatch.setattr("client.make_client", lambda: client)
-    messages = [{"role": "user", "content": "What is the magic word in data/a.txt?"}]
+    messages = [{"role": "user", "content": "What is the magic word?"}]
     answer = run_agent(client, messages, [DELEGATE])
-    assert client.calls[1]["messages"] is not messages
-    assert len(messages) == 4
-    assert len(client.calls) == 4
-    assert client.replies == []
-    assert messages[2]["content"][0]["content"] == "The magic word is banana."
+    child_messages = client.calls[1]["messages"]       # the child's own list, recorded by the fake
+    assert child_messages is not messages              # two separate lists
+    assert len(child_messages) == 2                    # the child saw its task and its own answer, nothing else
+    assert child_messages[0]["content"] == task        # the child's history starts with just the task
+    assert len(messages) == 4                          # the parent's history: question, delegate request, result, answer
     assert messages[1]["content"][0].name == "delegate"
-    assert client.calls[1]["messages"][0]["content"] == "Read file data/a.txt and reply with the magic word."
+    assert messages[2]["content"][0]["content"] == "The magic word is banana."   # only the child's final text
     assert answer == "Banana"
+    assert len(client.calls) == 3
+    assert client.replies == []
