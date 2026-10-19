@@ -29,6 +29,8 @@ first, not a code-delivery project.
     `diff` block of the real `git diff`), grouped by change, with a short "what this does and why" for
     each, and say how to see it themselves (`git diff <file>` in the terminal, or the Source Control
     panel in Cursor). Do this before committing, so the user reads what changed.
+    Show it right after every edit, even a one-line fix, and even when `git diff` would be empty (for
+    example when restoring a deleted line); never summarise a change in prose alone.
   - When a new Python idea first appears, give one sentence on it, not a lesson. Don't add ledger
     entries for pure Python mechanics unless asked.
   - The user runs scripts that call the real model themselves; Claude may run no-API tests and
