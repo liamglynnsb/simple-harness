@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 2 (tests), substep 2d: tests for `max_tokens` with and without text, an unexpected `stop_reason`, and the pass cap.
+**Where we are:** Layer 2, Step 2 (tests), substep 2e: one command runs every test, then break the loop on purpose and watch a test fail.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -105,8 +105,9 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
   - [x] 2c: tests: unknown tool, a tool that raises, bad arguments; each gives a
         flagged error result (`test_unknown_tool_finish`, `test_tool_raise_finish`,
         `test_unknown_tool_argument_finish`)
-  - [ ] 2d: tests: `max_tokens` with and without text, an unexpected `stop_reason`,
-        the pass cap reached
+  - [x] 2d: tests: `max_tokens` with and without text, an unexpected `stop_reason`,
+        the pass cap reached (`test_max_tokens_reply_text_finish`, `test_max_tokens_reply_no_text_finish`,
+        `test_other_stop_reason_finish`, `test_max_loops_finish`)
   - [ ] 2e: one command runs them all; break the loop on purpose and watch the right
         test fail (a test that can't fail proves nothing)
 - [ ] Step 3: a subagent with scoped tools (`layer2/l2s3_subagent.py`)

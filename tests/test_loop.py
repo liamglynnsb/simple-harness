@@ -92,10 +92,23 @@ def test_max_tokens_reply_no_text_finish():
     assert client.replies == []
 
 def test_other_stop_reason_finish():
-    client = FakeClient([SimpleNamespace(stop_reason="refusal", content=[SimpleNamespace(type="text", text="Response stopped due to refusal")])])
+    client = FakeClient([text_reply("Response stopped due to refusal", "refusal")])
     messages = [{"role": "user", "content": "hello"}]
     answer = run_agent(client, messages, [])
     assert answer == "Response stopped due to: refusal"
     assert len(messages) == 2
     assert len(client.calls) == 1
+    assert client.replies == []
+
+def test_max_loops_finish():
+    client = FakeClient([
+        tool_reply(tool_block("calculator", {"operation": "add", "a": 1, "b": 1}, "id1")),
+        tool_reply(tool_block("calculator", {"operation": "add", "a": 2, "b": 2}, "id2")),
+        tool_reply(tool_block("calculator", {"operation": "add", "a": 3, "b": 3}, "id3")),
+    ])
+    messages = [{"role": "user", "content": "keep adding"}]
+    answer = run_agent(client, messages, [CALCULATOR], max_loops=3)
+    assert answer == "Error: Max loops reached"
+    assert len(messages) == 7
+    assert len(client.calls) == 3
     assert client.replies == []
