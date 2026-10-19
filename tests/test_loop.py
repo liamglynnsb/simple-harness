@@ -112,3 +112,26 @@ def test_max_loops_finish():
     assert len(messages) == 7
     assert len(client.calls) == 3
     assert client.replies == []
+
+def test_no_system_prompt_finish():
+    client = FakeClient([text_reply("howzit")])
+    messages = [{"role": "user", "content": "hello"}]
+    answer = run_agent(client, messages, [])
+    assert "system" not in client.calls[0]
+    assert len(messages) == 2
+    assert len(client.calls) == 1
+    assert client.replies == []
+
+def test_system_prompt_finish():
+    client = FakeClient([tool_reply(tool_block("calculator", {"operation": "add", "a": 2, "b": 2}, "id1")), text_reply("The result is 4")])
+    messages = [{"role": "user", "content": "What is 2 + 2?"}]
+    answer = run_agent(client, messages, [CALCULATOR], system="Be concise.")
+    assert messages[2]["content"][0]["tool_use_id"] == "id1"
+    assert messages[2]["content"][0]["content"] == "4"
+    assert client.calls[0]["system"] == "Be concise."
+    assert client.calls[1]["system"] == "Be concise."
+    assert "is_error" not in messages[2]["content"][0]
+    assert answer == "The result is 4"
+    assert len(messages) == 4
+    assert len(client.calls) == 2
+    assert client.replies == []

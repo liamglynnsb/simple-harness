@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 3 (a subagent), substep 3b: an optional system prompt for `run_agent`.
+**Where we are:** Layer 2, Step 3 (a subagent), substep 3c: a `delegate` tool that runs a fresh `run_agent`.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -115,7 +115,9 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
 - [ ] Step 3: a subagent with scoped tools (`layer2/l2s3_subagent.py`)
   - [x] 3a: make `max_tokens` a parameter of `run_agent` instead of a fixed 300 (H4);
         the tests stay green (done early, before the tests existed)
-  - [ ] 3b: add an optional system prompt to `run_agent` (first use of `system`)
+  - [x] 3b: add an optional system prompt to `run_agent` (first use of `system`); sent on every pass
+        when given, left out of the request when not (`test_no_system_prompt_finish`,
+        `test_system_prompt_finish`); checked by breaking it on purpose (first pass only)
   - [ ] 3c: a `delegate` tool: runs a fresh `run_agent` with its own history and a
         short list of tools, and returns only its final text
   - [ ] 3d: see the isolation: the parent's `messages` never contain the child's
