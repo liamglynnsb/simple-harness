@@ -113,6 +113,8 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **role** Who wrote a message: `"user"` or `"assistant"`.
 
+**scoping** Limiting an agent to the tools it was given. The model can ask for any tool name, so the loop checks each request against the agent's own `tools` list and refuses the rest as unknown. Advising the model isn't enough; the check is in code.
+
 **SDK** Software development kit: the `anthropic` Python package that sends requests and turns replies into objects.
 
 **self** Inside a class's methods, the object itself. Written as the first parameter when defining a method, and filled in automatically when calling one.

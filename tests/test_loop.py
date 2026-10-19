@@ -157,3 +157,20 @@ def test_delegate_finish(monkeypatch):
     assert answer == "Banana"
     assert len(client.calls) == 3
     assert client.replies == []
+
+def test_tool_not_given_is_refused():
+    # read_file exists in FUNCTIONS, but this agent was only given the calculator
+    client = FakeClient([
+        tool_reply(tool_block("read_file", {"path": "data/a.txt"}, "id1")),
+        text_reply("I can't read files."),
+    ])
+    messages = [{"role": "user", "content": "What does data/a.txt say?"}]
+    answer = run_agent(client, messages, [CALCULATOR])
+    result = messages[2]["content"][0]
+    assert result["tool_use_id"] == "id1"
+    assert result["is_error"] == True
+    assert result["content"] == "Unknown tool: read_file. Available tools: calculator"
+    assert "banana" not in result["content"]            # the file was never read
+    assert answer == "I can't read files."
+    assert len(client.calls) == 2
+    assert client.replies == []

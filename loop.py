@@ -24,6 +24,7 @@ def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = N
     system      -- the system message to use for the model
     Returns the model's final text, or a message saying why it stopped early.
     """
+    allowed = [t["name"] for t in tools]  # the tools THIS agent was given; FUNCTIONS holds every tool there is
     for _ in range(max_loops):  # one pass = one call to the model
         tool_results = []  # reset every pass, so old results are never sent twice
         request = {
@@ -45,13 +46,18 @@ def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = N
                 if block.type == "tool_use":
                     print("calling", block.name, "with input", block.input) # helps with traceability
                     try:
+                        # Scoping: only run a tool this agent was given, even if FUNCTIONS has it. The model
+                        # can ask for any name; the tools list only controls what it is shown.
+                        if block.name not in allowed:
+                            raise PermissionError(block.name)
                         # Look the tool up by name and call it with the model's inputs.
                         result = FUNCTIONS[block.name](**block.input)
                     except Exception as e:
                         # Anything a tool raises lands here: send it back flagged as an error, so the
-                        # model still gets an answer and can recover. (An unknown tool name fails the lookup.)
-                        if block.name not in FUNCTIONS:
-                            result = "Unknown tool: " + block.name + ". Available tools: " + ", ".join(FUNCTIONS.keys())
+                        # model still gets an answer and can recover. (A tool the agent wasn't given, or one
+                        # that doesn't exist, is reported as unknown.)
+                        if block.name not in allowed or block.name not in FUNCTIONS:
+                            result = "Unknown tool: " + block.name + ". Available tools: " + ", ".join(allowed)
                         else:
                             result = "Error: " + str(e)
                         tool_results.append({

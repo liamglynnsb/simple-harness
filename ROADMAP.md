@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 3 (a subagent), substep 3e: scoping, so the loop refuses a tool the agent wasn't given.
+**Where we are:** Layer 2, Step 3 (a subagent), substep 3f: limits, when the child hits its own `max_loops` or errors, and what the parent sees.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -125,8 +125,9 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         turns; write a fake-model test that proves it; compare token cost (seen in a real run; proved by
         `test_delegate_finish`, checked by breaking `delegate`; the cost comparison was closed as a worked
         analysis in `learnings/harness.md`, to be measured with Layer 5 tracing)
-  - [ ] 3e: scoping: the child lacks a tool, asks for it anyway, and fails the way Layer 1 Step 5d
-        taught (unknown tool)
+  - [x] 3e: scoping: the child lacks a tool, asks for it anyway, and fails the way Layer 1 Step 5d
+        taught (unknown tool). The loop now refuses any tool not in the agent's own `tools` list
+        (`allowed` in `run_agent`); `test_tool_not_given_is_refused`, checked by removing the check
   - [ ] 3f: limits: the child hits its own `max_loops` or errors; what the parent sees
   - [ ] 3g: is it worth it? the same task with and without the subagent
 - [ ] Step 4: a hook around tool calls (`hooks.py`, `layer2/l2s4_hooks.py`)
