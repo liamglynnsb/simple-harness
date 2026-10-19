@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 3 (a subagent), substep 3d: see the isolation, prove it with a fake-model test, compare token cost.
+**Where we are:** Layer 2, Step 3 (a subagent), substep 3d: isolation seen and proved with a fake-model test (`test_delegate_finish`); the token-cost comparison is next.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first

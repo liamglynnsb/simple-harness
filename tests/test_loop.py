@@ -1,6 +1,6 @@
 from loop import run_agent
 from fake_client import FakeClient, text_reply, tool_reply, tool_block
-from tools import CALCULATOR
+from tools import CALCULATOR, DELEGATE
 from types import SimpleNamespace
 
 def test_plain_finish():
@@ -135,3 +135,18 @@ def test_system_prompt_finish():
     assert len(messages) == 4
     assert len(client.calls) == 2
     assert client.replies == []
+
+def test_delegate_finish(monkeypatch):
+    client = FakeClient([tool_reply(tool_block("delegate", {"task": "Read file data/a.txt and reply with the magic word."}, "id1")), tool_reply(tool_block("read_file", {"path": "data/a.txt"}, "id2")), text_reply("The magic word is banana."), text_reply("Banana")])
+    # delegate() calls make_client() to get the child's client; make it return the fake, so no real API call
+    monkeypatch.setattr("client.make_client", lambda: client)
+    messages = [{"role": "user", "content": "What is the magic word in data/a.txt?"}]
+    answer = run_agent(client, messages, [DELEGATE])
+    assert client.calls[1]["messages"] is not messages
+    assert len(messages) == 4
+    assert len(client.calls) == 4
+    assert client.replies == []
+    assert messages[2]["content"][0]["content"] == "The magic word is banana."
+    assert messages[1]["content"][0].name == "delegate"
+    assert client.calls[1]["messages"][0]["content"] == "Read file data/a.txt and reply with the magic word."
+    assert answer == "Banana"
