@@ -49,7 +49,7 @@ def test_unknown_tool_finish():
     assert len(client.calls) == 2
     assert client.replies == []
 
-def test_tool_raise_finish():
+def test_unknown_tool_name_finish():
     client = FakeClient([tool_reply(tool_block("calculator", {"operation": "divide", "a": 2, "b": 0}, "id1")), text_reply("I can't divide by zero.")])
     messages = [{"role": "user", "content": "What is 2 / 0?"}]
     answer = run_agent(client, messages, [CALCULATOR])
@@ -57,6 +57,18 @@ def test_tool_raise_finish():
     assert messages[2]["content"][0]["content"].startswith("Error: division by zero")
     assert messages[2]["content"][0]["is_error"] == True
     assert answer == "I can't divide by zero."
+    assert len(messages) == 4
+    assert len(client.calls) == 2
+    assert client.replies == []
+
+def test_unknown_tool_argument_finish():
+    client = FakeClient([tool_reply(tool_block("calculator", {"operation": "add", "x": 2, "b": 2}, "id1")), text_reply("That tool doesn't take that argument.")])
+    messages = [{"role": "user", "content": "What is 2 + 2?"}]
+    answer = run_agent(client, messages, [CALCULATOR])
+    assert messages[2]["content"][0]["tool_use_id"] == "id1"
+    assert messages[2]["content"][0]["content"].startswith("Error: calculator() got an unexpected keyword argument 'x'")
+    assert messages[2]["content"][0]["is_error"] == True
+    assert answer == "That tool doesn't take that argument."
     assert len(messages) == 4
     assert len(client.calls) == 2
     assert client.replies == []

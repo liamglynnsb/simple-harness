@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 2 (tests), substep 2c: tests for failures (unknown tool, a tool that raises, bad arguments).
+**Where we are:** Layer 2, Step 2 (tests), substep 2d: tests for `max_tokens` with and without text, an unexpected `stop_reason`, and the pass cap.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -102,8 +102,9 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
   - [x] 2b: tests: a plain finish; one tool call; several tool calls in one reply
         with the ids matched (`test_plain_finish`, `test_tool_finish`, `test_multiple_tool_finish`;
         the helpers are `text_reply`, `tool_block` and `tool_reply` in `tests/fake_client.py`)
-  - [ ] 2c: tests: unknown tool, a tool that raises, bad arguments; each gives a
-        flagged error result
+  - [x] 2c: tests: unknown tool, a tool that raises, bad arguments; each gives a
+        flagged error result (`test_unknown_tool_finish`, `test_tool_raise_finish`,
+        `test_unknown_tool_argument_finish`)
   - [ ] 2d: tests: `max_tokens` with and without text, an unexpected `stop_reason`,
         the pass cap reached
   - [ ] 2e: one command runs them all; break the loop on purpose and watch the right
