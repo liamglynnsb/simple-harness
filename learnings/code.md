@@ -134,7 +134,7 @@ creates the names I use for them. `print(read_skills())` runs the inner call fir
 `pass` is a placeholder that does nothing. `python` isn't on the PATH unless the venv is
 activated, so I run `.venv/bin/python`, and step scripts as modules from the root.
 
-## 2026-10-15 · Layer 2, Step 2 (tests with a scripted fake model, in progress)
+## 2026-10-15 · Layer 2, Step 2 (tests with a scripted fake model)
 
 **A fake client is a script played back in order; the test supplies the intelligence.** The fake has
 no logic and never looks at the question. Each test writes its own tiny script (the replies the "model"
@@ -184,3 +184,16 @@ on the import path; `-m` means "run a module by name" (Python's flag), `-q` mean
 verbose (pytest's); `--collect-only` lists what it found without running it.
 - The limit: the fake shows whether *my code* handles each situation. How the real model behaves is the
   server side, which evals measure in Layer 4.
+
+## 2026-10-19 · Layer 2, Step 3 (a system prompt)
+
+**Building the arguments in a dict, then spreading it (3b).** To make an argument optional in a call, I
+build the named arguments in a dict, add a key only if a condition holds, and spread the dict into the
+call with `**`: `request = {...}`; `if system is not None: request["system"] = system`;
+`client.messages.create(**request)`. In a *call*, `**request` spreads the dict out into named arguments,
+one per key, which is the same as `FUNCTIONS[block.name](**block.input)`. In a `def`, `**kwargs` does the
+opposite and collects them. Making `system` optional needs a default value on the parameter
+(`system=None`), so existing callers that don't pass it keep working.
+- Correction: inside a dict, a key and its value are separated by a colon (`"model": model_name()`), not
+  by `=`. The `=` is for named arguments in a call (`max_tokens=max_tokens`) and for assigning to a
+  variable, which is why `"model" = ...` gave `SyntaxError: cannot assign to literal`.

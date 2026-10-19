@@ -12,7 +12,7 @@ def collect_text(response):
     return "\n".join(parts)
 
 
-def run_agent(client, messages, tools, max_loops=10, max_tokens=1000):
+def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = None):
     """The agent loop. Ask the model; if it wants tools, run them, send the results back, ask
     again; stop when it finishes.
 
@@ -21,16 +21,21 @@ def run_agent(client, messages, tools, max_loops=10, max_tokens=1000):
     tools       -- the tool DEFINITIONS the model is allowed to use (not the functions)
     max_loops   -- the most passes allowed, so a stuck model can't loop (and spend) forever
     max_tokens  -- the limit on one reply; thinking tokens count against it
+    system      -- the system message to use for the model
     Returns the model's final text, or a message saying why it stopped early.
     """
     for _ in range(max_loops):  # one pass = one call to the model
         tool_results = []  # reset every pass, so old results are never sent twice
-        response = client.messages.create(
-            model=model_name(),
-            max_tokens=max_tokens,
-            tools=tools,
-            messages=messages,
-        )
+        request = {
+            "model": model_name(),
+            "max_tokens": max_tokens,
+            "tools": tools,
+            "messages": messages,
+        }
+        if system is not None:
+            request["system"] = system
+        response = client.messages.create(**request)
+
         # Keep the model's whole reply (thinking and tool requests included) in the history.
         messages.append({"role": "assistant", "content": response.content})
         # print("blocks this pass:", [b.type for b in response.content])

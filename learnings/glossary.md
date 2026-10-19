@@ -31,6 +31,8 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **decoy** A skill included on purpose to test that the model does not load a skill that isn't relevant (`release-notes-format`).
 
+**default value** What a parameter takes when the caller leaves it out, written in the `def` line: `system=None`. It is what makes a parameter optional.
+
 **dependency injection** Passing something a function needs (like the client) in as an argument instead of creating it inside. It's why a fake client can replace the real one without touching the loop.
 
 **dict** A Python dictionary: a lookup from keys to values, like `{"name": "calculator"}`.
