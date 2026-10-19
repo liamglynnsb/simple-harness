@@ -90,3 +90,12 @@ def test_max_tokens_reply_no_text_finish():
     assert len(messages) == 2
     assert len(client.calls) == 1
     assert client.replies == []
+
+def test_other_stop_reason_finish():
+    client = FakeClient([SimpleNamespace(stop_reason="refusal", content=[SimpleNamespace(type="text", text="Response stopped due to refusal")])])
+    messages = [{"role": "user", "content": "hello"}]
+    answer = run_agent(client, messages, [])
+    assert answer == "Response stopped due to: refusal"
+    assert len(messages) == 2
+    assert len(client.calls) == 1
+    assert client.replies == []
