@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 3 (a subagent), substep 3g: is it worth it? (the worked analysis in `learnings/harness.md` may already cover it).
+**Where we are:** Layer 2, Step 4 (a hook around tool calls), substep 4a: pull the tool-running code out of the loop into `execute_tool`.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -112,7 +112,7 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         test fail (a test that can't fail proves nothing). Broke it three ways: a wrong id in the error
         branch, `is_error` removed, and the cap off by one in each direction; only the tests that run
         the changed path failed, each in its own way
-- [ ] Step 3: a subagent with scoped tools (`layer2/l2s3_subagent.py`)
+- [x] Step 3: a subagent with scoped tools (`delegate` in `tools.py`, `run_agent` in `loop.py`, tests in `tests/test_loop.py`)
   - [x] 3a: make `max_tokens` a parameter of `run_agent` instead of a fixed 300 (H4);
         the tests stay green (done early, before the tests existed)
   - [x] 3b: add an optional system prompt to `run_agent` (first use of `system`); sent on every pass
@@ -131,7 +131,8 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
   - [x] 3f: limits: the child hits its own `max_loops` or errors; what the parent sees. A child that fails
         raises (`AgentStopped` via `raise_on_failure`, rewrapped by `delegate`), so the parent gets a flagged
         error and not text that looks like an answer (`test_failed_subagent_reaches_parent_as_an_error`)
-  - [ ] 3g: is it worth it? the same task with and without the subagent
+  - [x] 3g: is it worth it? the same task with and without the subagent. Closed as the worked analysis in
+        `learnings/harness.md`; the measurement moves to Layer 5 Step 1d (tracing)
 - [ ] Step 4: a hook around tool calls (`hooks.py`, `layer2/l2s4_hooks.py`)
   - [ ] 4a: pull the tool-running code out of the loop into `execute_tool`; every
         test must still pass
@@ -235,6 +236,9 @@ stream last because it changes the loop's shape.
   - [ ] 1b: a price table kept in config and an estimated cost per run
   - [ ] 1c: a summary: totals, p50 and p95 latency, tokens per pass; compare with the
         gateway's own logs
+  - [ ] 1d: measure what delegating costs, from the traces: a large file plus several passes after the read,
+        the same question with and without a subagent; total input and output tokens, summed over the
+        parent's and the child's calls (replaces the Layer 2 Step 3 cost comparison, which was a worked analysis)
 - [ ] Step 2: retries and model fallback
   - [ ] 2a: sort errors into retry (timeout, connection, 429, 5xx) and do not retry (400)
   - [ ] 2b: backoff with jitter, honour a retry-after header, cap the attempts, and
