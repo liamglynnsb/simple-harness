@@ -25,9 +25,11 @@ def execute_tool(block, allowed):
     can be applied (hooks, in Layer 2 Step 4). `allowed` is the list of tool names this agent was given.
     """
     try:
-        # Before-hooks run first, for every request (see hooks.py). The first one logs the call.
+        # Before-hooks run first, for every request (see hooks.py): one logs the call, one can block it.
         for hook in hooks.BEFORE_HOOKS:
-            hook(block.name, block.input)
+            reason = hook(block.name, block.input)
+            if reason is not None:  # a hook decided to block this call; tell the model why, flagged as an error
+                return {"type": "tool_result", "tool_use_id": block.id, "content": "Blocked: " + reason, "is_error": True}
         # Scoping: only run a tool this agent was given, even if FUNCTIONS has it. The model
         # can ask for any name; the tools list only controls what it is shown.
         if block.name not in allowed:

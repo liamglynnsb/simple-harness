@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 4 (a hook around tool calls), substep 4c: a blocking hook, `read_file` only inside `data/`.
+**Where we are:** Layer 2, Step 4 (a hook around tool calls), substep 4d: watch a real recovery, with a restricted `list_files` tool.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -138,10 +138,11 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         test must still pass
   - [x] 4b: before-hooks: a list of functions called before each tool; the first one
         logs the call (replaces the trace print) (`hooks.py`, `BEFORE_HOOKS`; `test_before_hooks_run_before_each_tool_call`)
-  - [ ] 4c: a blocking hook (decided: one scope for the whole harness, just `data/`; narrowing it per agent
-        is a later option): `read_file` only inside `data/`, returning a flagged
+  - [x] 4c: a blocking hook (decided: one scope for the whole harness, just `data/`; narrowing it per agent
+        is a later option; a hook blocks by returning a reason, an exception means a bug): `read_file` only inside `data/`, returning a flagged
         error result; then try to get around your own rule (`..`, absolute path,
-        symlink) and turn each attempt into a test
+        symlink) and turn each attempt into a test (`only_inside_data` in `hooks.py`; tests for a file outside,
+        `..` climbing out, a symlink pointing out, and `..` that stays inside, which is allowed)
   - [ ] 4d: watch a real recovery (H2): add a `list_files` tool held to the same
         rule, ask for a wrong path, and see the model list the folder and retry
         successfully; compare with what Layer 1 Step 5b showed
