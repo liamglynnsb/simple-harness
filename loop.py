@@ -1,5 +1,5 @@
 from client import make_client, model_name
-from tools import FUNCTIONS, CALCULATOR, READ_FILE, LOAD_SKILL
+from tools import FUNCTIONS, CALCULATOR, READ_FILE, LOAD_SKILL, DELEGATE
 
 
 def collect_text(response):
@@ -87,8 +87,8 @@ def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = N
 
 if __name__ == "__main__":  # runs only when this file is run directly, not when it is imported
     client = make_client()
-    messages = [{"role": "user", "content": "Write release notes for a release that added dark mode and fixed a login bug."}]
-    answer = run_agent(client, messages, [CALCULATOR, READ_FILE, LOAD_SKILL])
+    messages = [{"role": "user", "content": "What are the magic word and the magic number in the data folder? The files are a.txt and b.txt."}]
+    answer = run_agent(client, messages, [DELEGATE])
     print(answer)
     # for traceability, print the messages
     for m in messages:

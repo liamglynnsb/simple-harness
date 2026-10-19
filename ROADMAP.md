@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 3 (a subagent), substep 3c: a `delegate` tool that runs a fresh `run_agent`.
+**Where we are:** Layer 2, Step 3 (a subagent), substep 3d: see the isolation, prove it with a fake-model test, compare token cost.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -118,8 +118,9 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
   - [x] 3b: add an optional system prompt to `run_agent` (first use of `system`); sent on every pass
         when given, left out of the request when not (`test_no_system_prompt_finish`,
         `test_system_prompt_finish`); checked by breaking it on purpose (first pass only)
-  - [ ] 3c: a `delegate` tool: runs a fresh `run_agent` with its own history and a
-        short list of tools, and returns only its final text
+  - [x] 3c: a `delegate` tool: runs a fresh `run_agent` with its own history and a
+        short list of tools, and returns only its final text (`DELEGATE` and `delegate` in `tools.py`;
+        the child gets `read_file`, the parent only `delegate`; `loop.py` run for real)
   - [ ] 3d: see the isolation: the parent's `messages` never contain the child's
         turns; write a fake-model test that proves it; compare token cost
   - [ ] 3e: scoping: the child lacks a tool, asks for it anyway, and fails the way Layer 1 Step 5d

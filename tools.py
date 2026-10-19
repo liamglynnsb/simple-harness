@@ -82,7 +82,40 @@ def load_skill(name):
         raise ValueError(f"Skill {name} not found. Please choose a valid skill from the following list: {sorted(skills_dict.keys())}")
     return skills_dict[name]["body"]
 
+# The model's view of delegate. The description states what the subagent can do (its tools are fixed
+# in delegate() below), so keep the two in step: change one, change the other.
+DELEGATE = {
+    "name": "delegate",
+    "description": (
+        "Hand a task to a separate subagent and get back only its final answer. "
+        "The subagent can read text files in the project's folder (for example data/a.txt) and nothing else. "
+        "You cannot read files yourself, so use this whenever you need a file's contents. "
+        "The subagent cannot see this conversation: it sees only the task text, so the task must contain "
+        "everything it needs, including the file path, and say what to return."
+    ),
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "task": {
+                "type": "string",
+                "description": "A complete, self-contained instruction for the subagent, for example "
+                               "'Read data/a.txt and reply with its contents.'",
+            },
+        },
+        "required": ["task"],
+    },
+}
+
+def delegate(task, client=None):
+    if client is None:
+        from client import make_client
+        client = make_client()
+    
+    from loop import run_agent # we need to import run agent here to make sure both files have been loaded and avoid circular imports
+    messages = [{"role": "user", "content": task}]
+    answer = run_agent(client, messages, [READ_FILE])  # the child's tools: fixed here, not chosen by the model
+    return answer
 
 # Name -> function. The loop looks up each tool request here: FUNCTIONS[block.name](**block.input).
 # A new tool needs both a definition above and an entry here.
-FUNCTIONS = {"calculator": calculator, "read_file": read_file, "load_skill": load_skill}
+FUNCTIONS = {"calculator": calculator, "read_file": read_file, "load_skill": load_skill, "delegate": delegate}

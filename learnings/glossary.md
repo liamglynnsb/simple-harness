@@ -33,6 +33,8 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **default value** What a parameter takes when the caller leaves it out, written in the `def` line: `system=None`. It is what makes a parameter optional.
 
+**delegate** *(Layer 2 Step 3)* The tool that hands a task to a subagent: it runs a fresh `run_agent` with its own `messages` and a fixed list of tools, and returns only the child's final text. The harness, not the model, decides the child's tools.
+
 **dependency injection** Passing something a function needs (like the client) in as an argument instead of creating it inside. It's why a fake client can replace the real one without touching the loop.
 
 **dict** A Python dictionary: a lookup from keys to values, like `{"name": "calculator"}`.
