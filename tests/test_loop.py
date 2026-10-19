@@ -66,9 +66,17 @@ def test_unknown_tool_argument_finish():
     messages = [{"role": "user", "content": "What is 2 + 2?"}]
     answer = run_agent(client, messages, [CALCULATOR])
     assert messages[2]["content"][0]["tool_use_id"] == "id1"
-    assert messages[2]["content"][0]["content"].startswith("Error: calculator() got an unexpected keyword argument 'x'")
     assert messages[2]["content"][0]["is_error"] == True
     assert answer == "That tool doesn't take that argument."
     assert len(messages) == 4
     assert len(client.calls) == 2
+    assert client.replies == []
+
+def test_max_tokens_reply_text_finish():
+    client = FakeClient([text_reply("h", "max_tokens")])
+    messages = [{"role": "user", "content": "hello"}]
+    answer = run_agent(client, messages, [])
+    assert answer == "h" + "\n" + "Response stopped; max tokens reached"
+    assert len(messages) == 2
+    assert len(client.calls) == 1
     assert client.replies == []

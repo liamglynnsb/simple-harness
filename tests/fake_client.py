@@ -22,9 +22,9 @@ class FakeClient:
         self.calls.append((kwargs))     # job 1: write down what we were sent
         return self.replies.pop(0)      # job 2: hand back the next scripted reply (the front of the list)
 
-def text_reply(text): #formats the text reply for the test in the same way that the model's answer is formatted
+def text_reply(text, stop_reason="end_turn"): #formats the text reply for the test in the same way that the model's answer is formatted
     return SimpleNamespace(
-        stop_reason = "end_turn",
+        stop_reason = stop_reason,
         content = [SimpleNamespace(type="text", text=text)],
     )
 
