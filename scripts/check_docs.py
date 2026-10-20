@@ -20,6 +20,7 @@ prints one line per problem. Fix the docs, don't weaken the checker. What it che
  9. The SDK reference's claims still hold (runs scripts/gen_sdk_reference.py --check).
 10. The SDK reference keeps real-interaction material and test-only material apart: the fake client
     and its helpers may appear only in the section titled "For tests only" and after it.
+11. No tracked file contains a term from LOCAL_FORBIDDEN_TERMS.txt (an optional git-ignored list of terms; the check is skipped if the file is missing).
 """
 import argparse
 import ast
@@ -347,6 +348,24 @@ def check_real_vs_test(root, problems):
             problems.append(f"learnings/anthropic-sdk-reference.md: test-only term {term!r} appears outside the 'For tests only' section")
 
 
+def check_forbidden_terms(root, problems):
+    """Fail if a tracked file mentions anything in LOCAL_FORBIDDEN_TERMS.txt (an optional file, not tracked)."""
+    terms_file = root / "LOCAL_FORBIDDEN_TERMS.txt"
+    if not terms_file.exists():
+        return
+    patterns = [re.compile(l.strip(), re.I) for l in read(terms_file).splitlines() if l.strip() and not l.startswith("#")]
+    tracked = subprocess.run(["git", "ls-files"], cwd=root, capture_output=True, text=True).stdout.splitlines()
+    for name in tracked:
+        path = root / name
+        try:
+            text = read(path)
+        except Exception:
+            continue  # not a text file
+        for pat in patterns:
+            if pat.search(text):
+                problems.append(f"{name}: contains a term from LOCAL_FORBIDDEN_TERMS.txt (pattern {pat.pattern!r})")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default=str(pathlib.Path(__file__).resolve().parent.parent))
@@ -363,6 +382,7 @@ def main():
     check_glossary(root, problems)
     check_sdk_reference(root, problems)
     check_real_vs_test(root, problems)
+    check_forbidden_terms(root, problems)
     if problems:
         print(f"{len(problems)} documentation problem(s):")
         for p in problems:
