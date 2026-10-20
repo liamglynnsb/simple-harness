@@ -82,8 +82,8 @@ the others. When you add or change anything:
 - Python 3.12 in `.venv`; install from `requirements.txt`.
 - All gateway configuration lives in `client.py` and is read from environment
   variables. Never put keys in code or in the repo. `.env` is git-ignored.
-- Models go through the gateway in the Anthropic Messages format. The
-  default model is `us.anthropic.claude-haiku-5-5`,
+- Models are called in the Anthropic Messages format, directly or through a gateway. The
+  default model is `claude-haiku-5-5`,
   set via `HARNESS_MODEL`.
 - No agent frameworks.
 - `learnings/anthropic-sdk-reference.md` is a reference for the SDK's data structures (not a ledger).

@@ -62,7 +62,7 @@ roadmap, built in at the point each is needed (tagged H1-H5 there).
 ## 2. Facts about our setup that shape the plan
 
 From the official feature-availability table (Amazon Bedrock column), checked on
-2026-10-15. Our calls go the gateway -> Bedrock with Haiku 5.5 (switched from Haiku 4.5 on 2026-10-15).
+2026-10-15. Our calls go through a gateway to Bedrock with Haiku 5.5 (switched from Haiku 4.5 on 2026-10-15).
 
 - **Available on Bedrock:** prompt caching (5 minute and 1 hour) and automatic caching,
   token counting, fine-grained tool streaming, tool search, the memory and text-editor
@@ -109,7 +109,7 @@ Order, and why: **housekeeping** (rotate the key), **skill** (it only adds a too
 **tests** (the safety net, before `run_agent` is touched), **subagent** (changes the
 signature of `run_agent`), **hook** (restructures its tool-running code), **MCP** last.
 
-- **Step 0, housekeeping.** Rotate the the gateway key (H5). Nothing else.
+- **Step 0, housekeeping.** Rotate the gateway key (H5). Nothing else.
 - **Step 1, skill.** First measure what tool definitions cost (1a, H3; done). A skill
   is a text file with a name, a one-line description and instructions. The description
   is cheap and always visible; the body loads only when needed ("progressive
@@ -253,7 +253,7 @@ loop's shape, so last).
   whether to turn that off to avoid retrying inside retries. Because the API is
   stateless, any model can pick up the same `messages` list, which makes fallback
   easy; the server-side version isn't on Bedrock, so ours is code, or the gateway's
-  (check what your the gateway workspace offers). Test with a fake client that fails on
+  (check what your gateway offers). Test with a fake client that fails on
   command.
 - **Step 3, context.** Measure growth, then shrink it: trim old tool results, drop old
   turns, summarize, or keep a notes file. **Every `tool_use` must keep its
@@ -321,5 +321,5 @@ definitions add about 500 input tokens (measured in Layer 2 Step 1a); Haiku 5.5 
 Not verified (each has a probe or a read built into the plan): whether Haiku 5.5 rejects a
 non-default `temperature`; whether the gateway passes caching, structured-output and streaming
 parameters through; which Bedrock API the gateway uses; whether the SDK client is thread-safe; what
-retry and fallback options your the gateway workspace has; exact MCP message shapes in the newest
+retry and fallback options your gateway has; exact MCP message shapes in the newest
 revision; Haiku 5.5's minimum cacheable prefix length; real cost per eval run.

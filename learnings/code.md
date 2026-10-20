@@ -58,7 +58,7 @@ can't change its parent's environment, but it can set its own.
 Python's standard library (nothing to install). `os.environ` holds the name/value
 pairs Python received at startup, plus whatever was added since. In this project
 `load_dotenv()` reads `.env` and adds its pairs to that table, so
-`os.environ["ANTHROPIC_API_KEY"]` finds the key there. A missing name is a
+`os.environ["HARNESS_MODEL"]` finds the model name there. A missing name is a
 `KeyError`.
 - Correction: I first said it "pulls the value from the shell". It isn't a live
   link to the shell; it's a snapshot taken at startup, and here the values mostly

@@ -10,11 +10,10 @@ Newest at the bottom of each section.
 
 ## 2026-10-05 · Layer 1, setup
 
-**`api_key="dummy"` is a placeholder; the real key rides in a header.** The
-Anthropic SDK requires an `api_key`, so I pass `"dummy"`. The SDK sends it as an
-`x-api-key` header, which the gateway ignores. What the gateway actually checks is the
-`x-gateway-key` header, set through `default_headers`, which carries my real
-key from `os.environ`. Both headers go out on every request; only one matters.
+**The SDK needs an `api_key`; a gateway may want its own header.** The Anthropic SDK requires an
+`api_key` and sends it as an `x-api-key` header. Some gateways ignore that header and check one of their
+own instead, set through `default_headers`; then the SDK's key can be a placeholder and the real key rides
+in the gateway's header. Both go out on every request; only one matters.
 
 ## 2026-10-05 · Layer 1, Step 1 (stateless calls and token cost)
 
@@ -498,17 +497,17 @@ These came up along the way. I haven't restated them, so they stay here until I 
   and plenty for learning the loop, whose difficulty is in the harness, not the
   model. I have since moved to **Haiku 5.5**, which the docs list "from $0.10 / $0.50".
   The model name comes from `HARNESS_MODEL`, so switching was one line. Through
-  the gateway the slug is `` (the provider) + `us.` (the region profile) + the
-  Bedrock ID: `us.anthropic.claude-haiku-4-5-20251001-v1:0` before,
-  `us.anthropic.claude-haiku-5-5` now. A catalog listing doesn't prove my key can
+  a gateway the name can be a slug: a provider prefix, then a region profile (`us.`), then the
+  provider's model ID (`us.anthropic.claude-haiku-4-5-20251001-v1:0` before,
+  `us.anthropic.claude-haiku-5-5` now). A catalog listing doesn't prove my key can
   call a model; only a call does.
 - **Everything measured in Steps 1-5 was on Haiku 4.5.** Token counts, the
   tool-definition overhead (about 496 tokens for 4.5, 286 for 5.5), and how the model
   handled the banana tool may all differ on 5.5, which uses adaptive thinking at
   `medium` effort by default. Thinking tokens count against `max_tokens`.
-- **The gateway.** the gateway sits between my code and Bedrock. The request goes to
-  `https://your-gateway.example.com` in the Anthropic Messages format. the gateway also adds its
-  own `extra fields` (a guardrail check) to the reply object; I can ignore it.
+- **The gateway.** A gateway sits between my code and Bedrock. The request goes to the gateway's address
+  in the Anthropic Messages format. A gateway may also add fields of its own to the reply object; I can
+  ignore them.
 - **Tokens and the context window.** A token is a chunk of text, roughly three
   quarters of a word. `max_tokens` caps one reply. The context window (about 200,000 tokens for Haiku 4.5, 1,000,000 for Haiku 5.5) caps everything in one call: the whole `messages` list plus
   the reply. A conversation is limited by size, not by the number of exchanges, and

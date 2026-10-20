@@ -2,8 +2,8 @@
 
 A minimal tool-use agent harness built from scratch in Python, to learn how the
 agent loop works by owning every line. No agent frameworks: just the Anthropic
-Messages format (`tool_use`, `tool_result`, `stop_reason`) sent through a
-the gateway to Claude on Bedrock.
+Messages format (`tool_use`, `tool_result`, `stop_reason`) sent to Claude, directly
+or through a gateway.
 
 Progress lives in [ROADMAP.md](ROADMAP.md). Concepts learned along the way are
 in [LEARNINGS.md](LEARNINGS.md); unfamiliar word? See the [glossary](learnings/glossary.md).
@@ -23,7 +23,7 @@ so every person creates their own:
 
 ```bash
 cp .env.example .env
-# then edit .env and put your real ANTHROPIC_API_KEY in it
+# then edit .env and put your real ANTHROPIC_API_KEY in it (and the optional gateway lines, only if you use one)
 ```
 
 `client.py` loads `.env` itself, so there is no `source` step. Never commit
@@ -55,7 +55,7 @@ are defined in `tools.py` but not used in this run. Edit the `messages = [...]` 
 
 ## What's here
 
-- `client.py`: the only file that knows about the gateway (base URL, headers, `.env`)
+- `client.py`: the only file that knows how to reach the model (key, optional gateway address and headers, `.env`)
 - `tools.py`: tool definitions (`CALCULATOR`, `READ_FILE`, `LOAD_SKILL`, `DELEGATE`), their functions, and
   `FUNCTIONS`, the name-to-function lookup
 - `skills.py`: reads the files in `skills/` into a dict (name -> description and body)

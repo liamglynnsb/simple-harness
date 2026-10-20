@@ -17,7 +17,7 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **attribute** A named piece of data on an object, read with a dot: `block.name`. Compare with a *key* on a dict, read with brackets.
 
-**Bedrock** Amazon's service that hosts Claude models. My calls reach it through the gateway.
+**Bedrock** Amazon's service that hosts Claude models. My calls reach it through a gateway.
 
 **block (content block)** One piece of a reply or of a message's content: a text block, a thinking block, a tool request (`tool_use`), and so on. A reply's `content` is a list of blocks. See `anthropic-sdk-reference.md`.
 
@@ -57,7 +57,7 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **FUNCTIONS** The dict in `tools.py` that maps each tool's name to the function that runs it.
 
-**gateway** A service between my code and the model. the gateway is mine: requests go to it, and it forwards them to Bedrock.
+**gateway** A service between my code and the model: requests go to it, and it forwards them to the provider (here, Bedrock). It is optional; the harness also works against the API directly.
 
 **guardrail** *(planned, Layer 5)* A check on what goes into or comes out of the model: redacting secrets, validating output, blocking unsafe actions.
 
@@ -95,13 +95,12 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **Message / messages** Two different things. `Message` is the SDK's object for one reply from the model. `messages` is the list of the conversation I send with each request. See `anthropic-sdk-reference.md`.
 
-**model slug** The model's name as the gateway wants it: `us.anthropic.claude-haiku-5-5`. It lives in `HARNESS_MODEL`.
+**model slug** The model's name as your API or gateway wants it, for example `claude-haiku-5-5` on the API directly. It lives in `HARNESS_MODEL`.
 
 **non-deterministic** Giving different outputs for the same input. The model is; that's why evals run things several times.
 
 **pass** One iteration of the agent loop, which is one call to the model.
 
-**the gateway** The gateway my calls go through; it authenticates me with `x-gateway-key`.
 
 **progressive disclosure** Showing a short summary always and the details only on request. How skills work: the menu is always visible, the body loads on demand.
 

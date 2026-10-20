@@ -1,24 +1,23 @@
-# The only file that knows how to reach the model: the gateway's address, the key, and which model.
-# Everything else in the project just calls make_client() and model_name().
+# The only file that knows how to reach the model: the key, an optional gateway address and headers,
+# and which model. Everything else in the project just calls make_client() and model_name().
+import json
 import os
 import anthropic
 from dotenv import load_dotenv
 
 load_dotenv()  # reads the .env file (next to this file) into os.environ, so no key lives in the code
 
-GATEWAY_BASE_URL = "https://your-gateway.example.com"
 
 def make_client():
-    """Build the SDK client that talks to the model through the gateway.
+    """Build the SDK client. Everything comes from the environment (see .env.example):
 
-    The SDK insists on an api_key, so we pass a dummy; the gateway ignores it and checks the
-    x-gateway-key header instead, which carries the real key from the environment.
+    ANTHROPIC_API_KEY      the key (the SDK reads this itself)
+    ANTHROPIC_BASE_URL     optional: the address of a gateway, if your calls go through one (the SDK reads this too)
+    HARNESS_EXTRA_HEADERS  optional: a JSON object of extra headers, for a gateway that wants its own key or labels
     """
-    return anthropic.Anthropic(
-        api_key="dummy",
-        base_url=GATEWAY_BASE_URL,
-        default_headers={"x-gateway-key": os.environ["ANTHROPIC_API_KEY"]}
-    )
+    extra_headers = json.loads(os.environ.get("HARNESS_EXTRA_HEADERS", "{}"))
+    return anthropic.Anthropic(default_headers=extra_headers)
+
 
 def model_name():
     """Which model to call, from HARNESS_MODEL in .env (switching models is a one-line change)."""

@@ -18,7 +18,7 @@ Whenever we split a step into pieces, record the pieces here as substeps (`1a`,
 - [x] Step 1: plain API call; show the model is stateless; print token cost per turn
   - [x] 1a: repo, venv, README, ROADMAP, `.gitignore`
   - [x] 1b: config via environment variables and `.env` (key never in the repo)
-  - [x] 1c: `client.py`, the one module that knows about the gateway
+  - [x] 1c: `client.py`, the one module that knows how to reach the model
   - [x] 1d: first plain call; read the raw `Message` (content, stop_reason, usage)
   - [x] 1e: two calls prove statelessness; fix by re-sending history in order
   - [x] 1f: loop over turns, printing input/output tokens per turn
@@ -67,7 +67,8 @@ Layer 1 review (tagged H1 to H5 below) are required and built in at the point ea
 the reasons are in PLAN.md section 1, and details for every step are in PLAN.md section 3.
 
 - [x] Step 0: before building anything new
-  - [x] 0a: rotate the the gateway key and update `.env` (H5). Done: new key in `.env`, a real call worked, old key revoked.
+  - [x] 0a: rotate the gateway key and update `.env` (H5). Done: new key in `.env`, a real call worked,
+        old key revoked.
   - [x] 0b: the model changed from Haiku 4.5 to Haiku 5.5 (`HARNESS_MODEL`). Run the
         loop once to confirm the slug works through the gateway; check whether
         thinking tokens eat into `max_tokens=300` (empty or cut-off replies); then
