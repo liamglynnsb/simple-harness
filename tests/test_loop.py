@@ -500,3 +500,27 @@ def test_the_listing_shows_each_files_size_so_a_model_can_plan_its_reads(data_sc
     listing = list_files(str(data_scope / "data"))
     assert "big.txt (1234 bytes)" in listing
 
+
+def test_the_subagent_gets_the_harness_system_prompt_on_every_call_and_the_orchestrator_does_not(monkeypatch):
+    monkeypatch.setattr("tools.SUBAGENT_SYSTEM_PROMPT", "Reply with only the answer.")
+    client = FakeClient([
+        tool_reply(tool_block("delegate", {"task": "find it"}, "id1")),           # orchestrator, call 1
+        tool_reply(tool_block("list_files", {"path": "data"}, "id2")),            # subagent, call 1
+        text_reply("the answer"),                                                  # subagent, call 2
+        text_reply("done"),                                                        # orchestrator, call 2
+    ])
+    monkeypatch.setattr("client.make_client", lambda: client)
+    run_agent(client, [{"role": "user", "content": "go"}], [DELEGATE])
+    orchestrator_calls = [client.calls[0], client.calls[3]]
+    subagent_calls = [client.calls[1], client.calls[2]]
+    assert all("system" not in call for call in orchestrator_calls)               # the orchestrator's system prompt was never set
+    assert all(call["system"] == "Reply with only the answer." for call in subagent_calls)
+
+
+def test_an_empty_subagent_system_prompt_sends_none(monkeypatch):
+    monkeypatch.setattr("tools.SUBAGENT_SYSTEM_PROMPT", "")
+    client = FakeClient([tool_reply(tool_block("delegate", {"task": "x"}, "id1")), text_reply("sub"), text_reply("done")])
+    monkeypatch.setattr("client.make_client", lambda: client)
+    run_agent(client, [{"role": "user", "content": "go"}], [DELEGATE])
+    assert "system" not in client.calls[1]
+

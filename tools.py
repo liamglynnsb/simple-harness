@@ -143,6 +143,27 @@ DELEGATE = {
     },
 }
 
+# ---------------------------------------------------------------------------------------------------------
+# YOU WRITE THIS: the standing instructions every subagent gets on every call (its system prompt). It is written
+# once here, so the orchestrator doesn't have to repeat it in every task. It should say, for a subagent that is asked
+# to find something in a file:
+#   - look at the file's size first (list the folder: the listing shows each file's size in bytes)
+#   - read_file returns 4,000 characters per piece and takes a `start` input: work out every piece the file needs
+#     and request ALL of them in a single turn, not one at a time
+#   - reply with only the answer, in the form the task asks for, and nothing else
+SUBAGENT_SYSTEM_PROMPT = (
+    "You are a subagent. You are given one task and you see nothing else, so do exactly that task and nothing more.\n"
+    "\n"
+    "When the task is to find something in a file:\n"
+    "1. First list the file's folder with list_files. The listing shows each file's size in bytes.\n"
+    "2. read_file returns at most 4,000 characters per piece and takes an optional start input, a character position. "
+    "From the file's size, work out how many pieces it needs (they start at 0, 4000, 8000 and so on until the whole file "
+    "is covered), and request ALL of them in a single turn. Do not read them one at a time.\n"
+    "3. Once you have the whole text, reply with only the answer, in the form the task asks for, and nothing else."
+)
+# ---------------------------------------------------------------------------------------------------------
+
+
 def delegate(task, client=None):
     if client is None:
         from client import make_client
@@ -153,7 +174,8 @@ def delegate(task, client=None):
     try:
         # the child's tools are fixed here, not chosen by the model; a child that fails must raise, because
         # the parent would take any returned text for a real answer
-        return run_agent(client, messages, [READ_FILE, LIST_FILES], raise_on_failure=True)
+        return run_agent(client, messages, [READ_FILE, LIST_FILES], raise_on_failure=True,
+                         system=SUBAGENT_SYSTEM_PROMPT or None)  # the harness decides this, not the model; empty means none
     except AgentStopped as e:
         raise RuntimeError("The subagent did not finish: " + str(e))
 
