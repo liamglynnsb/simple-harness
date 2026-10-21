@@ -2,6 +2,8 @@
 #   1. a DEFINITION (a dict): what the model reads - name, description, and the shape of its inputs
 #   2. a FUNCTION: the real code that runs when the model asks for that tool
 # FUNCTIONS at the bottom maps each tool's name to its function.
+import os
+from hooks import is_sensitive_name
 from skills import read_skills
 
 # Read the skill files once, when this module is first imported (see skills.py).
@@ -57,6 +59,31 @@ def read_file(path):
     restricting it is planned for Layer 2, Step 4 (a blocking hook)."""
     with open(path) as f:
         return f.read()
+
+# The model's view of list_files: one input, a folder path. The scope (only inside data/) is enforced by the
+# before-hook in hooks.py, before this function ever runs.
+LIST_FILES = {
+    "name": "list_files",
+    "description": "List the files and folders inside a folder, one name per line (folders end with /). "
+                   "Only folders inside data/ can be listed. Use it to find the right file name when a path is not found.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "path": {"type": "string", "description": "A folder inside data/, for example 'data'"},
+        },
+        "required": ["path"],
+    },
+}
+
+def list_files(path):
+    """The names in a folder, one per line (folders end with /). Hidden and secret-looking names are left
+    out, using the same name test as the hook, so a listing never shows what a read would refuse."""
+    names = []
+    for name in sorted(os.listdir(path)):
+        if is_sensitive_name(name):
+            continue
+        names.append(name + "/" if os.path.isdir(os.path.join(path, name)) else name)
+    return "\n".join(names) if names else "(empty)"
 
 # The model's view of load_skill. The description carries the menu of skills (names and short
 # descriptions only); the enum is generated from skills_dict so it can't drift out of date.
@@ -122,4 +149,4 @@ def delegate(task, client=None):
 
 # Name -> function. The loop looks up each tool request here: FUNCTIONS[block.name](**block.input).
 # A new tool needs both a definition above and an entry here.
-FUNCTIONS = {"calculator": calculator, "read_file": read_file, "load_skill": load_skill, "delegate": delegate}
+FUNCTIONS = {"calculator": calculator, "read_file": read_file, "list_files": list_files, "load_skill": load_skill, "delegate": delegate}

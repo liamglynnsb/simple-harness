@@ -142,7 +142,7 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
   - [x] 4c: a blocking hook (decided: one scope for the whole harness, just `data/`; narrowing it per agent
         is a later option; a hook blocks by returning a reason, an exception means a bug): `read_file` only inside `data/`, returning a flagged
         error result; then try to get around your own rule (`..`, absolute path,
-        symlink) and turn each attempt into a test (`only_inside_data` in `hooks.py`; tests for a file outside,
+        symlink) and turn each attempt into a test (`guard_file_paths` in `hooks.py`, later shared with `list_files`; tests for a file outside,
         `..` climbing out, a symlink pointing out, and `..` that stays inside, which is allowed)
   - [ ] 4d: watch a real recovery (H2): add a `list_files` tool held to the same
         rule, ask for a wrong path, and see the model list the folder and retry

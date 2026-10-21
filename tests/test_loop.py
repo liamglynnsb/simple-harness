@@ -3,7 +3,7 @@ import pytest
 import hooks
 from loop import run_agent, AgentStopped
 from fake_client import FakeClient, text_reply, tool_reply, tool_block
-from tools import CALCULATOR, DELEGATE, READ_FILE
+from tools import CALCULATOR, DELEGATE, READ_FILE, LIST_FILES, list_files
 from types import SimpleNamespace
 
 def test_plain_finish():
@@ -231,16 +231,16 @@ def data_scope(tmp_path, monkeypatch):
 
 
 def test_hook_allows_a_file_inside_data(data_scope):
-    assert hooks.only_inside_data("read_file", {"path": str(data_scope / "data" / "ok.txt")}) is None
+    assert hooks.guard_file_paths("read_file", {"path": str(data_scope / "data" / "ok.txt")}) is None
 
 
 def test_hook_blocks_a_file_outside_data(data_scope):
-    reason = hooks.only_inside_data("read_file", {"path": str(data_scope / "secret.txt")})
+    reason = hooks.guard_file_paths("read_file", {"path": str(data_scope / "secret.txt")})
     assert reason is not None and "inside data/" in reason
 
 
 def test_hook_ignores_other_tools(data_scope):
-    assert hooks.only_inside_data("calculator", {"operation": "add", "a": 1, "b": 1}) is None
+    assert hooks.guard_file_paths("calculator", {"operation": "add", "a": 1, "b": 1}) is None
 
 
 def test_a_blocked_read_reaches_the_model_as_a_flagged_error(data_scope):
@@ -253,25 +253,62 @@ def test_a_blocked_read_reaches_the_model_as_a_flagged_error(data_scope):
     result = messages[2]["content"][0]
     assert result["tool_use_id"] == "id1"
     assert result["is_error"] == True
-    assert result["content"].startswith("Blocked: read_file can only read files inside data/")
+    assert result["content"].startswith("Blocked: read_file can only use paths inside data/")
     assert "TOP SECRET" not in result["content"]            # the file was never read
 
 
 def test_hook_blocks_dotdot_that_climbs_out_of_data(data_scope):
     # starts inside data/ but '..' steps back up and takes the secret in the folder above
     sneaky = os.path.join(str(data_scope / "data"), "..", "secret.txt")
-    assert hooks.only_inside_data("read_file", {"path": sneaky}) is not None
+    assert hooks.guard_file_paths("read_file", {"path": sneaky}) is not None
 
 
 def test_hook_blocks_a_symlink_inside_data_that_points_outside(data_scope):
     # data/link.txt LOOKS like it is inside data/, but it is a shortcut to the secret outside it
     link = data_scope / "data" / "link.txt"
     os.symlink(str(data_scope / "secret.txt"), str(link))
-    assert hooks.only_inside_data("read_file", {"path": str(link)}) is not None
+    assert hooks.guard_file_paths("read_file", {"path": str(link)}) is not None
 
 
 def test_hook_allows_dotdot_that_stays_inside_data(data_scope):
     # steps out of data/ and straight back in: the real destination is inside, so it is allowed
     roundabout = os.path.join(str(data_scope / "data"), "..", "data", "ok.txt")
-    assert hooks.only_inside_data("read_file", {"path": roundabout}) is None
+    assert hooks.guard_file_paths("read_file", {"path": roundabout}) is None
+
+
+def test_sensitive_names_are_recognised():
+    assert hooks.is_sensitive_name(".env") and hooks.is_sensitive_name(".git")
+    assert hooks.is_sensitive_name("server.PEM") and hooks.is_sensitive_name("my_secret_notes.txt")
+    assert not hooks.is_sensitive_name("a.txt") and not hooks.is_sensitive_name("numbers.txt")
+
+
+def test_hook_blocks_a_hidden_file_even_inside_data(data_scope):
+    (data_scope / "data" / ".env").write_text("KEY=hidden")
+    assert hooks.guard_file_paths("read_file", {"path": str(data_scope / "data" / ".env")}) is not None
+
+
+def test_hook_applies_the_same_scope_to_list_files(data_scope):
+    assert hooks.guard_file_paths("list_files", {"path": str(data_scope / "data")}) is None
+    assert hooks.guard_file_paths("list_files", {"path": str(data_scope)}) is not None   # the folder above data/
+
+
+def test_list_files_leaves_out_hidden_and_secret_looking_names(data_scope):
+    (data_scope / "data" / ".env").write_text("KEY=hidden")
+    (data_scope / "data" / "api_token.txt").write_text("hidden too")
+    (data_scope / "data" / "notes").mkdir()
+    assert list_files(str(data_scope / "data")) == "notes/\nok.txt"
+
+
+def test_the_model_can_list_a_folder_inside_data_but_not_outside(data_scope):
+    client = FakeClient([
+        tool_reply(tool_block("list_files", {"path": str(data_scope / "data")}, "id1"),
+                   tool_block("list_files", {"path": str(data_scope)}, "id2")),
+        text_reply("done"),
+    ])
+    messages = [{"role": "user", "content": "list both"}]
+    run_agent(client, messages, [LIST_FILES])
+    inside, outside = messages[2]["content"]
+    assert inside["content"] == "ok.txt" and "is_error" not in inside
+    assert outside["is_error"] == True and outside["content"].startswith("Blocked: list_files can only use paths inside data/")
+    assert "secret.txt" not in outside["content"]              # the file above data/ was never listed
 

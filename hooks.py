@@ -13,22 +13,43 @@ def log_call(tool_name, tool_input):
     print("calling", tool_name, "with input", tool_input)
 
 
-def only_inside_data(tool_name, tool_input):
-    """Block read_file unless the path, once fully resolved, is inside DATA_DIR. Other tools pass.
+# The tools that take a file or folder path. They all follow the same rule below.
+FILE_TOOLS = ("read_file", "list_files")
+
+
+def is_sensitive_name(name):
+    """True for a file or folder name the model should never see or open: hidden names (.env, .git, ...) and
+    names that look like secrets. This is a heuristic, a second layer: the real protection is the scope
+    (only inside DATA_DIR), which no name can get around."""
+    lowered = name.lower()
+    return (
+        lowered.startswith(".")
+        or lowered.endswith((".pem", ".key"))
+        or any(word in lowered for word in ("secret", "credential", "token"))
+    )
+
+
+def guard_file_paths(tool_name, tool_input):
+    """One rule for every file tool: the path, once fully resolved, must be inside DATA_DIR, and nothing
+    on the way down from DATA_DIR may be a sensitive name. Other tools pass.
 
     realpath() resolves '..' and symlinks first, so the check is on where the path REALLY leads,
     not on how it is written.
     """
-    if tool_name != "read_file":
+    if tool_name not in FILE_TOOLS:
         return None
     path = tool_input.get("path")
     if not isinstance(path, str):
-        return "read_file needs a text path"
+        return tool_name + " needs a text path"
     real = os.path.realpath(path)
     root = os.path.realpath(DATA_DIR)
     if os.path.commonpath([real, root]) != root:
-        return "read_file can only read files inside data/ (got: " + path + ")"
+        return tool_name + " can only use paths inside data/ (got: " + path + ")"
+    inside = os.path.relpath(real, root)
+    parts = [] if inside == "." else inside.split(os.sep)
+    if any(is_sensitive_name(part) for part in parts):
+        return tool_name + " can't use hidden or secret-looking names (got: " + path + ")"
     return None
 
 
-BEFORE_HOOKS = [log_call, only_inside_data]
+BEFORE_HOOKS = [log_call, guard_file_paths]

@@ -1,6 +1,6 @@
 import hooks
 from client import make_client, model_name
-from tools import FUNCTIONS, CALCULATOR, READ_FILE, LOAD_SKILL, DELEGATE
+from tools import FUNCTIONS, CALCULATOR, READ_FILE, LIST_FILES, LOAD_SKILL, DELEGATE
 
 
 class AgentStopped(Exception):
@@ -111,8 +111,8 @@ def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = N
 
 if __name__ == "__main__":  # runs only when this file is run directly, not when it is imported
     client = make_client()
-    messages = [{"role": "user", "content": "What are the magic word and the magic number in the data folder? The files are a.txt and b.txt."}]
-    answer = run_agent(client, messages, [DELEGATE])
+    messages = [{"role": "user", "content": "Read data/magic.txt and tell me the magic word."}]  # no such file: a wrong path to recover from
+    answer = run_agent(client, messages, [READ_FILE, LIST_FILES])
     print(answer)
     # for traceability, print the messages
     for m in messages:
