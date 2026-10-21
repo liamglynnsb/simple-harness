@@ -46,6 +46,7 @@ activate it first with `source .venv/bin/activate`, plain `python` works too:
 .venv/bin/python -m layer1.l1s2_tool_use       # L1 Step 2: define a tool, read the raw tool_use reply
 .venv/bin/python -m layer1.l1s3_one_tool_call  # L1 Step 3b: one tool request handled by hand
 .venv/bin/python -m layer2.l2s1_tool_cost      # L2 Step 1a: what tool definitions cost in tokens
+.venv/bin/python -m layer3.l3s1_baseline      # L3 Step 1b: one agent does the whole workload; prints passes, tokens, time (calls the real model)
 .venv/bin/python loop.py                       # the agent loop (see below)
 ```
 
@@ -65,6 +66,7 @@ activate it first with `source .venv/bin/activate`, plain `python` works too:
   to see the protocol (Layer 2 Step 5)
 - `mcp_client.py`: the harness side of MCP over stdio: starts a server as a subprocess, talks to it through its
   pipes, and wraps its tools as functions the loop can call (Layer 2 Step 5)
+- `measure.py`: wraps the model client and records each call's time and token usage (used by the Layer 3 baseline)
 - `hooks.py`: hooks, small functions the harness runs around every tool call (so far two before-hooks: one logs the call, one keeps the file tools inside `data/`; and one after-hook that cuts very long results)
 - `loop.py`: `run_agent`, the loop. It branches on `stop_reason`, answers every `tool_use`
   with a `tool_result` (errors flagged `is_error`), and caps its passes
