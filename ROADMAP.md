@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 4 (a hook around tool calls), substep 4d: watch a real recovery, with a restricted `list_files` tool.
+**Where we are:** Layer 2, Step 4 (a hook around tool calls), substep 4e: after-hooks, observing versus changing a result.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -144,9 +144,10 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         error result; then try to get around your own rule (`..`, absolute path,
         symlink) and turn each attempt into a test (`guard_file_paths` in `hooks.py`, later shared with `list_files`; tests for a file outside,
         `..` climbing out, a symlink pointing out, and `..` that stays inside, which is allowed)
-  - [ ] 4d: watch a real recovery (H2): add a `list_files` tool held to the same
+  - [x] 4d: watch a real recovery (H2): add a `list_files` tool held to the same
         rule, ask for a wrong path, and see the model list the folder and retry
-        successfully; compare with what Layer 1 Step 5b showed
+        successfully; compare with what Layer 1 Step 5b showed (a near-miss path recovers; a path with no
+        likely match makes the model stop and ask, so recovery needs an inferable target)
   - [ ] 4e: after-hooks: see or change a result (truncate, redact); observing vs
         changing
   - [ ] 4f: a hook that itself fails: fail open or fail closed, and why
