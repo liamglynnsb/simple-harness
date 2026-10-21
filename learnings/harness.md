@@ -628,6 +628,21 @@ model capabilities, not credentials.
   each request to the server, which only matches replies to requests. As I understand it, the messages are JSON in a
   request-and-reply style called JSON-RPC; to be confirmed against the spec in 5a.
 
+**What changed in how a client and an MCP server agree to talk (5a).** Instead of aligning on the ways of talking
+upfront, the current protocol includes them with every message: each request carries the protocol version and the
+client's capabilities in its `_meta` field, and the server remembers nothing between requests. We keep that
+information and send it each time. After a server restart there is nothing to resume, so we start it again and
+retry the request that was in flight; the old design held the agreement in a session on the server, so a restart
+meant doing the handshake again.
+- Explained to me, not yet said back: the old design (revisions up to 2025-11-25) opened with an `initialize`
+  handshake; the current one (2026-07-28) has none, and an optional `server/discover` request asks for the
+  supported versions and capabilities. Messages are JSON-RPC 2.0, one per line on the server's standard input and
+  output, which carries nothing else; logging goes to standard error; shutdown means closing the server's input. A
+  tool definition has `name`, `description` and `inputSchema`; a call has `name` and `arguments`; a result has
+  `content` and `isError`. An unknown tool or a malformed request is a JSON-RPC error, while a tool that ran and
+  failed is a normal result with `isError: true`. Stdio servers take credentials from the environment. State that a
+  tool needs across calls is carried by an explicit handle that the model passes on.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.

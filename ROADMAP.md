@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 5 (a tiny MCP server with one tool), substep 5a: read the current spec's stdio page and decide official SDK versus hand-written server.
+**Where we are:** Layer 2, Step 5 (a tiny MCP server with one tool), substep 5b: a minimal server exposing one tool, talked to by hand in the terminal.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -160,9 +160,10 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
   - [ ] 4g (optional): command hooks that read the call as JSON on stdin, like
         Claude Code
 - [ ] Step 5: a tiny MCP server with one tool (`mcp_client.py`, `layer2/l2s5_mcp.py`)
-  - [ ] 5a: read the current spec's stdio page; decide official Python SDK vs a
+  - [x] 5a: read the current spec's stdio page; decide official Python SDK vs a
         hand-written server; write down what changed from the older handshake
-        (decided: hand-written first, so the protocol is visible; the SDK comes after; the spec reading is next)
+        (decided: hand-written first, so the protocol is visible; the SDK comes after. Read revision 2026-07-28:
+        no handshake, each request carries its version and capabilities, the server is stateless)
   - [ ] 5b: a minimal server exposing one tool; talk to it by hand in the terminal
         (pipe JSON lines in) to see the protocol
   - [ ] 5c: harness side: start the server, list its tools, convert them to the
