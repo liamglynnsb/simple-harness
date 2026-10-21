@@ -643,6 +643,21 @@ meant doing the handshake again.
   failed is a normal result with `isError: true`. Stdio servers take credentials from the environment. State that a
   tool needs across calls is carried by an explicit handle that the model passes on.
 
+**stdin, stdout, and the pipe (Layer 2 Step 5).** Every program has standard streams: stdin for what it reads, stdout
+for what it writes, stderr for logs. In `echo '{"a": 1}' | python -c "..."`, the `echo` did print, but to its stdout,
+and the `|` connected that stdout to the second program's stdin; so nothing from `echo` appeared on the screen, and
+the second program's own stdout, `2`, is what I saw. That is how the harness will talk to an MCP server over stdio:
+it starts the server and writes JSON lines to its stdin, and reads JSON lines from its stdout. No network is involved.
+- Correction: I first thought `echo` "doesn't print"; it does, to its stdout, which the pipe redirects.
+
+**A hook as an external command, and why I dropped 4g.** A hook can be a separate program instead of a Python
+function: the harness launches it, writes the tool call to its stdin, and reads its verdict from its exit code and
+output. It runs at the same moment as any before-hook, and it pays off when the rule's authors aren't the harness's
+authors (as with Claude Code), or the rule is in another language. For this harness a Python function is simpler, so
+the concept was reinforced better in Step 5, and the idea is parked in the roadmap.
+- Explained to me, not yet said back: a process ends with an integer exit code, where 0 means success; running
+  commands named in a config file means trusting that config.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.

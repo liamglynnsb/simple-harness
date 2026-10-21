@@ -51,6 +51,8 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **exception** An error signal that travels up through the code that called the function until something catches it. `raise` throws one; `try` / `except` catches one. In the harness, a tool raises and the loop catches. See `harness.md` and `code.md`.
 
+**exit code** A whole number a program returns when it ends. By convention 0 means success and anything else means failure.
+
 **f-string** A string with an `f` before the quote; anything in `{}` is replaced by its value. `f"turn {n}"`.
 
 **fake client (test double)** A stand-in for the real client in tests: it plays back scripted replies in order and records what it was sent. `tests/fake_client.py`. See `code.md`.
@@ -105,6 +107,10 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **pass** One iteration of the agent loop, which is one call to the model.
 
+**pipe** The `|` in a command, or the connection a program sets up when it starts another one: what the left program writes to its stdout arrives as the right program's stdin.
+
+**process** A program while it is running, with its own memory and its own stdin, stdout and stderr. Running the same program twice makes two processes. A crash in one process doesn't crash another.
+
 **progressive disclosure** Showing a short summary always and the details only on request. How skills work: the menu is always visible, the body loads on demand.
 
 **prompt caching** *(planned, Layer 5)* Reusing a stable part of a request at a much lower price, instead of paying full price to re-send it every pass.
@@ -133,9 +139,17 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **stateless** The API remembers nothing between calls. The "conversation" exists only in the `messages` list I send each time.
 
+**stderr** *(standard error)* The channel for a program's logs and warnings, separate from its stdout. An MCP server may write anything to it; the client may capture or ignore it.
+
+**stdin** *(standard input)* The channel a program reads its input from. A pipe can connect another program's output to it. In MCP over stdio, the harness writes JSON lines to the server's stdin.
+
+**stdout** *(standard output)* The channel a program writes its normal output to. By default it shows on the terminal; a pipe can send it to another program's stdin instead. In MCP over stdio, the server's stdout carries only valid protocol messages.
+
 **stop_reason** The field on a reply saying why the model stopped: `end_turn`, `tool_use`, `max_tokens`, and a few others.
 
 **subagent** *(planned, Layer 2 Step 3)* A helper that runs its own separate loop, with its own history and a limited set of tools, and hands back only its final text.
+
+**subprocess** A program that another program starts and keeps in touch with, through pipes. The harness starts an MCP server as a subprocess.
 
 **system prompt** Instructions given to the model separate from the conversation. When tools are passed, the API also builds a hidden one containing the tool-use instructions and my tool definitions; that's part of why tools cost input tokens on every request.
 
