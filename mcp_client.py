@@ -3,8 +3,10 @@
 #
 # This does by code what you did by hand in 5b: write one JSON line to the server's stdin, read one line back.
 import json
+import queue
 import subprocess
 import sys
+import threading
 
 PROTOCOL_VERSION = "2026-07-28"
 META = {
@@ -14,11 +16,16 @@ META = {
 
 
 class McpError(Exception):
-    """The server answered with a JSON-RPC error, or it stopped answering."""
+    """The server answered with a JSON-RPC error (a protocol problem: retrying can't change it)."""
 
     def __init__(self, message, code=None):
         super().__init__(message)
         self.code = code
+
+
+class McpTransportError(McpError):
+    """The connection failed: the server died, stopped answering, or sent something that isn't a valid reply.
+    These are the failures that restarting the server and trying again can fix."""
 
 
 class McpToolError(Exception):
@@ -27,32 +34,82 @@ class McpToolError(Exception):
     connection."""
 
 
+def _read_lines(process, lines):
+    """Runs in a helper thread: copy every line the server prints into a queue, then a None when its output ends.
+    A thread is needed because reading a pipe waits forever; with a queue the main thread can wait with a time limit."""
+    for line in process.stdout:
+        lines.put(line)
+    lines.put(None)
+
+
 class McpClient:
     """One running server. Use it with `with`, so the server is always shut down cleanly:
 
-        with McpClient([sys.executable, "mcp_server.py"]) as client:
+        with McpClient([sys.executable, "mcp_server.py"], timeout=10, retries=1) as client:
             tools = client.list_tools()
+
+    timeout: seconds to wait for each reply before deciding the server is stuck.
+    retries: how many times to restart the server and send the request again after a connection failure. Only safe
+             for tools that are safe to repeat (like counting letters); a tool with side effects could act twice.
     """
 
-    def __init__(self, command):
-        # The harness holds the other ends of the pipes: what we write to .stdin arrives on the server's stdin,
-        # and what the server prints on its stdout is what we read from .stdout. The terminal is not involved.
-        self.process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
+    def __init__(self, command, timeout=10, retries=1):
+        self.command, self.timeout, self.retries = command, timeout, retries
         self._next_id = 1
+        self._start()
 
-    def request(self, method, **params):
-        """Send one request and return its `result`. Raises McpError if the server replies with an error."""
+    def _start(self):
+        # The harness holds the other ends of the pipes: what we write to .stdin arrives on the server's stdin,
+        # and what the server prints on its stdout arrives in self._lines. The terminal is not involved.
+        self.process = subprocess.Popen(self.command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
+        self._lines = queue.Queue()
+        threading.Thread(target=_read_lines, args=(self.process, self._lines), daemon=True).start()
+
+    def _restart(self):
+        """Throw the server away and start a fresh one. A stuck server may still reply late, and that reply would be
+        read as the answer to the next request, so the old process (and its queue) must go. The protocol is stateless,
+        so the new server needs nothing from the old one."""
+        self.process.kill()
+        self.process.wait()
+        self._start()
+
+    def _request_once(self, method, params):
+        """Send one request on the current connection and return its result. Connection failures raise McpTransportError."""
         message = {"jsonrpc": "2.0", "id": self._next_id, "method": method, "params": {**params, "_meta": META}}
         self._next_id += 1
-        self.process.stdin.write(json.dumps(message) + "\n")
-        self.process.stdin.flush()  # push the line out now; otherwise it can sit in a buffer and the server never sees it
-        line = self.process.stdout.readline()
-        if line == "":  # end of file: the server closed its output, or died
-            raise McpError("the server stopped answering (it closed its output)")
-        reply = json.loads(line)
-        if "error" in reply:
+        try:
+            self.process.stdin.write(json.dumps(message) + "\n")
+            self.process.stdin.flush()  # push the line out now; otherwise it can sit in a buffer and the server never sees it
+        except (BrokenPipeError, ValueError):  # the server is gone (ValueError: its input was already closed)
+            raise McpTransportError("the tool server is not running")
+        try:
+            line = self._lines.get(timeout=self.timeout)
+        except queue.Empty:
+            raise McpTransportError("the tool server did not answer within " + str(self.timeout) + " seconds")
+        if line is None:  # the server closed its output, or died
+            raise McpTransportError("the tool server stopped answering (it closed its output)")
+        try:
+            reply = json.loads(line)
+        except json.JSONDecodeError:
+            raise McpTransportError("the tool server sent something that is not valid JSON")
+        if reply.get("id") != message["id"]:
+            raise McpTransportError("the tool server's reply did not match the request")
+        if "error" in reply:  # a protocol error: the server is fine, the request was not. Retrying would not help.
             raise McpError(reply["error"]["message"], reply["error"]["code"])
         return reply["result"]
+
+    def request(self, method, **params):
+        """Send a request and return its `result`. If the connection fails, restart the server and try again, up to
+        `retries` more times; then raise one clear McpTransportError. A JSON-RPC error (McpError) is raised at once."""
+        attempts = self.retries + 1
+        for attempt in range(1, attempts + 1):
+            try:
+                return self._request_once(method, params)
+            except McpTransportError as problem:
+                print("MCP SERVER PROBLEM (attempt " + str(attempt) + " of " + str(attempts) + "):", problem, file=sys.stderr)
+                if attempt == attempts:
+                    raise McpTransportError(str(problem) + " (tried " + str(attempts) + " time" + ("s" if attempts > 1 else "") + ")")
+                self._restart()
 
     def list_tools(self):
         return self.request("tools/list")["tools"]
@@ -62,7 +119,10 @@ class McpClient:
 
     def close(self):
         """Shut down the way the spec says: close the server's input, wait for it to exit, force-stop it if it won't."""
-        self.process.stdin.close()
+        try:
+            self.process.stdin.close()
+        except BrokenPipeError:
+            pass  # the server already died: the unsent bytes have nowhere to go, and there is nothing left to shut down
         try:
             self.process.wait(timeout=5)
         except subprocess.TimeoutExpired:

@@ -176,7 +176,11 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         (done so far: `loop.py` starts the server in a `with` block and merges its tool with the local ones; a real run read
         `data/hard_word.txt` locally and counted with the MCP tool, and the server shut down cleanly. A model that can do the
         job itself doesn't call the tool unprompted (seen with a short word and a 45-letter word), so the question names it.
-        Still to see: a failure coming back as `is_error` with a real model; a server that dies or sends a bad reply)
+        Failure cases built and tested: a dead server is restarted and the request retried; a silent server times out
+        (`timeout`, default 10 s); garbage replies count as connection failures; after `retries` (default 1) one clear
+        `McpTransportError` reaches the model as a flagged error; protocol errors are never retried; `close()` copes with
+        a dead server. Not done: per-tool timeouts and retries (parked until a second MCP tool exists); a real-model run of
+        a failure (the model avoided the bad input because the description told it not to))
   - [ ] 5e: compare in-process tools with MCP: what you gain, what it costs
 - [ ] Layer 2 checkpoint: explain each of the four extensions back; rebuild the hook
       mechanism from a blank file; and do the pending Layer 1 rebuild (`run_agent`
