@@ -169,7 +169,8 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         fails with `isError`, tried by hand)
   - [x] 5c: harness side: start the server, list its tools, convert them to the
         `tools` format, route calls by name (`mcp_client.py`: `McpClient`, `to_tool_definition`, `make_tool_function`,
-        `register_tools`; a failing tool raises `McpToolError`, which the loop's existing handling flags; `loop.py` unchanged)
+        `register_tools`; a failing tool raises `McpToolError`, which the loop's existing handling flags; `loop.py` unchanged).
+        Built and tested, but NOT yet used by the running program: only the tests call it; 5d wires it into `__main__`
   - [ ] 5d: one task using a local tool and the MCP tool; failures (server dies, bad
         reply) come back as `is_error` results; shut the process down cleanly
   - [ ] 5e: compare in-process tools with MCP: what you gain, what it costs
