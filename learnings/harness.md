@@ -711,6 +711,26 @@ isolation costs by itself, and Step 2 adds concurrency on top.
   chunk is re-sent within its own conversation), and run one after another it is slower because each subagent pages
   through its document in sequence.
 
+## 2026-10-21 · Layer 3, Step 2 (parallel fan-out)
+
+**Parallel fan-out: what decides the time, and where the instructions should live.** Independent, separate parts fit
+fan-out: instead of wasting time building part by part, run them all at once. The whole run takes as long as the longest of
+the parallel chains, so the way to go faster is to shorten that chain. Running the six subagents at once took 11.9 seconds
+against 57.2 one at a time, with the model calls adding up to 43.5 seconds, which is how I could tell they overlapped.
+Asking for all the remaining pieces in one turn saves model calls, while running the file reads in parallel adds almost
+nothing, because the model call is the slow part, not the local read. Writing more output takes longer, so the orchestrator
+writing the same long instructions six times slowed it down; putting them in the subagents' system prompt, written once,
+made the run the fastest at 8.3 seconds. System prompts need to line up with the tools provided, and with the tasks they
+will be given: the subagents skipped the "list first" step in their system prompt because the task just told them to read
+the file, and the first read already told the character count.
+- Corrections: I first thought fewer model calls would mean less time, but the calls got heavier and the time barely moved,
+  until the output got shorter. A single run per setup isn't enough to compare token counts, since the model varied how it
+  batched its reads.
+- Explained to me, not yet said back: parallelise the slow parts (a `delegate` is slow, a local read is not); results come
+  back in request order whatever order they finish in; one pipe to the MCP server needs a lock when threads share it; a
+  system prompt is advice, and the model took a shorter route than the one it was given; a direct instruction in the task
+  beat a conflicting one in the system prompt.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.
