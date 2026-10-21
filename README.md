@@ -47,6 +47,7 @@ activate it first with `source .venv/bin/activate`, plain `python` works too:
 .venv/bin/python -m layer1.l1s3_one_tool_call  # L1 Step 3b: one tool request handled by hand
 .venv/bin/python -m layer2.l2s1_tool_cost      # L2 Step 1a: what tool definitions cost in tokens
 .venv/bin/python -m layer3.l3s1_baseline      # L3 Step 1b: one agent does the whole workload; prints passes, tokens, time (calls the real model)
+.venv/bin/python -m layer3.l3s2_sizes         # L3 Step 2: the parallel run again, with subagents told to check file sizes first (calls the real model)
 .venv/bin/python -m layer3.l3s2_parallel      # L3 Step 2a: the same job with the six subagents running at the same time (calls the real model)
 .venv/bin/python -m layer3.l3s1_orchestrator  # L3 Step 1c: the same workload through subagents, one at a time (calls the real model)
 .venv/bin/python loop.py                       # the agent loop (see below)

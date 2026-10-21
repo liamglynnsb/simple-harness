@@ -300,7 +300,7 @@ def test_list_files_leaves_out_hidden_and_secret_looking_names(data_scope):
     (data_scope / "data" / ".env").write_text("KEY=hidden")
     (data_scope / "data" / "api_token.txt").write_text("hidden too")
     (data_scope / "data" / "notes").mkdir()
-    assert list_files(str(data_scope / "data")) == "notes/\nok.txt"
+    assert list_files(str(data_scope / "data")) == "notes/\nok.txt (4 bytes)"      # "fine" is 4 bytes
 
 
 def test_the_model_can_list_a_folder_inside_data_but_not_outside(data_scope):
@@ -312,7 +312,7 @@ def test_the_model_can_list_a_folder_inside_data_but_not_outside(data_scope):
     messages = [{"role": "user", "content": "list both"}]
     run_agent(client, messages, [LIST_FILES])
     inside, outside = messages[2]["content"]
-    assert inside["content"] == "ok.txt" and "is_error" not in inside
+    assert inside["content"] == "ok.txt (4 bytes)" and "is_error" not in inside
     assert outside["is_error"] == True and outside["content"].startswith("Blocked: list_files can only use paths inside data/")
     assert "secret.txt" not in outside["content"]              # the file above data/ was never listed
 
@@ -493,4 +493,10 @@ def test_a_failing_tool_in_a_parallel_turn_is_flagged_and_the_others_still_retur
 def loop_functions():
     """A copy of the loop's tool table, so a test can add its own tools without touching the real one."""
     return dict(loop.FUNCTIONS)
+
+
+def test_the_listing_shows_each_files_size_so_a_model_can_plan_its_reads(data_scope):
+    (data_scope / "data" / "big.txt").write_text("x" * 1234)
+    listing = list_files(str(data_scope / "data"))
+    assert "big.txt (1234 bytes)" in listing
 

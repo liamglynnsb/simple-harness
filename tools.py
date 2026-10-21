@@ -71,7 +71,8 @@ def read_file(path, start=0):
 # before-hook in hooks.py, before this function ever runs.
 LIST_FILES = {
     "name": "list_files",
-    "description": "List the files and folders inside a folder, one name per line (folders end with /). "
+    "description": "List the files and folders inside a folder, one name per line (folders end with /; each file shows its "
+                   "size in bytes, which tells you how many pieces read_file will need). "
                    "Only folders inside data/ can be listed. Use it to find the right file name when a path is not found.",
     "input_schema": {
         "type": "object",
@@ -83,13 +84,15 @@ LIST_FILES = {
 }
 
 def list_files(path):
-    """The names in a folder, one per line (folders end with /). Hidden and secret-looking names are left
-    out, using the same name test as the hook, so a listing never shows what a read would refuse."""
+    """The names in a folder, one per line (folders end with /; a file shows its size in bytes). Hidden and
+    secret-looking names are left out, using the same name test as the hook, so a listing never shows what a read
+    would refuse. The size lets a model plan how many pieces a long file needs before it reads any."""
     names = []
     for name in sorted(os.listdir(path)):
         if is_sensitive_name(name):
             continue
-        names.append(name + "/" if os.path.isdir(os.path.join(path, name)) else name)
+        full = os.path.join(path, name)
+        names.append(name + "/" if os.path.isdir(full) else name + " (" + str(os.path.getsize(full)) + " bytes)")
     return "\n".join(names) if names else "(empty)"
 
 # The model's view of load_skill. The description carries the menu of skills (names and short
@@ -122,7 +125,7 @@ DELEGATE = {
     "name": "delegate",
     "description": (
         "Hand a task to a separate subagent and get back only its final answer. "
-        "The subagent can read text files in the project's folder (for example data/a.txt) and nothing else. "
+        "The subagent can read text files in the project's folder (for example data/a.txt) and list folders, and nothing else. "
         "You cannot read files yourself, so use this whenever you need a file's contents. "
         "The subagent cannot see this conversation: it sees only the task text, so the task must contain "
         "everything it needs, including the file path, and say what to return."
@@ -150,7 +153,7 @@ def delegate(task, client=None):
     try:
         # the child's tools are fixed here, not chosen by the model; a child that fails must raise, because
         # the parent would take any returned text for a real answer
-        return run_agent(client, messages, [READ_FILE], raise_on_failure=True)
+        return run_agent(client, messages, [READ_FILE, LIST_FILES], raise_on_failure=True)
     except AgentStopped as e:
         raise RuntimeError("The subagent did not finish: " + str(e))
 
