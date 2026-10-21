@@ -658,6 +658,18 @@ the concept was reinforced better in Step 5, and the idea is parked in the roadm
 - Explained to me, not yet said back: a process ends with an integer exit code, where 0 means success; running
   commands named in a config file means trusting that config.
 
+**Talking to an MCP server by hand (5b).** I wrote a one-tool server and typed JSON lines into it. `tools/list`
+returned my definition exactly as I wrote it, with the request's `id` copied into the reply. A call returned the count
+as text. "Strawberry" with `r` is 3, not the 2 I guessed, which is exactly the miscount a tool prevents. A call with
+`letter` as "rr" came back as a normal result flagged `isError`, not as a protocol error, because the tool ran and
+failed. The server isn't intelligent: the check that a letter is a single character is an `if` inside the tool's own
+function. The description I wrote on `letter` is advice for the model, so it builds a valid input; the check in the
+code is what enforces the rule. I was the client in that conversation, with no model involved; in the real system the
+model writes the tool call and the harness turns it into the request.
+- Explained to me, not yet said back: the server reads one JSON line at a time from stdin and flushes each reply to
+  stdout, because an unflushed reply can sit in a buffer and never arrive; logs go to stderr; a message without an
+  `id` is a notification and gets no reply; the server exits when its input closes.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.
