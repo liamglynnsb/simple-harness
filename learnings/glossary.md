@@ -63,7 +63,7 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **harness** All the code around the model: the loop, the tools, the history, and the limits. This project builds one from scratch.
 
-**hook** *(planned, Layer 2 Step 4)* A function that runs automatically before or after a tool call and can log it, block it, or change the result.
+**hook** A function attached at a defined point in the harness, which runs there every time without the loop naming it. A before-hook runs before a tool and can allow the call (return `None`) or block it (return a reason); an after-hook runs after a tool and sees the result. Hooks are registered in a list (`BEFORE_HOOKS` in `hooks.py`). See `harness.md`.
 
 **index** A position in a list, counting from 0: `messages[2]` is the third item.
 

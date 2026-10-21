@@ -488,6 +488,38 @@ import cycles, dict syntax), while the goal was understanding the harness.
   This matters for agents in general: a long task can drift in the same way, so a harness may need an
   explicit check of progress against the goal. It is a Layer 5 item (Step 3, context and memory).
 
+## 2026-10-21 · Layer 2, Step 4 (hooks)
+
+**Hooks.** A hook is a point where I can attach my own function to a process without changing the process.
+Before-hooks run before a tool executes, and after-hooks run after it has. The loop doesn't name the
+functions; it calls whatever is registered in a list (`BEFORE_HOOKS`), so adding a rule is adding a function
+to the list. Calling functions directly would also work, but then the loop has to know each one by name.
+- Correction: I first thought a hook is "a manual check I create". A hook isn't necessarily a check. It can
+  observe (the call trace), decide (block or allow), or change something (after-hooks, 4e). The logging
+  counts as a hook because of where and how it attaches, not because it checks anything.
+
+**What should be a hook.** A rule that applies to any tool that uses local files should be a hook, because
+one function covers all of them. A rule used in a single place, like expense formatting, stays where it's
+used. The test is whether the rule spans several tools and must hold whatever the model does.
+
+**How a hook blocks (decided, 4c).** It returns a reason string to block, and `None` to allow, because a
+block is an intentional policy decision and not an error in the code. An exception means a bug. A file
+scope is defined once, at the start, for the whole harness (just `data/`), and it is enforced by resolving
+the real destination of a path (`..` and symlinks included), since the rule is about where a path ends up
+and not how it is written.
+
+**Recovery needs a way to look and an inferable target (4d).** With `list_files` added, the model recovered
+from the near-miss path "data/number.txt" by listing `data/` and reading `numbers.txt`. For the path
+"data/magic.txt", with no likely match, it listed the folder and then stopped and asked. The harness provides the means to
+recover, and it doesn't guarantee a retry.
+- Explained to me, not yet said back: a hook is deterministic: it runs every time, unlike a prompt, which
+  only asks the model to behave. Hook points beyond tools: before a run starts, before each model call
+  (trim history, change the system prompt), after each model reply, when the model says it's done, when a
+  run ends, on errors and retries, and around subagents. Several Layer 5 items are hooks at those points
+  (tracing, retries, context trimming, guardrails). The costs are indirection (the order of hooks can
+  matter, and what happens before a tool is spread across a list) and the question in 4f of what a hook
+  that crashes should do. For a very small harness, putting everything in one place is fine.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.
