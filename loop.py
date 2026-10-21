@@ -45,8 +45,12 @@ def execute_tool(block, allowed):
         else:
             result = "Error: " + str(e)
         return {"type": "tool_result", "tool_use_id": block.id, "content": str(result), "is_error": True}
-    # No error: send the result back, matched to the request by its id.
-    return {"type": "tool_result", "tool_use_id": block.id, "content": str(result)}
+    # No error. After-hooks may change the result (for example cut it) before it goes into the history.
+    result = str(result)
+    for hook in hooks.AFTER_HOOKS:
+        result = hook(block.name, block.input, result)
+    # Send the result back, matched to the request by its id.
+    return {"type": "tool_result", "tool_use_id": block.id, "content": result}
 
 
 def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = None, raise_on_failure=False):

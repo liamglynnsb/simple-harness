@@ -149,7 +149,8 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         successfully; compare with what Layer 1 Step 5b showed (a near-miss path recovers; a path with no
         likely match makes the model stop and ask, so recovery needs an inferable target)
   - [ ] 4e: after-hooks: see or change a result (truncate, redact); observing vs
-        changing
+        changing. Decided: truncate any result over a size limit, with a note saying it was cut
+        (`truncate_long_results`, `AFTER_HOOKS`; tests written; the real-model demo with `data/long_notes.txt` is next)
   - [ ] 4f: a hook that itself fails: fail open or fail closed, and why
   - [ ] 4g (optional): command hooks that read the call as JSON on stdin, like
         Claude Code

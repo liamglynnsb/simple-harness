@@ -312,3 +312,29 @@ def test_the_model_can_list_a_folder_inside_data_but_not_outside(data_scope):
     assert outside["is_error"] == True and outside["content"].startswith("Blocked: list_files can only use paths inside data/")
     assert "secret.txt" not in outside["content"]              # the file above data/ was never listed
 
+
+def test_after_hook_leaves_a_short_result_alone():
+    assert hooks.truncate_long_results("read_file", {}, "short") == "short"
+
+
+def test_after_hook_cuts_a_long_result_and_says_so(monkeypatch):
+    monkeypatch.setattr("hooks.MAX_RESULT_CHARS", 10)
+    cut = hooks.truncate_long_results("read_file", {}, "0123456789ABCDEFGHIJ")
+    assert cut.startswith("0123456789")
+    assert "ABCDEFGHIJ" not in cut                                   # the tail is gone
+    assert "[truncated: showing the first 10 of 20 characters]" in cut
+
+
+def test_a_long_result_is_cut_before_it_enters_the_history(data_scope, monkeypatch):
+    monkeypatch.setattr("hooks.MAX_RESULT_CHARS", 10)
+    (data_scope / "data" / "long.txt").write_text("0123456789" + "x" * 500)
+    client = FakeClient([
+        tool_reply(tool_block("read_file", {"path": str(data_scope / "data" / "long.txt")}, "id1")),
+        text_reply("done"),
+    ])
+    messages = [{"role": "user", "content": "read it"}]
+    run_agent(client, messages, [READ_FILE])
+    stored = messages[2]["content"][0]["content"]                    # what is in the history the model will be sent
+    assert stored.startswith("0123456789") and "[truncated: showing the first 10 of 510 characters]" in stored
+    assert "x" * 50 not in stored                                    # the long text never entered the history
+

@@ -542,6 +542,24 @@ In terms of `run_agent`:
 - Which point a rule belongs at depends on what it needs to see and what it needs to change: a rule about
   one tool call sits at the tool hooks, a rule about the whole history sits before the model call.
 
+**A tool result that is far too long: truncate or summarise (4e).** A very long result goes into the history and is
+re-sent on every later pass, slows every call, fills the context window, and can bury what matters. I chose
+to truncate: if a result is above size X, cut it to X. It has to happen before the append: the after-hook runs
+between the tool returning and the `tool_result` being built, so the long text never enters `messages`.
+- Explained to me, not yet said back: the trade-offs.
+
+| | truncate | summarise with a model |
+|---|---|---|
+| cost | free and instant | an extra model call per long result: money and time |
+| predictability | the same result every time | varies from run to run |
+| what is kept | the start; the tail is lost (the answer may be in the tail) | the gist, but details can be dropped or even invented |
+| risk | the model may take a partial result for the whole | the file's own text is fed to a model, so hidden instructions in a file could steer the summariser |
+| complexity | a few lines | a nested model call inside a hook, which raises 4f (what if it fails?) |
+
+  Truncating has one rule that matters: the model must not mistake a partial result for the whole, so the cut
+  result carries a note saying it was cut and how much was shown of how much existed. Summarising old history
+  is planned for Layer 5 Step 3c.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.

@@ -53,3 +53,21 @@ def guard_file_paths(tool_name, tool_input):
 
 
 BEFORE_HOOKS = [log_call, guard_file_paths]
+
+
+# An after-hook is called as hook(tool_name, tool_input, result) once a tool has returned, and returns the result
+# the model will see (it may change it). It runs before the tool_result is built, so what it returns is what
+# enters the history. Like BEFORE_HOOKS, the list is looked up at call time.
+
+MAX_RESULT_CHARS = 4000  # about 1,000 tokens; a result longer than this is cut
+
+
+def truncate_long_results(tool_name, tool_input, result):
+    """Cut any result longer than MAX_RESULT_CHARS, and say so, so the model can't mistake it for the whole."""
+    if len(result) <= MAX_RESULT_CHARS:
+        return result
+    note = "\n[truncated: showing the first " + str(MAX_RESULT_CHARS) + " of " + str(len(result)) + " characters]"
+    return result[:MAX_RESULT_CHARS] + note
+
+
+AFTER_HOOKS = [truncate_long_results]
