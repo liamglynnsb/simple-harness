@@ -21,16 +21,19 @@ class MeasuringClient:
         started = time.time()
         response = self.client.messages.create(**kwargs)
         self.calls.append({
+            "tools": [t["name"] for t in kwargs.get("tools", [])],  # which agent made the call can be told from its tools
             "seconds": time.time() - started,
             "input_tokens": response.usage.input_tokens,
             "output_tokens": response.usage.output_tokens,
         })
         return response
 
-    def summary(self):
+    def summary(self, calls=None):
+        """Totals over all the calls, or over a chosen subset (for example only the subagents' calls)."""
+        calls = self.calls if calls is None else calls
         return {
-            "passes": len(self.calls),
-            "input_tokens": sum(c["input_tokens"] for c in self.calls),
-            "output_tokens": sum(c["output_tokens"] for c in self.calls),
-            "model_seconds": sum(c["seconds"] for c in self.calls),
+            "passes": len(calls),
+            "input_tokens": sum(c["input_tokens"] for c in calls),
+            "output_tokens": sum(c["output_tokens"] for c in calls),
+            "model_seconds": sum(c["seconds"] for c in calls),
         }
