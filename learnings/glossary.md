@@ -19,13 +19,19 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **Bedrock** Amazon's service that hosts Claude models. My calls reach it through a gateway.
 
+**binary** A file of machine code produced by a compiler. The operating system loads it and the processor runs it directly.
+
 **block (content block)** One piece of a reply or of a message's content: a text block, a thinking block, a tool request (`tool_use`), and so on. A reply's `content` is a list of blocks. See `anthropic-sdk-reference.md`.
+
+**bytecode** A compact in-between form that Python turns your text into before its interpreter runs it. One reason interpreted and compiled are not strict categories.
 
 **checkpoint** The last item of each layer in the roadmap: explain the concepts back, and rebuild that layer's core from a blank file with nothing open.
 
 **class** A Python blueprint that bundles data with the functions that use it. `FakeClient` is a class I wrote; `Anthropic` (the SDK's client) is one I use. Defining a class is not inheritance. See `code.md`.
 
 **client** Two meanings. In "client and server", my harness is the client (it sends requests) and the model is the server. And `client = make_client()` is the SDK object that sends the requests.
+
+**compiler** A program that translates source text into machine code once, ahead of time, producing a binary that runs without a translator. C, Rust and Go are compiled.
 
 **content** The list of blocks inside a reply (`response.content`). In a request, a message's `content` is a string or a list of blocks.
 
@@ -73,6 +79,8 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **input_schema** The JSON Schema inside a tool definition that describes the inputs the tool takes.
 
+**interpreter** A program that reads another program's text and carries it out as it goes, every time it runs. `python` and the shell (zsh) are interpreters, and are themselves binaries of machine code.
+
 **is_error** A flag on a `tool_result` saying the tool failed, so the model reads the content as an error message and not as data.
 
 **JSON / JSON Schema** JSON is a text format for structured data (dicts, lists, strings, numbers). JSON Schema is a standard way of describing the shape of some JSON; tool inputs are described with it.
@@ -88,6 +96,8 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 **list comprehension** A short way to build a list in one line: `[b.type for b in blocks]`.
 
 **load_skill** The tool that returns a skill's full instructions when the model asks for one by name.
+
+**machine code** The only language a processor runs: a small set of numeric instructions specific to that chip. Every other language is translated into it first.
 
 **max_loops** The most passes `run_agent` will make, so a stuck model can't loop and spend forever.
 
@@ -111,6 +121,8 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **process** A program while it is running, with its own memory and its own stdin, stdout and stderr. Running the same program twice makes two processes. A crash in one process doesn't crash another.
 
+**program** A file of instructions that a computer can run. When it is running it is a process. `python` is a program; `loop.py` is a script it runs.
+
 **progressive disclosure** Showing a short summary always and the details only on request. How skills work: the menu is always visible, the body loads on demand.
 
 **prompt caching** *(planned, Layer 5)* Reusing a stable part of a request at a much lower price, instead of paying full price to re-send it every pass.
@@ -125,11 +137,15 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **scoping** Limiting an agent to the tools it was given. The model can ask for any tool name, so the loop checks each request against the agent's own `tools` list and refuses the rest as unknown. Advising the model isn't enough; the check is in code.
 
+**script** A program run by an interpreter, as `loop.py` is run by `python`. Not a different kind of thing from a program, only a looser name for a small or interpreted one.
+
 **SDK** Software development kit: the `anthropic` Python package that sends requests and turns replies into objects.
 
 **self** Inside a class's methods, the object itself. Written as the first parameter when defining a method, and filled in automatically when calling one.
 
 **server-side tool** A tool the model's provider runs for me (such as web search). I don't use any; every tool here runs in my own code.
+
+**shell** A program (zsh on this Mac) that starts other programs and connects their streams, and an interpreter for a small language of commands, `|` and `>`. See `code.md`.
 
 **SimpleNamespace** A plain Python object whose attributes are whatever names you give it. Used to build fake replies in tests.
 

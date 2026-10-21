@@ -197,3 +197,29 @@ opposite and collects them. Making `system` optional needs a default value on th
 - Correction: inside a dict, a key and its value are separated by a colon (`"model": model_name()`), not
   by `=`. The `=` is for named arguments in a call (`max_tokens=max_tokens`) and for assigning to a
   variable, which is why `"model" = ...` gave `SyntaxError: cannot assign to literal`.
+
+## 2026-10-21 · Layer 2, Step 5 (programs, processes and streams)
+
+**Programs, scripts, processes, and the streams.** A program is a file of instructions that a computer can run. A
+script is a program run by an interpreter. A process is what exists while a program is running, and that is where
+stdin, stdout and stderr belong. Running `python loop.py` starts the program `python`, the interpreter, which reads
+`loop.py`; so while the harness runs it is a process, and when it starts an MCP server with `python server.py` that
+is a second process running the same program, `python`, on a different script. Two processes means separate memory,
+which is why a crash in one doesn't crash the other.
+- Corrections: I thought the harness "has output but no input". Every process has all three streams; ours uses
+  stdout (`print`) and never reads stdin. And input and output aren't stored anywhere; they are channels, and whoever
+  starts the process decides what they connect to: the terminal by default, a file (`>`), a pipe to another process
+  (`|`), or nothing. For MCP, the harness connects the server's stdin and stdout to pipes it holds.
+
+**What a computer actually runs.** A computer's own language is machine code, specific to the chip. A compiled
+language (C, Rust, Go) is translated once, ahead of time, by a compiler into a binary of machine code, so no
+translator is present when it runs. An interpreted language (Python, shell) stays as text, and an interpreter, itself
+a binary of machine code, reads it and carries it out every time it runs; Python also compiles to bytecode first, so
+the two are not strict categories. Compiled is usually faster to run but needs a compile step and a binary per kind
+of machine; interpreted is flexible and portable but slower. That is why an MCP server can be written in any
+language: the harness only starts a process and talks through its pipes.
+
+**The shell, and what flows through a pipe.** The shell (zsh) is both a program that starts other programs and an
+interpreter for a small language of commands, `|`, `>` and variables. A pipe carries only bytes, usually UTF-8 text;
+the meaning is an agreement between the two ends. For MCP that agreement is stacked: bytes, then text lines, then
+JSON, then JSON-RPC, then the MCP methods.
