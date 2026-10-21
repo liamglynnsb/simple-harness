@@ -680,6 +680,22 @@ like `count_letters`, an in-process function is simpler and more reliable; I bui
   language, credentials and crashes isolated in the server, a standard interface that makes adding a tool
   configuration).
 
+**Layer 2 in one line each (checkpoint explain-back).**
+- **Skills:** we tell the model how to do certain things; it is guidance and the model doesn't have to listen. The model
+  sees a menu of names and descriptions and picks one to load.
+- **Tools:** we hard-code certain things so they are done the same way every time; use them for deterministic tasks.
+- **Tests:** scripts that test failures in our harness in a repeatable way, with a fake client and scripted replies.
+- **Subagents:** delegate large tasks we wouldn't want in the main conversation because they would waste context; in
+  general, harnesses also use them to divide and conquer, running many at once.
+- **Hooks:** rules or functions attached to certain steps of the harness, to enforce things like protecting files, or
+  cutting a long result so the input stays smaller.
+- **MCP:** a common protocol for tools that live outside our code; it adds many failure modes and extra work, so
+  reserve it for a clear gain, like a well-maintained Slack or Google server.
+- Corrections: a tool's model-chosen call is the probabilistic part, and its function is the deterministic part. In our
+  harness, subagents run one after another; running them at the same time is a Layer 3 capability of the harness, not of
+  subagents themselves. Our after-hook limits the characters of a tool's result, which keeps the input to later calls
+  smaller; `max_tokens` is a different limit: the tokens the model writes back, thinking included.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.

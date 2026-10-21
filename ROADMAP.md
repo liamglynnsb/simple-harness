@@ -186,6 +186,7 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
 - [ ] Layer 2 checkpoint: explain each of the four extensions back; rebuild the hook
       mechanism from a blank file; and do the pending Layer 1 rebuild (`run_agent`
       from a blank file, nothing open)
+      (explain-back done and recorded in `learnings/harness.md`; the two rebuilds are still open)
 
 ## Layer 3: multi-agent  (builds on the Layer 2 subagent; `orchestrator.py`)
 
