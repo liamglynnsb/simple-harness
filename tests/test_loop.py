@@ -3,7 +3,7 @@ import pytest
 import hooks
 from loop import run_agent, AgentStopped
 from fake_client import FakeClient, text_reply, tool_reply, tool_block
-from tools import CALCULATOR, DELEGATE, READ_FILE, LIST_FILES, list_files
+from tools import CALCULATOR, DELEGATE, READ_FILE, LIST_FILES, list_files, read_file
 from types import SimpleNamespace
 
 def test_plain_finish():
@@ -322,7 +322,7 @@ def test_after_hook_cuts_a_long_result_and_says_so(monkeypatch):
     cut = hooks.truncate_long_results("read_file", {}, "0123456789ABCDEFGHIJ")
     assert cut.startswith("0123456789")
     assert "ABCDEFGHIJ" not in cut                                   # the tail is gone
-    assert "[truncated: showing the first 10 of 20 characters]" in cut
+    assert "[truncated: showing characters 0 to 10 of 20" in cut
 
 
 def test_a_long_result_is_cut_before_it_enters_the_history(data_scope, monkeypatch):
@@ -335,6 +335,41 @@ def test_a_long_result_is_cut_before_it_enters_the_history(data_scope, monkeypat
     messages = [{"role": "user", "content": "read it"}]
     run_agent(client, messages, [READ_FILE])
     stored = messages[2]["content"][0]["content"]                    # what is in the history the model will be sent
-    assert stored.startswith("0123456789") and "[truncated: showing the first 10 of 510 characters]" in stored
+    assert stored.startswith("0123456789") and "showing characters 0 to 10 of 510" in stored
+    assert "Call read_file again with start=10 to continue" in stored
     assert "x" * 50 not in stored                                    # the long text never entered the history
+
+
+def test_read_file_start_reads_from_a_position(tmp_path):
+    f = tmp_path / "t.txt"
+    f.write_text("0123456789ABCDEFGHIJ")
+    assert read_file(str(f)) == "0123456789ABCDEFGHIJ"
+    assert read_file(str(f), start=10) == "ABCDEFGHIJ"
+    assert read_file(str(f), start=20).startswith("(nothing at this position")
+
+
+def test_read_file_rejects_a_bad_start(tmp_path):
+    f = tmp_path / "t.txt"
+    f.write_text("abc")
+    for bad in (-1, "5", 1.5):
+        with pytest.raises(ValueError):
+            read_file(str(f), start=bad)
+
+
+def test_the_model_can_page_through_a_long_file(data_scope, monkeypatch):
+    monkeypatch.setattr("hooks.MAX_RESULT_CHARS", 10)
+    path = str(data_scope / "data" / "long.txt")
+    (data_scope / "data" / "long.txt").write_text("0123456789" + "ABCDEFGHIJ" + "KLMNO")
+    client = FakeClient([
+        tool_reply(tool_block("read_file", {"path": path}, "id1")),
+        tool_reply(tool_block("read_file", {"path": path, "start": 10}, "id2")),
+        tool_reply(tool_block("read_file", {"path": path, "start": 20}, "id3")),
+        text_reply("found it"),
+    ])
+    messages = [{"role": "user", "content": "read all of it"}]
+    run_agent(client, messages, [READ_FILE])
+    first, second, third = (messages[i]["content"][0]["content"] for i in (2, 4, 6))
+    assert first.startswith("0123456789") and "start=10 to continue" in first
+    assert second.startswith("ABCDEFGHIJ") and "start=20 to continue" in second
+    assert third == "KLMNO"                                    # the last piece fits, so no note
 

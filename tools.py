@@ -43,22 +43,29 @@ def calculator(operation, a, b):
 # The model's view of read_file: one input, a path (relative to where the script is run from).
 READ_FILE = {
     "name": "read_file",
-    "description": "Read a file and return its contents. The path is relative to the project's folder.",
+    "description": "Read a text file and return its contents. The path is relative to the project's folder. "
+                   "A long file comes back cut off; to read on from where a result stopped, call again with start.",
     "input_schema": {
         "type": "object",
         "properties": {
             "path": {"type": "string"},
+            "start": {"type": "integer", "description": "Optional. The character position to start reading from (default 0)."},
         },
         "required": ["path"],
     }
 }
 
-def read_file(path):
-    """Return the text of a file. A missing file raises an error, which the loop catches and
-    sends back to the model. NOTE: it can open ANY file the process can read (including .env);
-    restricting it is planned for Layer 2, Step 4 (a blocking hook)."""
+def read_file(path, start=0):
+    """Return the text of a file, from the character position `start` (default 0). A missing file raises an
+    error, which the loop catches and sends back to the model. The scope (only inside data/) is enforced by
+    the before-hook in hooks.py, and a long result is cut by the after-hook, so this function stays simple."""
+    if not isinstance(start, int) or start < 0:
+        raise ValueError("start must be a whole number, 0 or more")
     with open(path) as f:
-        return f.read()
+        text = f.read()
+    if start > 0 and start >= len(text):
+        return "(nothing at this position: the file has " + str(len(text)) + " characters)"
+    return text[start:]
 
 # The model's view of list_files: one input, a folder path. The scope (only inside data/) is enforced by the
 # before-hook in hooks.py, before this function ever runs.

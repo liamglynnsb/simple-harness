@@ -66,8 +66,15 @@ def truncate_long_results(tool_name, tool_input, result):
     """Cut any result longer than MAX_RESULT_CHARS, and say so, so the model can't mistake it for the whole."""
     if len(result) <= MAX_RESULT_CHARS:
         return result
-    note = "\n[truncated: showing the first " + str(MAX_RESULT_CHARS) + " of " + str(len(result)) + " characters]"
-    return result[:MAX_RESULT_CHARS] + note
+    # For read_file the result began at the model's `start`, so work out where in the whole file we are.
+    start = tool_input.get("start", 0) if tool_name == "read_file" else 0
+    if not isinstance(start, int):
+        start = 0
+    shown_to = start + MAX_RESULT_CHARS
+    note = "\n[truncated: showing characters " + str(start) + " to " + str(shown_to) + " of " + str(start + len(result))
+    if tool_name == "read_file":
+        note += ". Call read_file again with start=" + str(shown_to) + " to continue"
+    return result[:MAX_RESULT_CHARS] + note + "]"
 
 
 AFTER_HOOKS = [truncate_long_results]

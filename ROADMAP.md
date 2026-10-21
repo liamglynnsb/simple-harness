@@ -150,7 +150,8 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         likely match makes the model stop and ask, so recovery needs an inferable target)
   - [ ] 4e: after-hooks: see or change a result (truncate, redact); observing vs
         changing. Decided: truncate any result over a size limit, with a note saying it was cut
-        (`truncate_long_results`, `AFTER_HOOKS`; tests written; the real-model demo with `data/long_notes.txt` is next)
+        (`truncate_long_results`, `AFTER_HOOKS`). The demo with `data/long_notes.txt` showed that a cut result needs a
+        way to continue, so `read_file` got an optional `start` (paging); the real-model rerun is next
   - [ ] 4f: a hook that itself fails: fail open or fail closed, and why
   - [ ] 4g (optional): command hooks that read the call as JSON on stdin, like
         Claude Code

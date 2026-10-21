@@ -101,6 +101,8 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **non-deterministic** Giving different outputs for the same input. The model is; that's why evals run things several times.
 
+**paging (pagination)** Reading a long thing in pieces: each call returns one chunk, and the caller asks for the next by giving a start position. `read_file`'s `start` is the position; the harness fixes the chunk size.
+
 **pass** One iteration of the agent loop, which is one call to the model.
 
 **progressive disclosure** Showing a short summary always and the details only on request. How skills work: the menu is always visible, the body loads on demand.

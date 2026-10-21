@@ -560,6 +560,20 @@ between the tool returning and the `tool_result` being built, so the long text n
   result carries a note saying it was cut and how much was shown of how much existed. Summarising old history
   is planned for Layer 5 Step 3c.
 
+**Truncating a result trades reach for tokens (4e demo).** Truncating a result is good for controlling tokens and
+message size, at the cost of what the model can reach: if the answer, or context it needs, is in the part that was
+cut, it isn't there. With `data/long_notes.txt` (17,115 characters, answer on the last line) the model saw the
+first 4,000, couldn't find the answer, and said so, because the note carried the sizes. Truncation needs a way to
+get the rest, or the information is unreachable.
+- Correction: I first called the cost "accuracy". The model stayed accurate; what it lost was completeness. The note
+  kept the failure honest instead of producing a wrong answer.
+- Explained to me, not yet said back: the fix I chose is paging: `read_file` takes an optional `start` position, and
+  the note says how to continue ("call again with start=4000"). The model chooses `start` on each call, as it
+  chooses any tool input. The harness keeps control of the chunk size (set by the after-hook), the path rule (the
+  before-hook runs whatever `start` is) and the pass limit. A subagent that summarises the file would not solve it
+  alone, because the after-hook cuts the child's reads too; a child that pages through the file and returns only the
+  answer combines the two ideas. A search tool (find lines containing a word) is a third option.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.
