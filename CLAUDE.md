@@ -52,6 +52,17 @@ first, not a code-delivery project.
      counter-example, then let them fix it.
   Explaining a *concept* they've never seen (what a symlink is) is still fine; the rule is about the
   answer to the question they are working on.
+- **When the user is confused, change how I explain; don't repeat or push on.** A rut (several rounds of "I don't
+  get it") is my failure to find the mismatch, not theirs. So:
+  1. If they say they don't understand, or ask the same thing twice, stop quizzing them. First restate their
+     question in my own words and check it's what they meant; then answer it directly in a couple of sentences.
+  2. Name the mismatch: "you expected X; what actually happens is Y". Find the assumption they are working from
+     and address that, rather than explaining around it.
+  3. After one explanation fails, switch method (a tiny runnable example with real output, or a picture); don't
+     rephrase the same explanation.
+  4. One new idea or term per message, defined before it's used. Don't stack synonyms (name, label, key...).
+  5. Check any claim about how Python or a tool behaves with a quick read-only run before stating it.
+  6. Don't move on to the next step until they say they have the current one.
 - When they explain something back, check it against what's true and correct
   loose wording precisely.
 - Don't build ahead of the current step in `ROADMAP.md`.
