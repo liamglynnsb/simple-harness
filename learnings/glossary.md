@@ -65,6 +65,8 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **hook** A function attached at a defined point in the harness, which runs there every time without the loop naming it. A before-hook runs before a tool and can allow the call (return `None`) or block it (return a reason); an after-hook runs after a tool and sees the result. Hooks are registered in a list (`BEFORE_HOOKS` in `hooks.py`). See `harness.md`.
 
+**hook point** A moment in the loop where hooks can be attached: before or after a tool, before a model call, after a model reply, when the model says it's done, when a run ends, on an error or retry, or around a subagent. See the table in `harness.md`.
+
 **index** A position in a list, counting from 0: `messages[2]` is the third item.
 
 **input_schema** The JSON Schema inside a tool definition that describes the inputs the tool takes.
@@ -100,7 +102,6 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 **non-deterministic** Giving different outputs for the same input. The model is; that's why evals run things several times.
 
 **pass** One iteration of the agent loop, which is one call to the model.
-
 
 **progressive disclosure** Showing a short summary always and the details only on request. How skills work: the menu is always visible, the body loads on demand.
 

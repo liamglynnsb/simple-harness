@@ -520,6 +520,28 @@ recover, and it doesn't guarantee a retry.
   matter, and what happens before a tool is spread across a list) and the question in 4f of what a hook
   that crashes should do. For a very small harness, putting everything in one place is fine.
 
+**Where hooks are normally run (hook points).** *Explained to me, not yet said back.* Tool calls are only the
+most common point; the loop passes through several moments where the harness has information and control.
+In terms of `run_agent`:
+
+| hook point | where in the loop | what it could do | in this project |
+|---|---|---|---|
+| before a run starts | before the first model call | check or rewrite the user's input, add context, start a trace | not built |
+| before each model call | just before `client.messages.create(...)` | trim old history, change the system prompt, count tokens, enforce a budget | Layer 5 Step 3 (context), Step 4 (caching) |
+| after each model reply | right after the reply arrives | log `usage` and `stop_reason`, check the output, spot a refusal | Layer 5 Step 1 (tracing) |
+| before a tool | `execute_tool`, before the call | log, allow or block | built: `BEFORE_HOOKS` (4b, 4c) |
+| after a tool | `execute_tool`, after the call | observe, trim or redact a result | Layer 2 Step 4e |
+| when the model says it's done | the `end_turn` branch | check the answer; if it isn't good enough, send the model back for another pass | not built |
+| when a run ends | after the loop returns | write the trace, report the cost | Layer 5 Step 1 |
+| on an error or a retry | around the model call | retry, back off, switch model | Layer 5 Step 2 |
+| around a subagent | around `delegate` | trace which agent did what, apply the child's own rules | Layer 3 Step 5 |
+
+- As far as I know, Claude Code's own hooks follow the same pattern: its documented hook points include before and
+  after a tool call, when a prompt is submitted, when the model stops, and when a session starts or ends. That is
+  from memory of its docs, so check the names there before relying on them.
+- Which point a rule belongs at depends on what it needs to see and what it needs to change: a rule about
+  one tool call sits at the tool hooks, a rule about the whole history sits before the model call.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.
