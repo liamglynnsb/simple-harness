@@ -115,7 +115,7 @@ def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = N
 
 if __name__ == "__main__":  # runs only when this file is run directly, not when it is imported
     client = make_client()
-    messages = [{"role": "user", "content": "Read data/number.txt and tell me what it says."}]  # a near miss for numbers.txt: a wrong path to recover from
+    messages = [{"role": "user", "content": "What is the final answer in data/long_notes.txt?"}]  # a long file: the answer is on the last line, past the truncation limit
     answer = run_agent(client, messages, [READ_FILE, LIST_FILES])
     print(answer)
     # for traceability, print the messages
