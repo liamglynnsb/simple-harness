@@ -215,7 +215,11 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
   - [ ] 2b: measure speedup and watch for rate-limit errors from the gateway
         (so far: parallel run 11.9 s, no rate-limit errors at width 6. Then `list_files` got file sizes and the subagent got
         `list_files`; `layer3/l3s2_sizes.py`, 2026-10-21: 3 model calls per subagent, 20 in all, 61,275 input tokens, 5,412 output,
-        11.5 s: fewer calls but heavier ones, so the time barely moved. Still to do: a wider run to find the rate limit)
+        11.5 s: fewer calls but heavier ones, so the time barely moved. Then the standing instructions moved into the
+        subagent's system prompt (`SUBAGENT_SYSTEM_PROMPT`; `layer3/l3s2_short.py`): the orchestrator wrote 613 output tokens
+        instead of 1,449, 20 calls, 67,530 input tokens, 8.3 s, the fastest run. The subagents skipped the prompt's "list the
+        folder first" step and learned the file's length from the truncation note instead (still 3 calls each).
+        Still to do: a wider run to find the rate limit)
   - [ ] 2c: keep results in order and handle one worker finishing much later
 - [ ] Step 3: let the orchestrator plan the split
   - [ ] 3a: the model proposes subtasks as structured data; validate the plan
