@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 3, Step 1 (baseline), substep 1b: a single agent does the whole workload; record tokens, passes and wall-clock time.
+**Where we are:** Layer 3, Step 1 (baseline), substep 1c: an orchestrator with sequential `delegate` calls; record the same numbers.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -196,7 +196,10 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
   - [x] 1a: build a workload: several data files and a per-file question (`scripts/make_workload.py` writes six
         documents of 200 numbered lines in `data/workload/`, each with a different buried "final answer" at a different
         position; the question is "What is the final answer in <file>?"; the answer key is only in the script)
-  - [ ] 1b: single agent does it all; record tokens, passes and wall-clock time
+  - [x] 1b: single agent does it all; record tokens, passes and wall-clock time. Baseline (`layer3/l3s1_baseline.py`,
+        2026-10-21): all six answers right; 7 passes (the model batched six reads per pass); 170,356 input tokens and
+        3,443 output tokens; 21.9 s; input per pass [690, 8796, 17162, 25440, 33586, 41742, 42940], about 8,000 more each
+        pass because every chunk stays in the one history and is re-sent. It read every chunk of every file.
   - [ ] 1c: orchestrator with sequential `delegate` calls; record the same numbers
 - [ ] Step 2: parallel fan-out
   - [ ] 2a: run the subagents in threads; each gets its own `messages` (no shared lists)
