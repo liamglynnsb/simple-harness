@@ -1,5 +1,6 @@
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
 
 import hooks
 import mcp_client
@@ -65,7 +66,7 @@ def execute_tool(block, allowed):
     return {"type": "tool_result", "tool_use_id": block.id, "content": result}
 
 
-def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = None, raise_on_failure=False):
+def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = None, raise_on_failure=False, parallel_tools=False):
     """The agent loop. Ask the model; if it wants tools, run them, send the results back, ask
     again; stop when it finishes.
 
@@ -77,6 +78,8 @@ def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = N
     system      -- the system message to use for the model
     raise_on_failure -- if True, a run that ends without a real answer raises AgentStopped instead of
                         returning a message (delegate uses this, so the parent sees an error)
+    parallel_tools -- if True, the tool requests in ONE reply run at the same time, in threads (results are still
+                      sent back in the order they were requested). Off by default: tools then run one after another.
     Returns the model's final text, or a message saying why it stopped early.
     """
     allowed = [t["name"] for t in tools]  # the tools THIS agent was given; FUNCTIONS holds every tool there is
@@ -104,9 +107,14 @@ def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = N
         # print("blocks this pass:", [b.type for b in response.content])
         if response.stop_reason == "tool_use":
             # The model wants tools run. Answer EVERY request in this reply, one result each.
-            for block in response.content:
-                if block.type == "tool_use":
-                    tool_results.append(execute_tool(block, allowed))
+            requests = [block for block in response.content if block.type == "tool_use"]
+            if parallel_tools and len(requests) > 1:
+                # One thread per request. map() hands the results back in the order of `requests`, however long each
+                # one took, so a result is always paired with its own tool_use id.
+                with ThreadPoolExecutor(max_workers=len(requests)) as pool:
+                    tool_results = list(pool.map(lambda block: execute_tool(block, allowed), requests))
+            else:
+                tool_results = [execute_tool(block, allowed) for block in requests]
             # All the results go back together in ONE user message; the next pass sends them.
             messages.append({"role": "user", "content": tool_results})
         elif response.stop_reason == "end_turn":

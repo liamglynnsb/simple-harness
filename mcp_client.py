@@ -56,6 +56,7 @@ class McpClient:
     def __init__(self, command, timeout=10, retries=1):
         self.command, self.timeout, self.retries = command, timeout, retries
         self._next_id = 1
+        self._lock = threading.Lock()  # one pipe: two requests at once would interleave their lines, so take turns
         self._start()
 
     def _start(self):
@@ -102,14 +103,15 @@ class McpClient:
         """Send a request and return its `result`. If the connection fails, restart the server and try again, up to
         `retries` more times; then raise one clear McpTransportError. A JSON-RPC error (McpError) is raised at once."""
         attempts = self.retries + 1
-        for attempt in range(1, attempts + 1):
-            try:
-                return self._request_once(method, params)
-            except McpTransportError as problem:
-                print("MCP SERVER PROBLEM (attempt " + str(attempt) + " of " + str(attempts) + "):", problem, file=sys.stderr)
-                if attempt == attempts:
-                    raise McpTransportError(str(problem) + " (tried " + str(attempts) + " time" + ("s" if attempts > 1 else "") + ")")
-                self._restart()
+        with self._lock:  # threads may call this at the same time (parallel tools); the pipe handles one request at a time
+            for attempt in range(1, attempts + 1):
+                try:
+                    return self._request_once(method, params)
+                except McpTransportError as problem:
+                    print("MCP SERVER PROBLEM (attempt " + str(attempt) + " of " + str(attempts) + "):", problem, file=sys.stderr)
+                    if attempt == attempts:
+                        raise McpTransportError(str(problem) + " (tried " + str(attempts) + " time" + ("s" if attempts > 1 else "") + ")")
+                    self._restart()
 
     def list_tools(self):
         return self.request("tools/list")["tools"]

@@ -210,3 +210,19 @@ def test_if_the_server_is_dead_and_the_user_says_no_the_error_is_raised():
         with pytest.raises(mcp_client.McpTransportError):
             mcp_client.register_tools_or_ask(server, dict(loop.FUNCTIONS), ask=lambda q: "n")
 
+
+def test_many_threads_can_share_one_client_without_their_requests_getting_mixed_up():
+    import threading
+    with mcp_client.McpClient(SERVER) as client:
+        count = mcp_client.make_tool_function(client, mcp_server.TOOL["name"])
+        words = ["a" * n for n in range(1, 13)]                  # twelve different words: the right answer is the length
+        answers = {}
+        def work(word):
+            answers[word] = count(word=word, letter="a")
+        threads = [threading.Thread(target=work, args=(word,)) for word in words]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+    assert answers == {word: str(len(word)) for word in words}
+

@@ -1,7 +1,10 @@
 import os
 import re
+import threading
+import time
 import pytest
 import hooks
+import loop
 from loop import run_agent, AgentStopped
 from fake_client import FakeClient, text_reply, tool_reply, tool_block
 from tools import CALCULATOR, DELEGATE, READ_FILE, LIST_FILES, list_files, read_file
@@ -421,4 +424,73 @@ def test_a_critical_failure_in_a_subagent_stops_the_parent_too(monkeypatch, fail
     messages = [{"role": "user", "content": "go"}]
     with pytest.raises(hooks.HookFailed):
         run_agent(client, messages, [DELEGATE])
+
+
+# ---- parallel tools: the requests in one turn run at the same time, and results stay paired with their requests ----
+
+def _two_requests(name_a, name_b):
+    return FakeClient([
+        tool_reply(tool_block(name_a, {}, "id1"), tool_block(name_b, {}, "id2")),
+        text_reply("done"),
+    ])
+
+
+def test_parallel_tools_really_run_at_the_same_time(monkeypatch):
+    meeting = threading.Barrier(2, timeout=5)        # each tool waits here until the OTHER one has also arrived
+    def meet_a():
+        meeting.wait()
+        return "a done"
+    def meet_b():
+        meeting.wait()
+        return "b done"
+    monkeypatch.setattr("loop.FUNCTIONS", {**loop_functions(), "meet_a": meet_a, "meet_b": meet_b})
+    messages = [{"role": "user", "content": "go"}]
+    run_agent(_two_requests("meet_a", "meet_b"), messages, [{"name": "meet_a"}, {"name": "meet_b"}], parallel_tools=True)
+    results = messages[2]["content"]
+    assert [r["content"] for r in results] == ["a done", "b done"]    # impossible if they had run one after the other
+
+
+def test_results_stay_in_request_order_even_when_the_first_finishes_last(monkeypatch):
+    def slow():
+        time.sleep(0.4)
+        return "slow"
+    def quick():
+        return "quick"
+    monkeypatch.setattr("loop.FUNCTIONS", {**loop_functions(), "slow": slow, "quick": quick})
+    messages = [{"role": "user", "content": "go"}]
+    run_agent(_two_requests("slow", "quick"), messages, [{"name": "slow"}, {"name": "quick"}], parallel_tools=True)
+    results = messages[2]["content"]
+    assert [(r["tool_use_id"], r["content"]) for r in results] == [("id1", "slow"), ("id2", "quick")]
+
+
+def test_without_the_setting_tools_still_run_one_after_another(monkeypatch):
+    order = []
+    def first():
+        order.append("first start"); time.sleep(0.2); order.append("first end")
+        return "1"
+    def second():
+        order.append("second start")
+        return "2"
+    monkeypatch.setattr("loop.FUNCTIONS", {**loop_functions(), "first": first, "second": second})
+    messages = [{"role": "user", "content": "go"}]
+    run_agent(_two_requests("first", "second"), messages, [{"name": "first"}, {"name": "second"}])
+    assert order == ["first start", "first end", "second start"]       # the default behaviour is unchanged
+
+
+def test_a_failing_tool_in_a_parallel_turn_is_flagged_and_the_others_still_return(monkeypatch):
+    def boom():
+        raise ValueError("it broke")
+    def fine():
+        return "fine"
+    monkeypatch.setattr("loop.FUNCTIONS", {**loop_functions(), "boom": boom, "fine": fine})
+    messages = [{"role": "user", "content": "go"}]
+    run_agent(_two_requests("boom", "fine"), messages, [{"name": "boom"}, {"name": "fine"}], parallel_tools=True)
+    first, second = messages[2]["content"]
+    assert first["is_error"] is True and first["content"] == "Error: it broke"
+    assert second["content"] == "fine" and "is_error" not in second
+
+
+def loop_functions():
+    """A copy of the loop's tool table, so a test can add its own tools without touching the real one."""
+    return dict(loop.FUNCTIONS)
 

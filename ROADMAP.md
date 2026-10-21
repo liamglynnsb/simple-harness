@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 3, Step 2 (parallel fan-out), substep 2a: run the subagents in threads; each gets its own `messages` (no shared lists).
+**Where we are:** Layer 3, Step 2 (parallel fan-out), substep 2b: measure speedup and watch for rate-limit errors from the gateway (six at once showed none).
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -206,7 +206,12 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         2,007 tokens in total and no agent held more than 7,542 input tokens in one call (baseline: 42,940). Isolation shrinks
         every conversation; it does not make the reading cheaper, and run one after another it is slower
 - [ ] Step 2: parallel fan-out
-  - [ ] 2a: run the subagents in threads; each gets its own `messages` (no shared lists)
+  - [x] 2a: run the subagents in threads; each gets its own `messages` (no shared lists). `parallel_tools=True` in
+        `run_agent` runs one turn's tool requests in threads, results kept in request order; a lock on the MCP pipe.
+        Run (`layer3/l3s2_parallel.py`, 2026-10-21): all six right; 31 passes; 116,105 input tokens and 3,875 output;
+        11.9 s wall-clock (one at a time: 57.2 s, single agent: 21.9 s) while the model calls added up to 43.5 s, so they
+        overlapped. Fewer tokens than 1c came from the subagents batching their chunk reads differently in that run, not
+        from concurrency: one run per setup is not enough to compare token counts
   - [ ] 2b: measure speedup and watch for rate-limit errors from the gateway
   - [ ] 2c: keep results in order and handle one worker finishing much later
 - [ ] Step 3: let the orchestrator plan the split
