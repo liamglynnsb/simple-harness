@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 3, Step 1 (baseline: one orchestrator delegating subtasks one after another), substep 1a.
+**Where we are:** Layer 3, Step 1 (baseline), substep 1b: a single agent does the whole workload; record tokens, passes and wall-clock time.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -193,7 +193,9 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
 
 - [ ] Step 1: baseline: one orchestrator delegating N independent subtasks one after
       another, plus the single-agent version of the same job (time and tokens for both)
-  - [ ] 1a: build a workload: several data files and a per-file question
+  - [x] 1a: build a workload: several data files and a per-file question (`scripts/make_workload.py` writes six
+        documents of 200 numbered lines in `data/workload/`, each with a different buried "final answer" at a different
+        position; the question is "What is the final answer in <file>?"; the answer key is only in the script)
   - [ ] 1b: single agent does it all; record tokens, passes and wall-clock time
   - [ ] 1c: orchestrator with sequential `delegate` calls; record the same numbers
 - [ ] Step 2: parallel fan-out

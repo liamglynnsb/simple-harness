@@ -72,7 +72,8 @@ activate it first with `source .venv/bin/activate`, plain `python` works too:
 - `layer1/`, `layer2/`, ...: the step scripts for each layer
 - `tests/`: `fake_client.py` (a scripted stand-in for the model) and `test_loop.py`
 - `scripts/`: `gen_sdk_reference.py` regenerates the tables in `learnings/anthropic-sdk-reference.md`
-  from the installed SDK; `check_docs.py` checks the documentation for drift
+  from the installed SDK; `check_docs.py` checks the documentation for drift;
+  `make_workload.py` writes the Layer 3 sample documents in `data/workload/`
 - `ROADMAP.md`: layers and steps, with substeps; `PLAN.md`: the reasoning behind the plan;
   `LEARNINGS.md`: the index of what I've learned, with `learnings/harness.md` (the theory of the
   harness) and `learnings/code.md` (the code and tooling), `learnings/anthropic-sdk-reference.md` (SDK data structures)
