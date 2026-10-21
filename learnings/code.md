@@ -237,3 +237,13 @@ something has to hold it: a variable I create myself when I call `make_tool_func
 - Explained to me, not yet said back: the inner function remembering `client` and `tool_name` after
   `make_tool_function` finishes is called a closure. A function's printed form shows where it was defined
   (`make_tool_function.<locals>.call`), not the name you would call it by.
+
+**Dependency injection, and why a harness needs it.** It lets us control the client instead of leaving it to something
+probabilistic and potentially inconsistent. A function's dependencies (the model client, the keyboard, the MCP server)
+are passed in instead of created inside, so a test can hand it a scripted fake, and a different run can hand it a
+different model or server. The monkeypatch we used for `delegate` was the workaround for a place where it wasn't
+injected all the way down: the loop calls a tool with only the model's input, so the client couldn't be passed, and
+the test had to swap `make_client` to make the subagent use the same scripted client as the normal one.
+- Explained to me, not yet said back: the examples across the harness (`client` in `run_agent`, `ask=input`, the hook
+  lists, the server command), and the cost: more parameters, worth it where the dependency is random, slow, costly or
+  external.

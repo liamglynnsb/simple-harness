@@ -113,6 +113,8 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **model slug** The model's name as your API or gateway wants it, for example `claude-haiku-5-5` on the API directly. It lives in `HARNESS_MODEL`.
 
+**monkeypatch** A pytest tool that temporarily replaces something (a function, a setting) for one test and puts it back afterwards. Used where a dependency can't be passed in, for example making `make_client` return a fake. See `code.md`.
+
 **non-deterministic** Giving different outputs for the same input. The model is; that's why evals run things several times.
 
 **paging (pagination)** Reading a long thing in pieces: each call returns one chunk, and the caller asks for the next by giving a start position. `read_file`'s `start` is the position; the harness fixes the chunk size.
