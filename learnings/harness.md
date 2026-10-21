@@ -585,6 +585,25 @@ supported by the line numbers in the text, which is what made it checkable.
   model doesn't consult an index; it reads over text it has been sent. `start` controls how the pieces get there,
   and they stay until something removes them.
 
+**When a hook crashes: ask whether skipping it would let something bad through (4f).** A crashed hook doesn't return
+anything; it raises, and the exception travels up until something catches it. If nothing does, the run stops. What
+the harness should do depends on what the hook is for, and the question to ask is: does this hook raise a blocking
+issue, security or otherwise? The path guard enforces a security rule, so a crash should stop the whole run. The
+logger only observes, so a crash should be recorded and let through, because it has no risk and blocking would cost
+a whole run. Either way the harness records the failure itself, with the hook's name, the tool, the input and the
+traceback, so we never depend on the model to report a bug in our own code. The model can't see any of this and
+only gets the normal result.
+- Correction: I first thought `log_call` never returns `None` and so never blocks. A Python function with no
+  `return` returns `None`, which is exactly how a hook says "no objection". A crash is different: it isn't a return
+  value but an exception. Also, a blocked logger call wouldn't necessarily stop the run; it comes back to the model
+  as an error, but the task would likely fail anyway.
+- Explained to me, not yet said back: `@critical` is a decorator, shorthand for
+  `guard_file_paths = critical(guard_file_paths)`, which puts a label on the function. A bare `raise` inside an
+  `except` re-raises the caught exception, and `except HookFailed` has to sit above `except Exception` because the
+  first matching clause wins. `getattr(hook, "critical", False)` reads the label and defaults to not-critical for
+  hooks without one. The log is opened in append mode and never resets; the run id and turn number are planned for
+  Layer 5 tracing, with only a timestamp so far.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.
