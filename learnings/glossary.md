@@ -31,6 +31,8 @@ built yet. Where a term has a fuller explanation, the file to look in is named. 
 
 **client** Two meanings. In "client and server", my harness is the client (it sends requests) and the model is the server. And `client = make_client()` is the SDK object that sends the requests.
 
+**closure** A function made inside another function that keeps using values from where it was made, after that outer function has finished. Each wrapper `make_tool_function` builds remembers its own `client` and `tool_name`. See `code.md`.
+
 **compiler** A program that translates source text into machine code once, ahead of time, producing a binary that runs without a translator. C, Rust and Go are compiled.
 
 **content** The list of blocks inside a reply (`response.content`). In a request, a message's `content` is a string or a list of blocks.

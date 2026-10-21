@@ -223,3 +223,17 @@ language: the harness only starts a process and talks through its pipes.
 interpreter for a small language of commands, `|`, `>` and variables. A pipe carries only bytes, usually UTF-8 text;
 the meaning is an agreement between the two ends. For MCP that agreement is stacked: bytes, then text lines, then
 JSON, then JSON-RPC, then the MCP methods.
+
+**Functions made by functions, and how they are told apart (Layer 2 Step 5).** `make_tool_function` builds one wrapper
+function per MCP tool. The inner function is defined with the word `call` every time, and that is fine: it means we
+don't need to define a new name for everything by hand, which matters because the tools aren't known until the server
+lists them at startup. Python tells functions apart by identity (each is its own object at its own address), not by
+name, so wrappers that all read `...<locals>.call` are still separate objects, each remembering its own tool name.
+Since it is in a dict as a key-value pair, the key is what identifies it, instead of a label. To call one directly,
+something has to hold it: a variable I create myself when I call `make_tool_function`, or a dict entry.
+- Corrections: I first read `call.__name__ = tool_name` as renaming the function and `return call` as returning the
+  result of running it. `__name__` is only a label printed on the function; it doesn't make the name callable and it
+  isn't what the loop uses, and `return call` hands back the function itself, not run.
+- Explained to me, not yet said back: the inner function remembering `client` and `tool_name` after
+  `make_tool_function` finishes is called a closure. A function's printed form shows where it was defined
+  (`make_tool_function.<locals>.call`), not the name you would call it by.
