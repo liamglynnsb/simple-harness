@@ -63,6 +63,8 @@ activate it first with `source .venv/bin/activate`, plain `python` works too:
   the instructions. The model sees only names and descriptions until it asks for a skill
 - `mcp_server.py`: a minimal MCP server over stdio with one tool (`count_letters`); run it by hand and type JSON lines
   to see the protocol (Layer 2 Step 5)
+- `mcp_client.py`: the harness side of MCP over stdio: starts a server as a subprocess, talks to it through its
+  pipes, and wraps its tools as functions the loop can call (Layer 2 Step 5)
 - `hooks.py`: hooks, small functions the harness runs around every tool call (so far two before-hooks: one logs the call, one keeps the file tools inside `data/`; and one after-hook that cuts very long results)
 - `loop.py`: `run_agent`, the loop. It branches on `stop_reason`, answers every `tool_use`
   with a `tool_result` (errors flagged `is_error`), and caps its passes

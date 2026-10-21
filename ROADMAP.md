@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 5 (a tiny MCP server with one tool), substep 5c: the harness side: start the server, list its tools, convert them to the `tools` format, route calls by name.
+**Where we are:** Layer 2, Step 5 (a tiny MCP server with one tool), substep 5d: one real-model task using a local tool and the MCP tool; failures come back as `is_error`; shut the process down cleanly.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -167,8 +167,9 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         (this is where stdin and stdout are practised for real: a program started with its pipes connected)
         (`mcp_server.py`, tool `count_letters`; tested in `tests/test_mcp_server.py`; `tools/list`, a good call, a call that
         fails with `isError`, tried by hand)
-  - [ ] 5c: harness side: start the server, list its tools, convert them to the
-        `tools` format, route calls by name
+  - [x] 5c: harness side: start the server, list its tools, convert them to the
+        `tools` format, route calls by name (`mcp_client.py`: `McpClient`, `to_tool_definition`, `make_tool_function`,
+        `register_tools`; a failing tool raises `McpToolError`, which the loop's existing handling flags; `loop.py` unchanged)
   - [ ] 5d: one task using a local tool and the MCP tool; failures (server dies, bad
         reply) come back as `is_error` results; shut the process down cleanly
   - [ ] 5e: compare in-process tools with MCP: what you gain, what it costs
