@@ -239,20 +239,32 @@ def check_roadmap(root, problems):
     here = len(re.findall(r"WE ARE HERE", text))
     if here != 1:
         problems.append(f"ROADMAP.md: 'WE ARE HERE' should appear exactly once, found {here}")
-    first_open = None
-    for s in steps:
-        for letter, ticked, opt in s["subs"]:
-            if not ticked and not opt:
-                first_open = f"Layer {s['layer']}, Step {s['number']}, substep {s['number']}{letter}"
+    # What the "Where we are" line should name: the first unticked required substep, or, once every step of a layer
+    # is done, that layer's checkpoint (when the checkpoint is still unticked).
+    expected = None
+    for layer in sorted(per_layer):
+        for s in per_layer[layer]:
+            for letter, ticked, opt in s["subs"]:
+                if not ticked and not opt:
+                    expected = f"Layer {layer}, Step {s['number']}, substep {s['number']}{letter}"
+                    break
+            if expected:
                 break
-        if first_open:
+        if expected:
             break
-    m = re.search(r"\*\*Where we are:\*\*\s*Layer (\d+), Step (\d+)[^\n]*?substep (\d+[a-z])", text)
-    if not m:
-        problems.append("ROADMAP.md: no '**Where we are:** Layer N, Step N ... substep Nx' line")
-    elif first_open and f"Layer {m.group(1)}, Step {m.group(2)}, substep {m.group(3)}" != first_open:
-        problems.append(f"ROADMAP.md: 'Where we are' says Layer {m.group(1)}, Step {m.group(2)}, substep {m.group(3)} "
-                        f"but the first unticked substep is {first_open}")
+        checkpoint = re.search(rf"^- \[( |x)\] Layer {layer} checkpoint", text, re.M)
+        if checkpoint and checkpoint.group(1) == " ":
+            expected = f"Layer {layer} checkpoint"
+            break
+    step_form = re.search(r"\*\*Where we are:\*\*\s*Layer (\d+), Step (\d+)[^\n]*?substep (\d+[a-z])", text)
+    checkpoint_form = re.search(r"\*\*Where we are:\*\*\s*Layer (\d+) checkpoint", text)
+    if not (step_form or checkpoint_form):
+        problems.append("ROADMAP.md: no '**Where we are:** Layer N, Step N ... substep Nx' (or 'Layer N checkpoint') line")
+    elif expected:
+        said = (f"Layer {step_form.group(1)}, Step {step_form.group(2)}, substep {step_form.group(3)}" if step_form
+                else f"Layer {checkpoint_form.group(1)} checkpoint")
+        if said != expected:
+            problems.append(f"ROADMAP.md: 'Where we are' says {said} but the first thing still open is {expected}")
 
 
 def check_index(root, problems):

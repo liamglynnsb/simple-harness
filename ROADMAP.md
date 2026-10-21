@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 5 (a tiny MCP server with one tool), substep 5e: compare in-process tools with MCP: what you gain, what it costs.
+**Where we are:** Layer 2 checkpoint: explain the extensions back (skill, tests, subagent, hooks, MCP), rebuild the hook mechanism from a blank file, and do the pending Layer 1 rebuild of `run_agent`.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -157,7 +157,7 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         silently skipped, would something bad get through? Yes: `@critical`, a crash raises `HookFailed` and stops the
         run (the path guard). No: the crash is recorded and the call goes ahead (the logger). Every crash is recorded by
         the harness itself, with a timestamp (`record_failure`, `hook_failures.log`)
-- [ ] Step 5: a tiny MCP server with one tool (`mcp_client.py`, `layer2/l2s5_mcp.py`)
+- [x] Step 5: a tiny MCP server with one tool (`mcp_server.py`, `mcp_client.py`, tests in `tests/test_mcp_server.py` and `tests/test_mcp_client.py`)
   - [x] 5a: read the current spec's stdio page; decide official Python SDK vs a
         hand-written server; write down what changed from the older handshake
         (decided: hand-written first, so the protocol is visible; the SDK comes after. Read revision 2026-07-28:
@@ -182,7 +182,7 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         a dead server. If the server can't be used at startup, the user is asked whether to carry on with only the local tools
         (`register_tools_or_ask`). Not done: per-tool timeouts and retries (parked until a second MCP tool exists); a real-model run of
         a failure (the model avoided the bad input because the description told it not to))
-  - [ ] 5e: compare in-process tools with MCP: what you gain, what it costs
+  - [x] 5e: compare in-process tools with MCP: what you gain, what it costs (recorded in `learnings/harness.md`)
 - [ ] Layer 2 checkpoint: explain each of the four extensions back; rebuild the hook
       mechanism from a blank file; and do the pending Layer 1 rebuild (`run_agent`
       from a blank file, nothing open)

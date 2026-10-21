@@ -670,6 +670,16 @@ model writes the tool call and the harness turns it into the request.
   stdout, because an unflushed reply can sit in a buffer and never arrive; logs go to stderr; a message without an
   `id` is a notification and gets no reply; the server exits when its input closes.
 
+**In-process tools versus MCP: what you gain and what it costs (5e).** MCP introduces all the failure modes of a server
+and external tools (a server that has to be running, communicating, dying, going silent, sending garbage), and ways to
+catch every one of them, so what you gain really has to be worth it. The gain is that someone else has already built
+and maintains the server for a big service: I would never code Slack or Google Docs access on my own. For a tiny tool
+like `count_letters`, an in-process function is simpler and more reliable; I built it as MCP only to learn how it works.
+- Explained to me, not yet said back: the costs we hit (a second process to manage, timeouts, restart and retry, format
+  conversion, trusting descriptions someone else wrote, slower calls and harder debugging) and the other gains (any
+  language, credentials and crashes isolated in the server, a standard interface that makes adding a tool
+  configuration).
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.
