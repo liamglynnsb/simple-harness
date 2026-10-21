@@ -162,6 +162,7 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
 - [ ] Step 5: a tiny MCP server with one tool (`mcp_client.py`, `layer2/l2s5_mcp.py`)
   - [ ] 5a: read the current spec's stdio page; decide official Python SDK vs a
         hand-written server; write down what changed from the older handshake
+        (decided: hand-written first, so the protocol is visible; the SDK comes after; the spec reading is next)
   - [ ] 5b: a minimal server exposing one tool; talk to it by hand in the terminal
         (pipe JSON lines in) to see the protocol
   - [ ] 5c: harness side: start the server, list its tools, convert them to the

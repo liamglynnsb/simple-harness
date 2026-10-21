@@ -604,6 +604,30 @@ only gets the normal result.
   hooks without one. The log is opened in append mode and never resets; the run id and turn number are planned for
   Layer 5 tracing, with only a timestamp so far.
 
+## 2026-10-21 · Layer 2, Step 5 (MCP)
+
+**How a harness works with MCP (before reading the spec).** An MCP tool lives in a separate program instead of a
+Python function in our own process. At startup the harness starts the server, asks it what tools it has, converts
+the definitions into the model's `tools` format, and keeps a table of which server each tool name belongs to. The
+model chooses tools exactly as before; the harness routes the call. To the server the harness sends the tool's name
+and input, and the model's `tool_use` id stays with the harness, which puts it on the `tool_result`, with `is_error`
+for a failure. Everything between is internal to the harness and the server, so, as with a subagent, the model only
+sees a tool call and a tool result.
+- Correction: I first called MCP "a universal format"; it is a protocol, a standard way of having the conversation.
+  The server is ordinary code with no model in it, and the model, the loop and the reasoning live in the host. The
+  routing logic is on the harness side.
+
+**Credentials never go through the model.** Authentication is part of the connection between the harness and the
+server, not of the model's messages. The best protection is that the model never has the secret at all: give the
+model capabilities, not credentials.
+- Explained to me, not yet said back: the risk is that a secret in the context can be written out (repeated in a
+  reply or placed in another tool's input), and everything in the context travels: it is re-sent on every call, so it
+  also reaches the gateway and provider and ends up in logs and traces. A local server over stdio is started as a
+  child process and talks over its standard input and output; secrets reach it through its environment. A remote
+  server uses an OAuth sign-in at the connection layer. There are two ids: the model's `tool_use` id, and the id on
+  each request to the server, which only matches replies to requests. As I understand it, the messages are JSON in a
+  request-and-reply style called JSON-RPC; to be confirmed against the spec in 5a.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.
