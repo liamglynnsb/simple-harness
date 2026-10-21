@@ -1,4 +1,5 @@
 import os
+import re
 import pytest
 import hooks
 from loop import run_agent, AgentStopped
@@ -372,4 +373,52 @@ def test_the_model_can_page_through_a_long_file(data_scope, monkeypatch):
     assert first.startswith("0123456789") and "start=10 to continue" in first
     assert second.startswith("ABCDEFGHIJ") and "start=20 to continue" in second
     assert third == "KLMNO"                                    # the last piece fits, so no note
+
+
+@pytest.fixture
+def failure_log(tmp_path, monkeypatch):
+    log = tmp_path / "hook_failures.log"
+    monkeypatch.setattr("hooks.HOOK_FAILURE_LOG", str(log))
+    return log
+
+
+def _crashing_hook(tool_name, tool_input):
+    raise RuntimeError("bug in the hook")
+
+
+def test_a_crashing_noncritical_hook_is_recorded_and_the_call_goes_ahead(monkeypatch, failure_log):
+    monkeypatch.setattr("hooks.BEFORE_HOOKS", [_crashing_hook])
+    client = FakeClient([
+        tool_reply(tool_block("calculator", {"operation": "add", "a": 2, "b": 2}, "id1")),
+        text_reply("4"),
+    ])
+    messages = [{"role": "user", "content": "2+2"}]
+    run_agent(client, messages, [CALCULATOR])
+    result = messages[2]["content"][0]
+    assert result["content"] == "4" and "is_error" not in result       # the tool ran anyway
+    text = failure_log.read_text()
+    assert "_crashing_hook" in text and "calculator" in text and "bug in the hook" in text   # what, where, and the traceback
+    assert re.match(r"\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}", text)                       # and when
+
+
+def test_a_crashing_critical_hook_stops_the_run(monkeypatch, failure_log):
+    monkeypatch.setattr("hooks.BEFORE_HOOKS", [hooks.critical(_crashing_hook)])
+    client = FakeClient([tool_reply(tool_block("calculator", {"operation": "add", "a": 2, "b": 2}, "id1"))])
+    messages = [{"role": "user", "content": "2+2"}]
+    with pytest.raises(hooks.HookFailed):
+        run_agent(client, messages, [CALCULATOR])
+    assert len(messages) == 2                                           # no tool_result was ever built: the tool never ran
+    assert "_crashing_hook" in failure_log.read_text()                  # and it was recorded
+
+
+def test_a_critical_failure_in_a_subagent_stops_the_parent_too(monkeypatch, failure_log):
+    monkeypatch.setattr("hooks.BEFORE_HOOKS", [hooks.critical(_crashing_hook)])
+    client = FakeClient([
+        tool_reply(tool_block("delegate", {"task": "read it"}, "id1")),   # parent
+        tool_reply(tool_block("read_file", {"path": "x"}, "id2")),        # child: its hook crashes
+    ])
+    monkeypatch.setattr("client.make_client", lambda: client)
+    messages = [{"role": "user", "content": "go"}]
+    with pytest.raises(hooks.HookFailed):
+        run_agent(client, messages, [DELEGATE])
 

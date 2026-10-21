@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 4 (a hook around tool calls), substep 4f: a hook that itself fails, fail open or fail closed.
+**Where we are:** Layer 2, Step 5 (a tiny MCP server with one tool), substep 5a: read the current spec's stdio page and decide official SDK versus hand-written server.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -134,7 +134,7 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         error and not text that looks like an answer (`test_failed_subagent_reaches_parent_as_an_error`)
   - [x] 3g: is it worth it? the same task with and without the subagent. Closed as the worked analysis in
         `learnings/harness.md`; the measurement moves to Layer 5 Step 1d (tracing)
-- [ ] Step 4: a hook around tool calls (`hooks.py`, `layer2/l2s4_hooks.py`)
+- [x] Step 4: a hook around tool calls (`hooks.py`, `execute_tool` in `loop.py`, tests in `tests/test_loop.py`)
   - [x] 4a: pull the tool-running code out of the loop into `execute_tool`; every
         test must still pass
   - [x] 4b: before-hooks: a list of functions called before each tool; the first one
@@ -153,7 +153,10 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         (`truncate_long_results`, `AFTER_HOOKS`). The demo with `data/long_notes.txt` showed that a cut result needs a
         way to continue, so `read_file` got an optional `start` (paging); the rerun read the file in five chunks
         and found the answer
-  - [ ] 4f: a hook that itself fails: fail open or fail closed, and why
+  - [x] 4f: a hook that itself fails: fail open or fail closed, and why. Decided by one question: if this hook were
+        silently skipped, would something bad get through? Yes: `@critical`, a crash raises `HookFailed` and stops the
+        run (the path guard). No: the crash is recorded and the call goes ahead (the logger). Every crash is recorded by
+        the harness itself, with a timestamp (`record_failure`, `hook_failures.log`)
   - [ ] 4g (optional): command hooks that read the call as JSON on stdin, like
         Claude Code
 - [ ] Step 5: a tiny MCP server with one tool (`mcp_client.py`, `layer2/l2s5_mcp.py`)
@@ -246,6 +249,8 @@ stream last because it changes the loop's shape.
   - [ ] 1d: measure what delegating costs, from the traces: a large file plus several passes after the read,
         the same question with and without a subagent; total input and output tokens, summed over the
         parent's and the child's calls (replaces the Layer 2 Step 3 cost comparison, which was a worked analysis)
+  - [ ] 1e: tag every record, hook failures included, with a run id, a pass number and a timestamp, so events can be
+        matched to a run and a turn (the hook-failure log has only a timestamp so far; noticed in Layer 2 Step 4f)
 - [ ] Step 2: retries and model fallback
   - [ ] 2a: sort errors into retry (timeout, connection, 429, 5xx) and do not retry (400)
   - [ ] 2b: backoff with jitter, honour a retry-after header, cap the attempts, and

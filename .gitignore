@@ -8,3 +8,4 @@ __pycache__/
 .claude/settings.local.json
 LOCAL_NOTES.md
 LOCAL_FORBIDDEN_TERMS.txt
+hook_failures.log

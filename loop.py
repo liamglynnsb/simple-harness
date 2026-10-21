@@ -27,7 +27,13 @@ def execute_tool(block, allowed):
     try:
         # Before-hooks run first, for every request (see hooks.py): one logs the call, one can block it.
         for hook in hooks.BEFORE_HOOKS:
-            reason = hook(block.name, block.input)
+            try:
+                reason = hook(block.name, block.input)
+            except Exception:
+                hooks.record_failure(hook, block.name, block.input)  # always recorded, with the traceback
+                if getattr(hook, "critical", False):
+                    raise hooks.HookFailed(hook.__name__ + " crashed on " + block.name)  # stop the whole run
+                continue  # a non-critical hook crashed: carry on without it
             if reason is not None:  # a hook decided to block this call; tell the model why, flagged as an error
                 return {"type": "tool_result", "tool_use_id": block.id, "content": "Blocked: " + reason, "is_error": True}
         # Scoping: only run a tool this agent was given, even if FUNCTIONS has it. The model
@@ -36,6 +42,8 @@ def execute_tool(block, allowed):
             raise PermissionError(block.name)
         # Look the tool up by name and call it with the model's inputs.
         result = FUNCTIONS[block.name](**block.input)
+    except hooks.HookFailed:
+        raise  # a critical hook crashed: let it stop the run, don't turn it into a tool error
     except Exception as e:
         # Anything a tool raises lands here: send it back flagged as an error, so the
         # model still gets an answer and can recover. (A tool the agent wasn't given, or one

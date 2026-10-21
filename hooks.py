@@ -3,9 +3,38 @@
 # the call go ahead, or a string giving the reason to BLOCK it (a deliberate decision, not an error).
 # The list is looked up at call time (hooks.BEFORE_HOOKS), so a test can swap it for its own.
 import os
+import traceback
+from datetime import datetime, timezone
 
 # The one place file tools may read from (decided for the whole harness, not chosen by the model).
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+
+
+# What happens when a hook itself crashes depends on what the hook is for. Ask: if this hook were silently
+# skipped, would something bad get through? If yes, mark it @critical: a crash stops the whole run (HookFailed).
+# If no, the crash is recorded and the call goes ahead.
+HOOK_FAILURE_LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hook_failures.log")  # git-ignored
+
+
+class HookFailed(Exception):
+    """A critical hook crashed. Raised out of the loop to stop the run: the rule it enforces can't be trusted."""
+
+
+def critical(hook):
+    """Mark a hook as critical (used as @critical above its def)."""
+    hook.critical = True
+    return hook
+
+
+def record_failure(hook, tool_name, tool_input):
+    """Write a hook crash to HOOK_FAILURE_LOG (when, hook, tool, input, traceback) and print a one-line notice. The
+    harness does this itself, so we never depend on the model to report a bug in our own code. A run id and a
+    pass number are planned for Layer 5 (tracing), where they will be added to every record at once."""
+    when = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    entry = "[" + when + "] hook " + hook.__name__ + " crashed on " + tool_name + " " + repr(tool_input) + "\n" + traceback.format_exc() + "\n"
+    with open(HOOK_FAILURE_LOG, "a") as f:
+        f.write(entry)
+    print("HOOK FAILED:", hook.__name__, "on", tool_name, "(details in hook_failures.log)")
 
 
 def log_call(tool_name, tool_input):
@@ -29,6 +58,7 @@ def is_sensitive_name(name):
     )
 
 
+@critical
 def guard_file_paths(tool_name, tool_input):
     """One rule for every file tool: the path, once fully resolved, must be inside DATA_DIR, and nothing
     on the way down from DATA_DIR may be a sensitive name. Other tools pass.
