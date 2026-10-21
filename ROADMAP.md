@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2 checkpoint: explain the extensions back (skill, tests, subagent, hooks, MCP), rebuild the hook mechanism from a blank file, and do the pending Layer 1 rebuild of `run_agent`.
+**Where we are:** Layer 3, Step 1 (baseline: one orchestrator delegating subtasks one after another), substep 1a.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -183,10 +183,11 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         (`register_tools_or_ask`). Not done: per-tool timeouts and retries (parked until a second MCP tool exists); a real-model run of
         a failure (the model avoided the bad input because the description told it not to))
   - [x] 5e: compare in-process tools with MCP: what you gain, what it costs (recorded in `learnings/harness.md`)
-- [ ] Layer 2 checkpoint: explain each of the four extensions back; rebuild the hook
+- [x] Layer 2 checkpoint: explain each of the four extensions back; rebuild the hook
       mechanism from a blank file; and do the pending Layer 1 rebuild (`run_agent`
       from a blank file, nothing open)
-      (explain-back done and recorded in `learnings/harness.md`; the two rebuilds are still open)
+      (explain-back done and recorded in `learnings/harness.md`. The two rebuilds are ON HOLD by decision, not done:
+      the goal is understanding, and explaining in words is the test chosen for now. They are kept in the backlog)
 
 ## Layer 3: multi-agent  (builds on the Layer 2 subagent; `orchestrator.py`)
 
@@ -312,6 +313,11 @@ stream last because it changes the loop's shape.
       wrapper (retry, trace, guardrail) from a blank file
 
 ## Backlog (wanted, not yet scheduled)
+
+- [ ] The Layer 2 ownership tests, on hold since the Layer 2 checkpoint (2026-10-21): rebuild the hook mechanism and
+      `run_agent` from a blank file. A form that fits the goal of understanding (agreed in discussion, not yet tried): the
+      user writes a plain-English spec; Claude implements from the spec alone in a scratch folder; the existing tests
+      grade it; each failure points at a gap in the spec. Optional second exercise: find a subtle bug in a given version.
 
 - [x] A separate markdown reference of the Anthropic SDK's data structures: `learnings/anthropic-sdk-reference.md`
       (how `Message`, its content blocks and `usage` fit together, the request shapes, a full tool round trip
