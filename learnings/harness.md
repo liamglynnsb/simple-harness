@@ -696,6 +696,21 @@ like `count_letters`, an in-process function is simpler and more reliable; I bui
   subagents themselves. Our after-hook limits the characters of a tool's result, which keeps the input to later calls
   smaller; `max_tokens` is a different limit: the tokens the model writes back, thinking included.
 
+## 2026-10-21 · Layer 3, Step 1 (the baseline)
+
+**Isolation versus parallelism: what the baseline showed.** The same six-document job took 7 passes, about 170,000 input
+tokens and 22 seconds as a single agent, which batched six reads into each pass, with a history that ballooned to 43,000
+tokens. Through an orchestrator handing the documents to subagents one at a time, it took 36 passes, about 144,000 input
+tokens and 57 seconds, with no conversation larger than about 7,500 tokens. I predicted fewer tokens and a longer time, and
+both were right. Handing off one at a time defeats the point of parallelism, so that version is a control: it shows what
+isolation costs by itself, and Step 2 adds concurrency on top.
+- Correction: I had thought "model batching" and "subagents" were similar. Batching asks for several tools in one turn, but
+  the text still lands in one growing conversation; a subagent changes where the text lives. Running things at the same
+  time is a third, separate thing, which our harness does not do yet.
+- Explained to me, not yet said back: isolation made every conversation small but didn't make the reading cheaper (each
+  chunk is re-sent within its own conversation), and run one after another it is slower because each subagent pages
+  through its document in sequence.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.
