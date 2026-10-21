@@ -157,8 +157,6 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         silently skipped, would something bad get through? Yes: `@critical`, a crash raises `HookFailed` and stops the
         run (the path guard). No: the crash is recorded and the call goes ahead (the logger). Every crash is recorded by
         the harness itself, with a timestamp (`record_failure`, `hook_failures.log`)
-  - [ ] 4g (optional): command hooks that read the call as JSON on stdin, like
-        Claude Code
 - [ ] Step 5: a tiny MCP server with one tool (`mcp_client.py`, `layer2/l2s5_mcp.py`)
   - [x] 5a: read the current spec's stdio page; decide official Python SDK vs a
         hand-written server; write down what changed from the older handshake
@@ -166,6 +164,7 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         no handshake, each request carries its version and capabilities, the server is stateless)
   - [ ] 5b: a minimal server exposing one tool; talk to it by hand in the terminal
         (pipe JSON lines in) to see the protocol
+        (this is where stdin and stdout are practised for real: a program started with its pipes connected)
   - [ ] 5c: harness side: start the server, list its tools, convert them to the
         `tools` format, route calls by name
   - [ ] 5d: one task using a local tool and the MCP tool; failures (server dies, bad
@@ -318,6 +317,9 @@ stream last because it changes the loop's shape.
 
 ## Parking lot (not planned; revisit after Layer 5)
 
+- [ ] command hooks: a hook that is an external program, given the tool call as JSON on its stdin and answering with
+      its exit code and output, like Claude Code's hooks (moved here from Layer 2 Step 4g; the stdin and stdout
+      mechanics are practised in Step 5)
 - [ ] a shell/terminal tool (powerful and risky: plan permissions or a sandbox first)
 - [ ] the memory tool, Anthropic's built-in context editing and compaction
 - [ ] the SDK's Tool Runner and the Claude Agent SDK, compared with this harness
