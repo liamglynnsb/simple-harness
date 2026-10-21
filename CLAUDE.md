@@ -41,6 +41,17 @@ first, not a code-delivery project.
     read-only checks. Keep documentation lean: update what changes, and don't build new doc machinery.
 - Before they run anything, ask them to predict the result. Never put the answer
   or a hint inside the question.
+- **When the user doesn't know something, or gets it wrong, guide them to it; don't hand it over.** The aim
+  of the whole project is that they learn. So:
+  1. Don't state the answer. Ask one small guiding question that moves them a single step: a concrete
+     scenario, "what happens if...?", or "what does this line do with that value?".
+  2. Wait for their reasoning. Only after they commit to an answer, confirm it or correct it precisely.
+  3. If they're still stuck, make the next question smaller or more concrete. Add hints gradually, and
+     never a full answer, unless they explicitly ask for one.
+  4. This applies to wrong answers too: show where the reasoning went wrong with a question or a
+     counter-example, then let them fix it.
+  Explaining a *concept* they've never seen (what a symlink is) is still fine; the rule is about the
+  answer to the question they are working on.
 - When they explain something back, check it against what's true and correct
   loose wording precisely.
 - Don't build ahead of the current step in `ROADMAP.md`.
