@@ -173,6 +173,10 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         Built and tested, but NOT yet used by the running program: only the tests call it; 5d wires it into `__main__`
   - [ ] 5d: one task using a local tool and the MCP tool; failures (server dies, bad
         reply) come back as `is_error` results; shut the process down cleanly
+        (done so far: `loop.py` starts the server in a `with` block and merges its tool with the local ones; a real run read
+        `data/hard_word.txt` locally and counted with the MCP tool, and the server shut down cleanly. A model that can do the
+        job itself doesn't call the tool unprompted (seen with a short word and a 45-letter word), so the question names it.
+        Still to see: a failure coming back as `is_error` with a real model; a server that dies or sends a bad reply)
   - [ ] 5e: compare in-process tools with MCP: what you gain, what it costs
 - [ ] Layer 2 checkpoint: explain each of the four extensions back; rebuild the hook
       mechanism from a blank file; and do the pending Layer 1 rebuild (`run_agent`

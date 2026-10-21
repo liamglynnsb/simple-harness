@@ -1,4 +1,8 @@
+import os
+import sys
+
 import hooks
+import mcp_client
 from client import make_client, model_name
 from tools import FUNCTIONS, CALCULATOR, READ_FILE, LIST_FILES, LOAD_SKILL, DELEGATE
 
@@ -123,8 +127,14 @@ def run_agent(client, messages, tools, max_loops=10, max_tokens=1000, system = N
 
 if __name__ == "__main__":  # runs only when this file is run directly, not when it is imported
     client = make_client()
-    messages = [{"role": "user", "content": "What is the final answer in data/long_notes.txt?"}]  # a long file: the answer is on the last line, past the truncation limit
-    answer = run_agent(client, messages, [READ_FILE, LIST_FILES])
+    server_command = [sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "mcp_server.py")]
+    # The server is a second process. `with` guarantees it is shut down when the run ends, even if the run crashes.
+    with mcp_client.McpClient(server_command) as mcp:
+        mcp_definitions = mcp_client.register_tools(mcp, FUNCTIONS)  # adds the server's tools to FUNCTIONS
+        tools = [READ_FILE, LIST_FILES] + mcp_definitions            # local tools and the server's tools, one list
+        # Needs both kinds of tool, and the question names the server's tool: a model that can count a word itself won't reach for it unprompted.
+        messages = [{"role": "user", "content": "Read data/hard_word.txt. Then use the count_letters tool to count how many times the letter 'o' appears in that word."}]
+        answer = run_agent(client, messages, tools)
     print(answer)
     # for traceability, print the messages
     for m in messages:
