@@ -130,7 +130,8 @@ if __name__ == "__main__":  # runs only when this file is run directly, not when
     server_command = [sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "mcp_server.py")]
     # The server is a second process. `with` guarantees it is shut down when the run ends, even if the run crashes.
     with mcp_client.McpClient(server_command) as mcp:
-        mcp_definitions = mcp_client.register_tools(mcp, FUNCTIONS)  # adds the server's tools to FUNCTIONS
+        mcp_definitions = mcp_client.register_tools_or_ask(mcp, FUNCTIONS)  # adds the server's tools to FUNCTIONS; if the
+        # server can't be used, asks the user whether to carry on with only the local tools
         tools = [READ_FILE, LIST_FILES] + mcp_definitions            # local tools and the server's tools, one list
         # Needs both kinds of tool, and the question names the server's tool: a model that can count a word itself won't reach for it unprompted.
         messages = [{"role": "user", "content": "Read data/hard_word.txt. Then use the count_letters tool to count how many times 'on' appears in that word."}]

@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 5 (a tiny MCP server with one tool), substep 5d: one real-model task using a local tool and the MCP tool; failures come back as `is_error`; shut the process down cleanly.
+**Where we are:** Layer 2, Step 5 (a tiny MCP server with one tool), substep 5e: compare in-process tools with MCP: what you gain, what it costs.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -171,7 +171,7 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         `tools` format, route calls by name (`mcp_client.py`: `McpClient`, `to_tool_definition`, `make_tool_function`,
         `register_tools`; a failing tool raises `McpToolError`, which the loop's existing handling flags; `loop.py` unchanged).
         Built and tested, but NOT yet used by the running program: only the tests call it; 5d wires it into `__main__`
-  - [ ] 5d: one task using a local tool and the MCP tool; failures (server dies, bad
+  - [x] 5d: one task using a local tool and the MCP tool; failures (server dies, bad
         reply) come back as `is_error` results; shut the process down cleanly
         (done so far: `loop.py` starts the server in a `with` block and merges its tool with the local ones; a real run read
         `data/hard_word.txt` locally and counted with the MCP tool, and the server shut down cleanly. A model that can do the
@@ -179,7 +179,8 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         Failure cases built and tested: a dead server is restarted and the request retried; a silent server times out
         (`timeout`, default 10 s); garbage replies count as connection failures; after `retries` (default 1) one clear
         `McpTransportError` reaches the model as a flagged error; protocol errors are never retried; `close()` copes with
-        a dead server. Not done: per-tool timeouts and retries (parked until a second MCP tool exists); a real-model run of
+        a dead server. If the server can't be used at startup, the user is asked whether to carry on with only the local tools
+        (`register_tools_or_ask`). Not done: per-tool timeouts and retries (parked until a second MCP tool exists); a real-model run of
         a failure (the model avoided the bad input because the description told it not to))
   - [ ] 5e: compare in-process tools with MCP: what you gain, what it costs
 - [ ] Layer 2 checkpoint: explain each of the four extensions back; rebuild the hook

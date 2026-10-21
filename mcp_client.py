@@ -176,3 +176,19 @@ def register_tools(client, functions):
         definitions.append(to_tool_definition(mcp_tool))
     return definitions
 
+
+def register_tools_or_ask(client, functions, ask=input):
+    """Like register_tools, but if the server can't be used (dead, silent, garbage), tell the user and let THEM decide:
+    carry on with only the local tools (returns an empty list), or stop (the original error is raised).
+
+    `ask` is the function that asks the question and returns the answer; it defaults to input() (the keyboard) and a
+    test can pass a fake one instead.
+    """
+    try:
+        return register_tools(client, functions)
+    except McpError as problem:
+        print("The tool server could not be used:", problem)
+        if ask("Continue with only the local tools? [y/N] ").strip().lower() == "y":
+            return []
+        raise
+

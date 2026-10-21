@@ -180,3 +180,33 @@ def test_a_server_failure_reaches_the_model_as_a_flagged_error_and_the_loop_carr
     assert result["is_error"] is True
     assert result["content"].startswith("Error: the tool server")
 
+
+# ---- when the server can't be used at startup, the user decides ----
+
+DEAD = [sys.executable, "-c", "import sys; sys.exit(1)"]
+
+
+def test_a_working_server_registers_without_asking(monkeypatch):
+    monkeypatch.setattr("loop.FUNCTIONS", dict(loop.FUNCTIONS))
+    asked = []
+    with mcp_client.McpClient(SERVER) as server:
+        definitions = mcp_client.register_tools_or_ask(server, loop.FUNCTIONS, ask=lambda q: asked.append(q) or "n")
+    assert [d["name"] for d in definitions] == [mcp_server.TOOL["name"]]
+    assert asked == []                                          # nothing was wrong, so nobody was asked
+
+
+def test_if_the_server_is_dead_and_the_user_says_yes_the_run_carries_on_without_mcp_tools(monkeypatch):
+    functions = dict(loop.FUNCTIONS)
+    asked = []
+    with mcp_client.McpClient(DEAD, timeout=2, retries=0) as server:
+        definitions = mcp_client.register_tools_or_ask(server, functions, ask=lambda q: asked.append(q) or "y")
+    assert definitions == []
+    assert mcp_server.TOOL["name"] not in functions             # nothing was registered
+    assert len(asked) == 1 and "local tools" in asked[0]
+
+
+def test_if_the_server_is_dead_and_the_user_says_no_the_error_is_raised():
+    with mcp_client.McpClient(DEAD, timeout=2, retries=0) as server:
+        with pytest.raises(mcp_client.McpTransportError):
+            mcp_client.register_tools_or_ask(server, dict(loop.FUNCTIONS), ask=lambda q: "n")
+
