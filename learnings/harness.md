@@ -574,6 +574,17 @@ get the rest, or the information is unreachable.
   alone, because the after-hook cuts the child's reads too; a child that pages through the file and returns only the
   answer combines the two ideas. A search tool (find lines containing a word) is a third option.
 
+**Paging lets the model reach the whole file while keeping each result small (4e).** With `start`, the model read a
+17,115-character file in five bounded chunks and found the answer on the last one. It didn't keep a count between
+calls; the history, re-sent each time, held every chunk. The model's claim "after 200 lines of filler" was
+supported by the line numbers in the text, which is what made it checkable.
+- Correction: paging bounds the size of each result, not the total. Every chunk stays in the history and is re-sent
+  on each later call, so reading all of a long file costs more input in total than one full read; the saving comes
+  from stopping early, trimming old chunks, or letting a subagent page and return only the answer.
+- Explained to me, not yet said back: by the last call the whole file was in the model's input, in five pieces. The
+  model doesn't consult an index; it reads over text it has been sent. `start` controls how the pieces get there,
+  and they stay until something removes them.
+
 ## Explained to me, not yet said back in my own words
 
 These came up along the way. I haven't restated them, so they stay here until I do.

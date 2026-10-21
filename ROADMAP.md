@@ -1,6 +1,6 @@
 # Roadmap
 
-**Where we are:** Layer 2, Step 4 (a hook around tool calls), substep 4e: after-hooks, observing versus changing a result.
+**Where we are:** Layer 2, Step 4 (a hook around tool calls), substep 4f: a hook that itself fails, fail open or fail closed.
 
 Read this first at the start of every session. Tick items off as we finish them, and update the
 "Where we are" line in the same commit (`scripts/check_docs.py` checks that it names the first
@@ -148,10 +148,11 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
         rule, ask for a wrong path, and see the model list the folder and retry
         successfully; compare with what Layer 1 Step 5b showed (a near-miss path recovers; a path with no
         likely match makes the model stop and ask, so recovery needs an inferable target)
-  - [ ] 4e: after-hooks: see or change a result (truncate, redact); observing vs
+  - [x] 4e: after-hooks: see or change a result (truncate, redact); observing vs
         changing. Decided: truncate any result over a size limit, with a note saying it was cut
         (`truncate_long_results`, `AFTER_HOOKS`). The demo with `data/long_notes.txt` showed that a cut result needs a
-        way to continue, so `read_file` got an optional `start` (paging); the real-model rerun is next
+        way to continue, so `read_file` got an optional `start` (paging); the rerun read the file in five chunks
+        and found the answer
   - [ ] 4f: a hook that itself fails: fail open or fail closed, and why
   - [ ] 4g (optional): command hooks that read the call as JSON on stdin, like
         Claude Code
