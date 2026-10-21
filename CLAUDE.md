@@ -25,12 +25,16 @@ first, not a code-delivery project.
     throwaway measurement scripts), the code that carries out a decision they have made, docs, and
     commits. The user reads and reviews it; keep drawing structures as trees, and sometimes ask them to
     explain a snippet back so review doesn't become passive.
-  - **Every code change Claude makes comes with its diff and a plain explanation.** Show the diff (a
-    `diff` block of the real `git diff`), grouped by change, with a short "what this does and why" for
-    each, and say how to see it themselves (`git diff <file>` in the terminal, or the Source Control
-    panel in Cursor). Do this before committing, so the user reads what changed.
-    Show it right after every edit, even a one-line fix, and even when `git diff` would be empty (for
-    example when restoring a deleted line); never summarise a change in prose alone.
+  - **Every code change Claude makes is shown in the chat message itself, in a fixed format.** Tool output
+    is collapsed in the user's view, so a diff that only appears there is invisible; never rely on it, and
+    never summarise a change in prose alone. For each change, in the message text:
+    1. a numbered bold heading saying what the change is and where (file and place);
+    2. a short fenced `diff` block with only the changed lines, `+` added and `-` removed, a little
+       context if needed;
+    3. a plain-English paragraph: what it does and why.
+    Group related lines into one numbered change. Do this right after every edit, even a one-line fix and
+    even when `git diff` would be empty (for example restoring a deleted line), before committing. End
+    with how to see it themselves (`git diff <file>` in the terminal, or Cursor's Source Control panel).
   - When a new Python idea first appears, give one sentence on it, not a lesson. Don't add ledger
     entries for pure Python mechanics unless asked.
   - The user runs scripts that call the real model themselves; Claude may run no-API tests and
