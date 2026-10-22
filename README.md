@@ -8,6 +8,33 @@ or through a gateway.
 **Status: work in progress.** Layers 1 and 2 are done, Layer 3 is in progress, Layers 4 and 5
 are planned. The build goes in small steps, and the commit messages double as a learning log.
 
+## What this repo is for
+
+This is a learning project first and a code project second. The goal is for me to understand how an
+agent harness works: what it does, why it is built the way it is, and how to tell that it works. I build
+it in small steps with Claude Code as tutor and pair-builder, so the repo is as much a record of the
+learning as it is a harness.
+
+A step goes like this:
+
+1. I predict what a piece of code will do before I run it.
+2. I run it and compare, then change one thing, or break it on purpose, and predict again.
+3. I explain it back in my own words, and anything loose gets corrected.
+
+The work is split. I decide the design and write the tool descriptions and policies in words (they are
+prompts, so the wording matters). Claude writes the plumbing and shows every change as a diff with a
+plain-English explanation. When I'm stuck, it asks small questions instead of handing me the answer.
+
+That is why the learnings are so built out: they are the main product, and the code is how I get there.
+[LEARNINGS.md](LEARNINGS.md) indexes them: the theory of the harness ([learnings/harness.md](learnings/harness.md)),
+the code and tooling ([learnings/code.md](learnings/code.md)), a map of the SDK's data structures, and a
+[glossary](learnings/glossary.md) of every term. Entries are written in my own words, and only after I have
+explained the idea back. The commit messages double as a learning log, and the tutoring rules are in
+[CLAUDE.md](CLAUDE.md).
+
+To follow along, start with [ROADMAP.md](ROADMAP.md), which says where I am and what comes next, then
+read the learnings in the order the index gives.
+
 ## The idea
 
 A model can't run anything itself; it can only ask for things to be run. A harness is the loop
@@ -35,8 +62,8 @@ re-sends the whole conversation. Everything else in this repo is built around th
 | 5. Production shell | tracing, retries, context management, caching, structured output, injection tests, guardrails, streaming | planned |
 
 Each layer wraps the loop; none rewrites it. The steps and substeps are in [ROADMAP.md](ROADMAP.md),
-and the reasoning behind the plan is in [PLAN.md](PLAN.md). Concepts learned along the way are
-in [LEARNINGS.md](LEARNINGS.md); unfamiliar word? See the [glossary](learnings/glossary.md).
+and the reasoning behind the plan is in [PLAN.md](PLAN.md). Unfamiliar word? See the
+[glossary](learnings/glossary.md).
 
 ## Quickstart
 
