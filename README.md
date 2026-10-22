@@ -5,10 +5,40 @@ agent loop works by owning every line. No agent frameworks: just the Anthropic
 Messages format (`tool_use`, `tool_result`, `stop_reason`) sent to Claude, directly
 or through a gateway.
 
-Progress lives in [ROADMAP.md](ROADMAP.md). Concepts learned along the way are
+**Status: work in progress.** Layers 1 and 2 are done, Layer 3 is in progress, Layers 4 and 5
+are planned. The build goes in small steps, and the commit messages double as a learning log.
+
+## The idea
+
+A model can't run anything itself; it can only ask for things to be run. A harness is the loop
+around it:
+
+```
+ask the model
+  it asks for tools      -> run them, send the results back, ask again
+  it says it is done     -> return its answer
+  it hit a length limit  -> say so
+stop after a fixed number of passes, so a stuck model can never loop (and spend) forever
+```
+
+That is `run_agent` in `loop.py`. The model remembers nothing between calls, so every pass
+re-sends the whole conversation. Everything else in this repo is built around that loop.
+
+## The plan at a glance
+
+| Layer | What it adds | Status |
+|---|---|---|
+| 1. The loop | stateless calls, tool definitions, the loop itself, errors returned as results | done |
+| 2. Extensions | skills as tools, tests with a fake client, a subagent tool, hooks, a minimal MCP server and client | done |
+| 3. Multi-agent | an orchestrator that delegates to subagents, parallel fan-out, measuring time and tokens | in progress |
+| 4. Evals and judges | a task set, a runner, verifiers, an LLM judge | planned |
+| 5. Production shell | tracing, retries, context management, caching, structured output, injection tests, guardrails, streaming | planned |
+
+Each layer wraps the loop; none rewrites it. The steps and substeps are in [ROADMAP.md](ROADMAP.md),
+and the reasoning behind the plan is in [PLAN.md](PLAN.md). Concepts learned along the way are
 in [LEARNINGS.md](LEARNINGS.md); unfamiliar word? See the [glossary](learnings/glossary.md).
 
-## Setup
+## Quickstart
 
 Python 3.10+ is required (the macOS system python is too old).
 
@@ -27,13 +57,26 @@ cp .env.example .env
 ```
 
 `client.py` loads `.env` itself, so there is no `source` step. Never commit
-`.env` or put keys in code.
+`.env` or put keys in code. Running the real model costs money, so the scripts that call it say so.
+
+Then run the loop:
+
+```bash
+.venv/bin/python loop.py
+```
+
+`loop.py` runs **one hard-coded question** from its `__main__` block, giving the model two tools,
+`read_file` and `list_files`, and asking for a file that doesn't exist, to watch it recover. The other tools
+(`calculator`, `load_skill`, `delegate`) are defined in `tools.py` but not used in this run. Edit the `messages = [...]` line to try other questions.
 
 The tests (Layer 2 Step 2, under `tests/`) need one more package:
 `.venv/bin/pip install -r requirements-dev.txt`. Run them with `.venv/bin/python -m pytest -q`
 (they use a scripted fake client, so no API calls and no cost).
 
-## Run
+## Step scripts
+
+<details>
+<summary>Every step script, in order</summary>
 
 `.env` is found next to `client.py`. Step scripts live in a folder per layer
 (`layer1/`, `layer2/`, ...) and are named `l<layer>s<step>_<topic>.py`. Run them as
@@ -47,16 +90,14 @@ activate it first with `source .venv/bin/activate`, plain `python` works too:
 .venv/bin/python -m layer1.l1s3_one_tool_call  # L1 Step 3b: one tool request handled by hand
 .venv/bin/python -m layer2.l2s1_tool_cost      # L2 Step 1a: what tool definitions cost in tokens
 .venv/bin/python -m layer3.l3s1_baseline      # L3 Step 1b: one agent does the whole workload; prints passes, tokens, time (calls the real model)
+.venv/bin/python -m layer3.l3s1_orchestrator  # L3 Step 1c: the same workload through subagents, one at a time (calls the real model)
 .venv/bin/python -m layer3.l3s2_short         # L3 Step 2: the parallel run with short tasks; the subagents' instructions are in their system prompt (calls the real model)
 .venv/bin/python -m layer3.l3s2_sizes         # L3 Step 2: the parallel run again, with subagents told to check file sizes first (calls the real model)
 .venv/bin/python -m layer3.l3s2_parallel      # L3 Step 2a: the same job with the six subagents running at the same time (calls the real model)
-.venv/bin/python -m layer3.l3s1_orchestrator  # L3 Step 1c: the same workload through subagents, one at a time (calls the real model)
-.venv/bin/python loop.py                       # the agent loop (see below)
+.venv/bin/python loop.py                       # the agent loop (see Quickstart)
 ```
 
-`loop.py` runs **one hard-coded question** from its `__main__` block, giving the model two tools,
-`read_file` and `list_files`, and asking for a file that doesn't exist, to watch it recover. The other tools
-(`calculator`, `load_skill`, `delegate`) are defined in `tools.py` but not used in this run. Edit the `messages = [...]` line to try other questions.
+</details>
 
 ## What's here
 

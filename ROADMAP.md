@@ -56,7 +56,7 @@ Whenever we split a step into pieces, record the pieces here as substeps (`1a`,
   - [x] 5d: other failure kinds the loop should survive: an unknown tool name,
         bad arguments; what makes an error message useful for recovery
 
-## Layer 2: extensions  <- WE ARE HERE
+## Layer 2: extensions
 
 Order is deliberate: housekeeping, then the skill (it only adds a tool), then tests
 (the safety net, before `run_agent` is changed), then the subagent (changes
@@ -189,7 +189,7 @@ the reasons are in PLAN.md section 1, and details for every step are in PLAN.md 
       (explain-back done and recorded in `learnings/harness.md`. The two rebuilds are ON HOLD by decision, not done:
       the goal is understanding, and explaining in words is the test chosen for now. They are kept in the backlog)
 
-## Layer 3: multi-agent  (builds on the Layer 2 subagent; `orchestrator.py`)
+## Layer 3: multi-agent  (builds on the Layer 2 subagent; `orchestrator.py`)  <- WE ARE HERE
 
 - [x] Step 1: baseline: one orchestrator delegating N independent subtasks one after
       another, plus the single-agent version of the same job (time and tokens for both)
