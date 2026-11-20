@@ -51,6 +51,16 @@ stop after a fixed number of passes, so a stuck model can never loop (and spend)
 That is `run_agent` in `loop.py`. The model remembers nothing between calls, so every pass
 re-sends the whole conversation. Everything else in this repo is built around that loop.
 
+## Architecture
+
+![Architecture of the harness: a caller passes a question to run_agent, which sends requests through client.py to a stateless model API, and runs each requested tool through execute_tool, which applies hooks and calls tool functions. Tools reach a data folder, skill files, an MCP server in a separate process, and worker subagents. Evals and a production shell are planned around it.](docs/architecture/01-architecture.svg)
+
+The harness is the client: it holds the conversation, the tools and the rules, and the model is a
+stateless service it calls. This is the full design; the layers below say how much of it is built so far.
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) walks through it in seven figures: one question through the
+loop, what goes out in a request, how the code reads a reply, where hooks plug in, how an MCP tool is
+reached, and the orchestrator and its workers.
+
 ## The plan at a glance
 
 | Layer | What it adds | Status |
@@ -143,6 +153,7 @@ activate it first with `source .venv/bin/activate`, plain `python` works too:
 - `loop.py`: `run_agent`, the loop. It branches on `stop_reason`, answers every `tool_use`
   with a `tool_result` (errors flagged `is_error`), and caps its passes
 - `data/`: small text files for the `read_file` tool
+- `docs/`: `ARCHITECTURE.md`, the design in seven figures, with the diagrams (SVG) in `docs/architecture/`
 - `layer1/`, `layer2/`, ...: the step scripts for each layer
 - `tests/`: `fake_client.py` (a scripted stand-in for the model) and `test_loop.py`
 - `scripts/`: `gen_sdk_reference.py` regenerates the tables in `learnings/anthropic-sdk-reference.md`

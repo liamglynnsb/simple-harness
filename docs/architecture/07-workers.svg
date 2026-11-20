@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 570" role="img" aria-label="A fan-out drawn against time. The orchestrator's first pass writes six delegate calls. Six workers start together and each makes three model calls in its own conversation. The orchestrator waits until the slowest worker returns, then its second pass combines the answers, applying three rules for messy, failed and conflicting results.">
+<style>
+svg { --panel: #ffffff; --tint: #e3f0ef; --fg: #15212b; --muted: #566572; --line: #9aa8b3; --accent: #0b6b6b; --ext: #9a5a0a;
+--sans: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif; --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+@media (prefers-color-scheme: dark) { svg { --panel: #172028; --tint: #14302f; --fg: #e3e9ed; --muted: #9babb6; --line: #5b6a75; --accent: #55c4c0; --ext: #e2a658; } }
+svg .bgr { fill: var(--panel); }
+/* diagram marks */
+svg text { fill: var(--fg); font-family: var(--sans); font-size: 12px; }
+svg .h { font-weight: 600; font-size: 13px; }
+svg .c { font-family: var(--mono); font-size: 11.5px; }
+svg .ch { font-family: var(--mono); font-size: 13px; font-weight: 500; }
+svg .m { fill: var(--muted); font-size: 11.5px; }
+svg .lab { font-size: 11.5px; paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
+svg .cap { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; fill: var(--accent); }
+svg .cap-m { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; fill: var(--muted); paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
+svg .box { fill: var(--panel); stroke: var(--line); stroke-width: 1.2; }
+svg .harness { fill: var(--tint); stroke: var(--accent); stroke-width: 1.5; }
+svg .ext { fill: var(--panel); stroke: var(--ext); stroke-width: 1.6; }
+svg .plan { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 4; }
+svg .arrow { fill: none; stroke: var(--fg); stroke-width: 1.3; }
+svg .arrow-p { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; }
+svg .head { fill: var(--fg); }
+svg .head-p { fill: var(--muted); }
+svg .life { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
+svg .pill { fill: var(--tint); stroke: var(--accent); stroke-width: 1; }
+svg .stn { fill: var(--accent); }
+svg .stn-t { fill: var(--panel); font-family: var(--mono); font-size: 12px; font-weight: 500; }
+svg .seg { fill: var(--accent); }
+svg .wait { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 4; }
+svg .brace { fill: none; stroke: var(--muted); stroke-width: 1.2; }
+</style>
+<rect width="100%" height="100%" class="bgr"/>
+<defs><marker id="g1" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" class="head"/></marker></defs>
+<text x="20" y="75" class="h">Orchestrator</text><text x="20" y="92" class="m">its only tool is delegate</text>
+<text x="220" y="46" class="m">pass 1: splits the job, one delegate call per file</text><text x="900" y="46" class="m">pass 2: combines the answers</text>
+<rect x="220" y="58" width="110" height="24" rx="4" class="harness"/><text x="275" y="75" text-anchor="middle">pass 1</text>
+<rect x="334" y="58" width="560" height="24" rx="4" class="wait"/><text x="614" y="75" text-anchor="middle" class="m">waits: every delegate call needs its result before the next pass</text>
+<rect x="900" y="58" width="140" height="24" rx="4" class="harness"/><text x="970" y="75" text-anchor="middle">pass 2</text>
+<path d="M 337 82 V 350" class="brace"/>
+<text x="20" y="145" class="h">Worker 1</text><text x="100" y="145" class="m">report_1.txt</text>
+<line x1="337" y1="140" x2="343" y2="140" class="brace"/>
+<rect x="345" y="130" width="101" height="20" rx="3" class="seg"/><text x="395.5" y="144" text-anchor="middle" class="stn-t">1</text>
+<rect x="452" y="130" width="181" height="20" rx="3" class="seg"/><text x="542.5" y="144" text-anchor="middle" class="stn-t">2</text>
+<rect x="639" y="130" width="121" height="20" rx="3" class="seg"/><text x="699.5" y="144" text-anchor="middle" class="stn-t">3</text>
+<text x="20" y="187" class="h">Worker 2</text><text x="100" y="187" class="m">report_2.txt</text>
+<line x1="337" y1="182" x2="343" y2="182" class="brace"/>
+<rect x="345" y="172" width="116" height="20" rx="3" class="seg"/><text x="403.0" y="186" text-anchor="middle" class="stn-t">1</text>
+<rect x="467" y="172" width="208" height="20" rx="3" class="seg"/><text x="571.0" y="186" text-anchor="middle" class="stn-t">2</text>
+<rect x="681" y="172" width="139" height="20" rx="3" class="seg"/><text x="750.5" y="186" text-anchor="middle" class="stn-t">3</text>
+<text x="20" y="229" class="h">Worker 3</text><text x="100" y="229" class="m">report_3.txt</text>
+<line x1="337" y1="224" x2="343" y2="224" class="brace"/>
+<rect x="345" y="214" width="86" height="20" rx="3" class="seg"/><text x="388.0" y="228" text-anchor="middle" class="stn-t">1</text>
+<rect x="437" y="214" width="154" height="20" rx="3" class="seg"/><text x="514.0" y="228" text-anchor="middle" class="stn-t">2</text>
+<rect x="597" y="214" width="103" height="20" rx="3" class="seg"/><text x="648.5" y="228" text-anchor="middle" class="stn-t">3</text>
+<text x="20" y="271" class="h">Worker 4</text><text x="100" y="271" class="m">report_4.txt</text>
+<line x1="337" y1="266" x2="343" y2="266" class="brace"/>
+<rect x="345" y="256" width="133" height="20" rx="3" class="seg"/><text x="411.5" y="270" text-anchor="middle" class="stn-t">1</text>
+<rect x="484" y="256" width="240" height="20" rx="3" class="seg"/><text x="604.0" y="270" text-anchor="middle" class="stn-t">2</text>
+<rect x="730" y="256" width="160" height="20" rx="3" class="seg"/><text x="810.0" y="270" text-anchor="middle" class="stn-t">3</text>
+<text x="20" y="313" class="h">Worker 5</text><text x="100" y="313" class="m">report_5.txt</text>
+<line x1="337" y1="308" x2="343" y2="308" class="brace"/>
+<rect x="345" y="298" width="106" height="20" rx="3" class="seg"/><text x="398.0" y="312" text-anchor="middle" class="stn-t">1</text>
+<rect x="457" y="298" width="190" height="20" rx="3" class="seg"/><text x="552.0" y="312" text-anchor="middle" class="stn-t">2</text>
+<rect x="653" y="298" width="127" height="20" rx="3" class="seg"/><text x="716.5" y="312" text-anchor="middle" class="stn-t">3</text>
+<text x="20" y="355" class="h">Worker 6</text><text x="100" y="355" class="m">report_6.txt</text>
+<line x1="337" y1="350" x2="343" y2="350" class="brace"/>
+<rect x="345" y="340" width="96" height="20" rx="3" class="seg"/><text x="393.0" y="354" text-anchor="middle" class="stn-t">1</text>
+<rect x="447" y="340" width="172" height="20" rx="3" class="seg"/><text x="533.0" y="354" text-anchor="middle" class="stn-t">2</text>
+<rect x="625" y="340" width="115" height="20" rx="3" class="seg"/><text x="682.5" y="354" text-anchor="middle" class="stn-t">3</text>
+<text x="345" y="112" class="m">six workers start together, each in its own thread</text>
+<line x1="896" y1="350" x2="896" y2="86" class="arrow" marker-end="url(#g1)"/>
+<text x="888" y="376" text-anchor="end" class="m">the slowest worker ends the turn</text>
+<text x="345" y="376" class="m">1 lists the folder · 2 reads every piece at once · 3 answers</text>
+<rect x="930" y="126" width="230" height="150" rx="5" class="box"/><text x="944" y="150" class="h">Inside one worker</text>
+<text x="944" y="170" class="m">its own messages[]</text>
+<text x="944" y="187" class="m">sees only the task it was given</text>
+<text x="944" y="204" class="m">tools fixed: read_file, list_files</text>
+<text x="944" y="221" class="m">same loop, hooks and limits</text>
+<text x="944" y="238" class="m">can&#x27;t finish → a flagged error,</text>
+<text x="944" y="255" class="m">never a fake answer</text>
+<text x="904" y="108" class="m">6 results, in request order</text>
+<text x="220" y="420" class="cap-m">BEFORE IT ANSWERS, PASS 2 APPLIES THREE RULES</text>
+<rect x="220" y="434" width="300" height="104" rx="5" class="box"/><text x="234" y="458" class="h">A messy reply</text>
+<text x="234" y="480">answer clearly stated → take it</text>
+<text x="234" y="498">can&#x27;t tell → ask that worker once more</text>
+<text x="234" y="516">still unclear → say so, don&#x27;t guess</text>
+<rect x="535" y="434" width="300" height="104" rx="5" class="box"/><text x="549" y="458" class="h">A failed worker</text>
+<text x="549" y="480">ask for that piece once more</text>
+<text x="549" y="498">still failing → give what was found,</text>
+<text x="549" y="516">then name what is missing and why</text>
+<rect x="850" y="434" width="310" height="104" rx="5" class="box"/><text x="864" y="458" class="h">Two that disagree</text>
+<text x="864" y="480">no doubt voiced → ask a third, take the majority</text>
+<text x="864" y="498">rival candidates named, or no two agree →</text>
+<text x="864" y="516">report the values, don&#x27;t vote</text>
+</svg>

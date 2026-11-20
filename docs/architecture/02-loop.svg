@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 640" role="img" aria-label="Sequence of one run: the caller's question becomes the first message; run_agent sends request 1 to the model; the model replies with stop_reason tool_use and three tool requests; each goes through execute_tool and comes back as a tool_result; run_agent sends request 2 with the whole history; the model replies with stop_reason end_turn; the text is returned as the answer.">
+<style>
+svg { --panel: #ffffff; --tint: #e3f0ef; --fg: #15212b; --muted: #566572; --line: #9aa8b3; --accent: #0b6b6b; --ext: #9a5a0a;
+--sans: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif; --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+@media (prefers-color-scheme: dark) { svg { --panel: #172028; --tint: #14302f; --fg: #e3e9ed; --muted: #9babb6; --line: #5b6a75; --accent: #55c4c0; --ext: #e2a658; } }
+svg .bgr { fill: var(--panel); }
+/* diagram marks */
+svg text { fill: var(--fg); font-family: var(--sans); font-size: 12px; }
+svg .h { font-weight: 600; font-size: 13px; }
+svg .c { font-family: var(--mono); font-size: 11.5px; }
+svg .ch { font-family: var(--mono); font-size: 13px; font-weight: 500; }
+svg .m { fill: var(--muted); font-size: 11.5px; }
+svg .lab { font-size: 11.5px; paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
+svg .cap { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; fill: var(--accent); }
+svg .cap-m { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; fill: var(--muted); paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
+svg .box { fill: var(--panel); stroke: var(--line); stroke-width: 1.2; }
+svg .harness { fill: var(--tint); stroke: var(--accent); stroke-width: 1.5; }
+svg .ext { fill: var(--panel); stroke: var(--ext); stroke-width: 1.6; }
+svg .plan { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 4; }
+svg .arrow { fill: none; stroke: var(--fg); stroke-width: 1.3; }
+svg .arrow-p { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; }
+svg .head { fill: var(--fg); }
+svg .head-p { fill: var(--muted); }
+svg .life { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
+svg .pill { fill: var(--tint); stroke: var(--accent); stroke-width: 1; }
+svg .stn { fill: var(--accent); }
+svg .stn-t { fill: var(--panel); font-family: var(--mono); font-size: 12px; font-weight: 500; }
+svg .seg { fill: var(--accent); }
+svg .wait { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 4; }
+svg .brace { fill: none; stroke: var(--muted); stroke-width: 1.2; }
+</style>
+<rect width="100%" height="100%" class="bgr"/>
+<defs>
+<marker id="b1" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" class="head"/></marker>
+</defs>
+<!-- lifeline heads -->
+<rect x="20" y="20" width="120" height="44" rx="5" class="box"/><text x="80" y="47" text-anchor="middle" class="h">Caller</text>
+<rect x="225" y="20" width="170" height="44" rx="5" class="harness"/><text x="310" y="40" text-anchor="middle" class="ch">run_agent</text><text x="310" y="56" text-anchor="middle" class="m">the loop</text>
+<rect x="555" y="20" width="170" height="44" rx="5" class="harness"/><text x="640" y="40" text-anchor="middle" class="ch">execute_tool</text><text x="640" y="56" text-anchor="middle" class="m">hooks + tool code</text>
+<rect x="920" y="20" width="150" height="44" rx="5" class="ext"/><text x="995" y="47" text-anchor="middle" class="h">Model API</text>
+<line x1="80" y1="64" x2="80" y2="610" class="life"/>
+<line x1="310" y1="64" x2="310" y2="610" class="life"/>
+<line x1="640" y1="64" x2="640" y2="610" class="life"/>
+<line x1="995" y1="64" x2="995" y2="610" class="life"/>
+<!-- 1 question -->
+<line x1="80" y1="100" x2="308" y2="100" class="arrow" marker-end="url(#b1)"/>
+<text x="92" y="92" class="lab">the question</text>
+<rect x="322" y="110" width="264" height="22" rx="11" class="pill"/>
+<text x="334" y="125" class="c">messages: 1   user (the question)</text>
+<!-- pass 1 -->
+<line x1="310" y1="166" x2="993" y2="166" class="arrow" marker-end="url(#b1)"/>
+<text x="324" y="158" class="lab">request 1: tool definitions + all messages (1)</text>
+<line x1="995" y1="212" x2="312" y2="212" class="arrow" marker-end="url(#b1)"/>
+<text x="324" y="204" class="lab">reply: stop_reason = tool_use · three tool_use blocks, each with an id</text>
+<rect x="322" y="222" width="316" height="22" rx="11" class="pill"/>
+<text x="334" y="237" class="c">messages: 2   + assistant (its 3 requests)</text>
+<line x1="310" y1="278" x2="552" y2="278" class="arrow" marker-end="url(#b1)"/>
+<text x="324" y="270" class="lab">each tool_use block</text>
+<rect x="556" y="262" width="330" height="92" rx="5" class="box"/>
+<text x="570" y="282">1  scope: was this agent given the tool?</text>
+<text x="570" y="300">2  before-hooks: log it, check the file path</text>
+<text x="570" y="318">3  the function runs: read_file ×2, calculator</text>
+<text x="570" y="336">4  after-hook: cut a result over 4,000 chars</text>
+<line x1="554" y1="372" x2="312" y2="372" class="arrow" marker-end="url(#b1)"/>
+<text x="324" y="364" class="lab">a tool_result per request, same id</text>
+<rect x="322" y="382" width="322" height="22" rx="11" class="pill"/>
+<text x="334" y="397" class="c">messages: 3   + user (the 3 tool_results)</text>
+<!-- pass 2 -->
+<line x1="310" y1="446" x2="993" y2="446" class="arrow" marker-end="url(#b1)"/>
+<text x="324" y="438" class="lab">request 2: tool definitions + all messages again (3)</text>
+<line x1="995" y1="492" x2="312" y2="492" class="arrow" marker-end="url(#b1)"/>
+<text x="324" y="484" class="lab">reply: stop_reason = end_turn · a text block</text>
+<!-- answer -->
+<line x1="310" y1="548" x2="82" y2="548" class="arrow" marker-end="url(#b1)"/>
+<text x="92" y="540" class="lab">the answer (that text)</text>
+<!-- pass braces -->
+<path d="M 196 150 H 186 V 404 H 196" class="brace"/>
+<text x="178" y="282" text-anchor="end" class="m">pass 1</text>
+<path d="M 196 430 H 186 V 500 H 196" class="brace"/>
+<text x="178" y="470" text-anchor="end" class="m">pass 2</text>
+</svg>

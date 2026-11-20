@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 560" role="img" aria-label="One request to the model, drawn as a stack: the model name and reply limit, the system prompt, the list of tool definitions, and the list of messages. The load_skill definition carries the skill menu. The model can call load_skill, and the skill's body then comes back as a tool_result that joins the messages.">
+<style>
+svg { --panel: #ffffff; --tint: #e3f0ef; --fg: #15212b; --muted: #566572; --line: #9aa8b3; --accent: #0b6b6b; --ext: #9a5a0a;
+--sans: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif; --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+@media (prefers-color-scheme: dark) { svg { --panel: #172028; --tint: #14302f; --fg: #e3e9ed; --muted: #9babb6; --line: #5b6a75; --accent: #55c4c0; --ext: #e2a658; } }
+svg .bgr { fill: var(--panel); }
+/* diagram marks */
+svg text { fill: var(--fg); font-family: var(--sans); font-size: 12px; }
+svg .h { font-weight: 600; font-size: 13px; }
+svg .c { font-family: var(--mono); font-size: 11.5px; }
+svg .ch { font-family: var(--mono); font-size: 13px; font-weight: 500; }
+svg .m { fill: var(--muted); font-size: 11.5px; }
+svg .lab { font-size: 11.5px; paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
+svg .cap { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; fill: var(--accent); }
+svg .cap-m { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; fill: var(--muted); paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
+svg .box { fill: var(--panel); stroke: var(--line); stroke-width: 1.2; }
+svg .harness { fill: var(--tint); stroke: var(--accent); stroke-width: 1.5; }
+svg .ext { fill: var(--panel); stroke: var(--ext); stroke-width: 1.6; }
+svg .plan { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 4; }
+svg .arrow { fill: none; stroke: var(--fg); stroke-width: 1.3; }
+svg .arrow-p { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; }
+svg .head { fill: var(--fg); }
+svg .head-p { fill: var(--muted); }
+svg .life { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
+svg .pill { fill: var(--tint); stroke: var(--accent); stroke-width: 1; }
+svg .stn { fill: var(--accent); }
+svg .stn-t { fill: var(--panel); font-family: var(--mono); font-size: 12px; font-weight: 500; }
+svg .seg { fill: var(--accent); }
+svg .wait { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 4; }
+svg .brace { fill: none; stroke: var(--muted); stroke-width: 1.2; }
+</style>
+<rect width="100%" height="100%" class="bgr"/>
+<defs><marker id="f1" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" class="head"/></marker></defs>
+<rect x="20" y="24" width="580" height="38" rx="5" class="harness"/><text x="34" y="48" class="ch">client.messages.create(…)</text><text x="262" y="48" class="m">one request: everything the model will know</text>
+<rect x="20" y="72" width="580" height="32" rx="5" class="box"/><text x="34" y="93" class="c">model, max_tokens</text><text x="170" y="93" class="m">which model; a cap on the reply (thinking counts)</text>
+<rect x="20" y="112" width="580" height="50" rx="5" class="box"/><text x="34" y="133" class="c">system</text><text x="170" y="133" class="m">standing instructions for this agent, written once</text>
+<text x="170" y="151" class="m">orchestrator: how to delegate · worker: how to read a file</text>
+<rect x="20" y="170" width="580" height="170" rx="5" class="box"/><text x="34" y="191" class="c">tools</text><text x="170" y="191" class="m">a list of definitions: name, description, input_schema</text>
+<rect x="40" y="202" width="540" height="30" rx="5" class="box"/><text x="54" y="223" class="c">5 other tools</text><text x="190" y="223" class="m">calculator, read_file, list_files, delegate, count_letters</text>
+<rect x="40" y="240" width="540" height="90" rx="5" class="box"/><text x="54" y="261" class="c">load_skill</text><text x="190" y="261" class="m">its description carries the skill menu:</text>
+<text x="70" y="281" class="c">verify-arithmetic: use whenever asked to calculate…</text>
+<text x="70" y="298" class="c">expense-policy: use when asked what can be expensed…</text>
+<text x="70" y="315" class="c">release-notes-format: use when asked for release notes…</text>
+<rect x="20" y="348" width="580" height="164" rx="5" class="box"/><text x="34" y="369" class="c">messages</text><text x="170" y="369" class="m">the whole conversation so far, in order</text>
+<rect x="40" y="380" width="540" height="26" rx="5" class="box"/><text x="54" y="401" class="c">user</text><text x="190" y="401" class="m">the question</text>
+<rect x="40" y="412" width="540" height="26" rx="5" class="box"/><text x="54" y="433" class="c">assistant</text><text x="190" y="433" class="m">the last reply: its blocks, tool requests included</text>
+<rect x="40" y="444" width="540" height="26" rx="5" class="box"/><text x="54" y="465" class="c">user</text><text x="190" y="465" class="m">the tool_results, one per request</text>
+<rect x="40" y="476" width="540" height="26" rx="5" class="box"/><text x="54" y="497" class="c">…</text><text x="190" y="497" class="m">two more entries for every pass</text>
+<rect x="660" y="24" width="500" height="82" rx="5" class="harness"/>
+<text x="676" y="46" class="h">Sent in full on every pass</text>
+<text x="676" y="64">The model keeps nothing between calls, so each request repeats</text>
+<text x="676" y="82">the system prompt, every tool definition and the whole history.</text>
+<rect x="660" y="170" width="500" height="64" rx="5" class="harness"/>
+<text x="676" y="192" class="h">Tools cost tokens before any tool is called</text>
+<text x="676" y="210">Two definitions added about 500 input tokens to every request.</text>
+<rect x="660" y="248" width="500" height="36" rx="5" class="harness"/>
+<text x="676" y="270">1  The menu is always in view, in every request</text>
+<rect x="660" y="302" width="500" height="36" rx="5" class="harness"/>
+<text x="676" y="324">2  The model calls load_skill(&quot;expense-policy&quot;)</text>
+<rect x="660" y="425" width="500" height="54" rx="5" class="harness"/>
+<text x="676" y="447">3  The skill&#x27;s body comes back as a tool_result</text>
+<text x="676" y="465">    and stays in the history from then on</text>
+<line x1="580" y1="266" x2="658" y2="266" class="arrow" marker-end="url(#f1)"/><text x="606" y="258" class="m">menu</text>
+<line x1="700" y1="284" x2="700" y2="300" class="arrow" marker-end="url(#f1)"/>
+<line x1="700" y1="338" x2="700" y2="423" class="arrow" marker-end="url(#f1)"/><text x="710" y="386" class="m">load_skill runs: a dict lookup, no model involved</text>
+<line x1="660" y1="457" x2="582" y2="457" class="arrow" marker-end="url(#f1)"/><text x="606" y="449" class="m">body</text>
+<text x="660" y="512" class="m">messages is the part that grows: two entries a pass, and a long file read</text><text x="660" y="530" class="m">rides along in every later request until something trims it.</text>
+</svg>

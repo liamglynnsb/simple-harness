@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 550" role="img" aria-label="The model's reply as a tree, and what the loop does with each part. The reply is a Message object with a stop_reason, a content list of blocks, and usage. The loop branches on stop_reason, appends the whole content list to the history, skips thinking blocks, joins text blocks into the answer, runs the named function for each tool_use block with its input and answers it with a tool_result carrying its id, and counts the usage.">
+<style>
+svg { --panel: #ffffff; --tint: #e3f0ef; --fg: #15212b; --muted: #566572; --line: #9aa8b3; --accent: #0b6b6b; --ext: #9a5a0a;
+--sans: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif; --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+@media (prefers-color-scheme: dark) { svg { --panel: #172028; --tint: #14302f; --fg: #e3e9ed; --muted: #9babb6; --line: #5b6a75; --accent: #55c4c0; --ext: #e2a658; } }
+svg .bgr { fill: var(--panel); }
+/* diagram marks */
+svg text { fill: var(--fg); font-family: var(--sans); font-size: 12px; }
+svg .h { font-weight: 600; font-size: 13px; }
+svg .c { font-family: var(--mono); font-size: 11.5px; }
+svg .ch { font-family: var(--mono); font-size: 13px; font-weight: 500; }
+svg .m { fill: var(--muted); font-size: 11.5px; }
+svg .lab { font-size: 11.5px; paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
+svg .cap { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; fill: var(--accent); }
+svg .cap-m { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; fill: var(--muted); paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
+svg .box { fill: var(--panel); stroke: var(--line); stroke-width: 1.2; }
+svg .harness { fill: var(--tint); stroke: var(--accent); stroke-width: 1.5; }
+svg .ext { fill: var(--panel); stroke: var(--ext); stroke-width: 1.6; }
+svg .plan { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 4; }
+svg .arrow { fill: none; stroke: var(--fg); stroke-width: 1.3; }
+svg .arrow-p { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; }
+svg .head { fill: var(--fg); }
+svg .head-p { fill: var(--muted); }
+svg .life { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
+svg .pill { fill: var(--tint); stroke: var(--accent); stroke-width: 1; }
+svg .stn { fill: var(--accent); }
+svg .stn-t { fill: var(--panel); font-family: var(--mono); font-size: 12px; font-weight: 500; }
+svg .seg { fill: var(--accent); }
+svg .wait { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 4; }
+svg .brace { fill: none; stroke: var(--muted); stroke-width: 1.2; }
+</style>
+<rect width="100%" height="100%" class="bgr"/>
+<defs><marker id="e1" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" class="head"/></marker></defs>
+<text x="20" y="22" class="cap-m">WHAT COMES BACK</text><text x="640" y="22" class="cap-m">WHAT THE LOOP DOES WITH IT</text>
+<rect x="20" y="34" width="230" height="40" rx="5" class="ext"/><text x="34" y="59" class="ch">response</text><text x="112" y="59" class="m">a Message object</text>
+<path d="M 44 74 V 510 M 44 110 H 70 M 44 190 H 70 M 44 460 H 70 M 44 510 H 70" class="brace"/>
+<path d="M 96 208 V 400 M 96 250 H 120 M 96 300 H 120 M 96 350 H 120 M 96 400 H 120" class="brace"/>
+<rect x="70" y="92" width="470" height="36" rx="5" class="box"/><text x="84" y="115" class="c">.stop_reason</text><text x="250" y="115" class="m">&quot;tool_use&quot; here: why it stopped</text>
+<rect x="70" y="172" width="470" height="36" rx="5" class="box"/><text x="84" y="195" class="c">.content</text><text x="250" y="195" class="m">a list of blocks, in the order written</text>
+<rect x="70" y="442" width="470" height="36" rx="5" class="box"/><text x="84" y="465" class="c">.usage</text><text x="250" y="465" class="m">.input_tokens · .output_tokens</text>
+<rect x="70" y="492" width="470" height="36" rx="5" class="box"/><text x="84" y="515" class="c">.role · .id · .model</text><text x="250" y="515" class="m">not read by the loop</text>
+<rect x="120" y="232" width="420" height="36" rx="5" class="box"/><text x="134" y="255" class="c">[0] type: thinking</text><text x="300" y="255" class="m">.thinking · .signature</text>
+<rect x="120" y="282" width="420" height="36" rx="5" class="box"/><text x="134" y="305" class="c">[1] type: text</text><text x="300" y="305" class="m">.text</text>
+<rect x="120" y="332" width="420" height="36" rx="5" class="box"/><text x="134" y="355" class="c">[2] type: tool_use</text><text x="300" y="355" class="m">.id · .name · .input (a dict)</text>
+<rect x="120" y="382" width="420" height="36" rx="5" class="box"/><text x="134" y="405" class="c">[3] type: tool_use</text><text x="300" y="405" class="m">a reply can hold several</text>
+<line x1="540" y1="110" x2="638" y2="110" class="arrow" marker-end="url(#e1)"/><text x="548" y="102" class="m">decides</text>
+<rect x="640" y="40" width="520" height="90" rx="5" class="harness"/>
+<text x="656" y="62" class="h">run_agent picks a branch</text>
+<text x="656" y="80">tool_use → run every requested tool, then ask again</text>
+<text x="656" y="98">end_turn → return the text as the answer</text>
+<text x="656" y="116">max_tokens → partial text plus a note · anything else → stop and say why</text>
+<line x1="540" y1="190" x2="638" y2="190" class="arrow" marker-end="url(#e1)"/><text x="548" y="182" class="m">kept</text>
+<rect x="640" y="160" width="520" height="54" rx="5" class="harness"/>
+<text x="656" y="182">Appended whole to messages as the assistant turn,</text>
+<text x="656" y="200">thinking and tool requests included</text>
+<line x1="540" y1="250" x2="638" y2="250" class="arrow" marker-end="url(#e1)"/><text x="548" y="242" class="m">skipped</text>
+<rect x="640" y="232.0" width="520" height="36" rx="5" class="harness"/>
+<text x="656" y="254.0">Never parsed; it stays in the history only</text>
+<line x1="540" y1="300" x2="638" y2="300" class="arrow" marker-end="url(#e1)"/><text x="548" y="292" class="m">.text</text>
+<rect x="640" y="282.0" width="520" height="36" rx="5" class="harness"/>
+<text x="656" y="304.0">collect_text joins every text block with newlines: the answer</text>
+<line x1="540" y1="350" x2="638" y2="350" class="arrow" marker-end="url(#e1)"/><text x="548" y="342" class="m">.name .input</text>
+<rect x="640" y="332.0" width="520" height="36" rx="5" class="harness"/>
+<text x="656" y="354.0" class="c">FUNCTIONS[block.name](**block.input)</text>
+<line x1="540" y1="400" x2="638" y2="400" class="arrow" marker-end="url(#e1)"/><text x="548" y="392" class="m">.id</text>
+<rect x="640" y="382.0" width="520" height="36" rx="5" class="harness"/>
+<text x="656" y="404.0">Each block gets a tool_result carrying its .id; all go back in one user message</text>
+<line x1="540" y1="460" x2="638" y2="460" class="arrow" marker-end="url(#e1)"/><text x="548" y="452" class="m">counted</text>
+<rect x="640" y="442.0" width="520" height="36" rx="5" class="harness"/>
+<text x="656" y="464.0">Added up per call, for measuring and for the token budget</text>
+</svg>

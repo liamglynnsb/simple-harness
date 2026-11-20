@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 810" role="img" aria-label="Architecture of the harness: a caller passes a question to run_agent, which sends requests through client.py to a stateless model API, and runs each requested tool through execute_tool, which applies hooks and calls tool functions. Tools reach a data folder, skill files, an MCP server in a separate process, and worker subagents. Evals and a production shell are planned around it.">
+<style>
+svg { --panel: #ffffff; --tint: #e3f0ef; --fg: #15212b; --muted: #566572; --line: #9aa8b3; --accent: #0b6b6b; --ext: #9a5a0a;
+--sans: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif; --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+@media (prefers-color-scheme: dark) { svg { --panel: #172028; --tint: #14302f; --fg: #e3e9ed; --muted: #9babb6; --line: #5b6a75; --accent: #55c4c0; --ext: #e2a658; } }
+svg .bgr { fill: var(--panel); }
+/* diagram marks */
+svg text { fill: var(--fg); font-family: var(--sans); font-size: 12px; }
+svg .h { font-weight: 600; font-size: 13px; }
+svg .c { font-family: var(--mono); font-size: 11.5px; }
+svg .ch { font-family: var(--mono); font-size: 13px; font-weight: 500; }
+svg .m { fill: var(--muted); font-size: 11.5px; }
+svg .lab { font-size: 11.5px; paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
+svg .cap { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; fill: var(--accent); }
+svg .cap-m { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; fill: var(--muted); paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
+svg .box { fill: var(--panel); stroke: var(--line); stroke-width: 1.2; }
+svg .harness { fill: var(--tint); stroke: var(--accent); stroke-width: 1.5; }
+svg .ext { fill: var(--panel); stroke: var(--ext); stroke-width: 1.6; }
+svg .plan { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 4; }
+svg .arrow { fill: none; stroke: var(--fg); stroke-width: 1.3; }
+svg .arrow-p { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; }
+svg .head { fill: var(--fg); }
+svg .head-p { fill: var(--muted); }
+svg .life { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
+svg .pill { fill: var(--tint); stroke: var(--accent); stroke-width: 1; }
+svg .stn { fill: var(--accent); }
+svg .stn-t { fill: var(--panel); font-family: var(--mono); font-size: 12px; font-weight: 500; }
+svg .seg { fill: var(--accent); }
+svg .wait { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 4; }
+svg .brace { fill: none; stroke: var(--muted); stroke-width: 1.2; }
+</style>
+<rect width="100%" height="100%" class="bgr"/>
+<defs>
+<marker id="a1" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" class="head"/></marker>
+<marker id="a1p" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" class="head-p"/></marker>
+</defs>
+<!-- harness process -->
+<rect x="200" y="40" width="650" height="650" rx="8" class="harness"/>
+<text x="216" y="66" class="cap">HARNESS PROCESS · YOUR CODE</text>
+<text x="216" y="86" class="m">The client side: everything here runs on your machine.</text>
+<!-- caller -->
+<rect x="20" y="140" width="140" height="84" rx="5" class="box"/>
+<text x="34" y="164" class="h">Caller</text>
+<text x="34" y="183" class="m">a script or a person</text>
+<text x="34" y="200" class="m">with a question</text>
+<line x1="160" y1="166" x2="228" y2="166" class="arrow" marker-end="url(#a1)"/>
+<text x="166" y="158" class="m">question</text>
+<line x1="230" y1="204" x2="162" y2="204" class="arrow" marker-end="url(#a1)"/>
+<text x="170" y="220" class="m">answer</text>
+<!-- run_agent -->
+<rect x="230" y="120" width="230" height="150" rx="5" class="box"/>
+<text x="246" y="144" class="ch">run_agent</text>
+<text x="326" y="144" class="m">loop.py</text>
+<text x="246" y="166">ask → run tools → repeat</text>
+<text x="246" y="184">keeps and re-sends messages[]</text>
+<text x="246" y="202">branches on stop_reason</text>
+<text x="246" y="220">limits: 10 passes, max_tokens</text>
+<text x="246" y="238">can cap workers per turn</text>
+<text x="246" y="256" class="m">the model decides; this enforces</text>
+<!-- client.py -->
+<rect x="600" y="120" width="220" height="150" rx="5" class="box"/>
+<text x="616" y="144" class="ch">client.py</text>
+<text x="616" y="166">only file that imports the SDK</text>
+<text x="616" y="184">env config: key, URL, model</text>
+<text x="616" y="202">timeout: 60 s per call</text>
+<text x="616" y="220">SDK retries 429 and 5xx twice</text>
+<text x="616" y="238">optional token budget</text>
+<text x="616" y="256" class="m">for the run, workers included</text>
+<line x1="460" y1="166" x2="598" y2="166" class="arrow" marker-end="url(#a1)"/>
+<text x="468" y="158" class="m">tools + messages</text>
+<line x1="600" y1="224" x2="462" y2="224" class="arrow" marker-end="url(#a1)"/>
+<text x="468" y="240" class="m">reply + token usage</text>
+<!-- model -->
+<rect x="900" y="120" width="250" height="150" rx="5" class="ext"/>
+<text x="916" y="144" class="h">Model API</text>
+<text x="916" y="166">direct, or through a gateway</text>
+<text x="916" y="184">stateless: knows only what</text>
+<text x="916" y="202">each request carries</text>
+<text x="916" y="220">returns text or tool requests</text>
+<text x="916" y="238" class="m">never runs a tool itself</text>
+<line x1="820" y1="166" x2="898" y2="166" class="arrow" marker-end="url(#a1)"/>
+<text x="856" y="158" class="m">HTTPS</text>
+<line x1="900" y1="224" x2="822" y2="224" class="arrow" marker-end="url(#a1)"/>
+<!-- execute_tool -->
+<rect x="230" y="330" width="230" height="160" rx="5" class="box"/>
+<text x="246" y="354" class="ch">execute_tool</text>
+<text x="246" y="372" class="m">every tool call passes through here</text>
+<text x="246" y="394">1  scope: is the tool allowed?</text>
+<text x="246" y="412">2  before-hooks: log, may block</text>
+<text x="246" y="430">3  run the tool's function</text>
+<text x="246" y="448">4  after-hooks: may cut result</text>
+<text x="246" y="472" class="m">any failure → flagged is_error</text>
+<line x1="300" y1="270" x2="300" y2="328" class="arrow" marker-end="url(#a1)"/>
+<text x="234" y="304" class="m">tool_use</text>
+<line x1="390" y1="330" x2="390" y2="272" class="arrow" marker-end="url(#a1)"/>
+<text x="398" y="304" class="m">tool_result</text>
+<!-- hooks -->
+<rect x="500" y="316" width="320" height="88" rx="5" class="box"/>
+<text x="516" y="340" class="ch">hooks.py</text>
+<text x="590" y="340" class="m">the tool hooks; all nine points below</text>
+<text x="516" y="360">before: log_call (a trace line)</text>
+<text x="516" y="378">before: guard_file_paths (blocks; critical)</text>
+<text x="516" y="396">after: truncate_long_results (4,000 chars)</text>
+<line x1="460" y1="362" x2="498" y2="362" class="arrow" marker-end="url(#a1)"/>
+<text x="466" y="354" class="m">2, 4</text>
+<!-- tools -->
+<rect x="500" y="420" width="320" height="166" rx="5" class="box"/>
+<text x="516" y="444" class="ch">FUNCTIONS</text>
+<text x="598" y="444" class="m">tool name → the code that runs</text>
+<text x="516" y="466" class="c">calculator</text><text x="622" y="466" class="m">arithmetic, exactly</text>
+<text x="516" y="484" class="c">read_file</text><text x="622" y="484" class="m">text from data/, in pages</text>
+<text x="516" y="502" class="c">list_files</text><text x="622" y="502" class="m">names and sizes in data/</text>
+<text x="516" y="520" class="c">load_skill</text><text x="622" y="520" class="m">returns a skill's instructions</text>
+<text x="516" y="538" class="c">delegate</text><text x="622" y="538" class="m">hands a task to a worker</text>
+<text x="516" y="556" class="c">count_letters</text><text x="622" y="556" class="m">forwarded to the MCP server</text>
+<text x="516" y="576" class="m">the model sees definitions, never the code</text>
+<line x1="460" y1="456" x2="498" y2="456" class="arrow" marker-end="url(#a1)"/>
+<text x="474" y="448" class="m">3</text>
+<!-- skills -->
+<rect x="230" y="512" width="230" height="74" rx="5" class="box"/>
+<text x="246" y="536" class="ch">skills/*.md</text>
+<text x="246" y="556">short menu always visible</text>
+<text x="246" y="574" class="m">body loaded only when asked for</text>
+<line x1="498" y1="524" x2="462" y2="540" class="arrow" marker-end="url(#a1)"/>
+<text x="464" y="516" class="m">reads</text>
+<!-- workers -->
+<rect x="230" y="616" width="590" height="60" rx="5" class="box"/>
+<text x="246" y="640" class="h">Workers (subagents)</text>
+<text x="376" y="640" class="m">each is a fresh run_agent in its own thread, calling the model the same way</text>
+<text x="246" y="660" class="m">sees only its task and its own system prompt · tools fixed by the harness: read_file, list_files</text>
+<line x1="560" y1="586" x2="560" y2="614" class="arrow" marker-end="url(#a1)"/>
+<text x="568" y="605" class="m">delegate starts them, in parallel</text>
+<!-- outside: data and MCP -->
+<rect x="230" y="726" width="230" height="64" rx="5" class="ext"/>
+<text x="246" y="750" class="ch">data/</text>
+<text x="246" y="770" class="m">the only folder file tools can reach</text>
+<line x1="345" y1="690" x2="345" y2="724" class="arrow" marker-end="url(#a1)"/>
+<text x="353" y="712" class="m">file reads</text>
+<rect x="500" y="726" width="320" height="64" rx="5" class="ext"/>
+<text x="516" y="750" class="h">MCP server</text>
+<text x="596" y="750" class="m">a separate process</text>
+<text x="516" y="770" class="m">JSON-RPC lines over stdin/stdout · count_letters</text>
+<line x1="660" y1="690" x2="660" y2="724" class="arrow" marker-end="url(#a1)"/>
+<text x="668" y="712" class="m">tools/list, tools/call</text>
+<!-- planned: evals -->
+<rect x="20" y="330" width="150" height="250" rx="5" class="box"/>
+<text x="34" y="354" class="cap">EVALS</text>
+<text x="34" y="372" class="m">around the harness</text>
+<text x="34" y="398" class="m">tasks, known answers</text>
+<text x="34" y="416" class="m">runner + full run logs</text>
+<text x="34" y="434" class="m">verifiers: outcome</text>
+<text x="34" y="452" class="m">and process checks</text>
+<text x="34" y="470" class="m">repeat runs: pass@k</text>
+<text x="34" y="488" class="m">LLM judge, calibrated</text>
+<text x="34" y="506" class="m">before/after gate</text>
+<text x="34" y="540" class="m">measures how often</text>
+<text x="34" y="558" class="m">the harness is right</text>
+<line x1="90" y1="330" x2="90" y2="227" class="arrow" marker-end="url(#a1)"/>
+<text x="98" y="284" class="m">as the caller</text>
+<!-- planned: production shell -->
+<rect x="900" y="330" width="250" height="250" rx="5" class="box"/>
+<text x="916" y="354" class="cap">PRODUCTION SHELL</text>
+<text x="916" y="372" class="m">around the loop</text>
+<text x="916" y="398" class="m">tracing: a record per call</text>
+<text x="916" y="416" class="m">retries, backoff, model fallback</text>
+<text x="916" y="434" class="m">context: trim, summarise, notes</text>
+<text x="916" y="452" class="m">prompt caching of the stable prefix</text>
+<text x="916" y="470" class="m">structured output, validated</text>
+<text x="916" y="488" class="m">injection tests, then guardrails</text>
+<text x="916" y="506" class="m">streaming</text>
+<text x="916" y="540" class="m">lets the loop run unattended</text>
+<line x1="900" y1="352" x2="824" y2="274" class="arrow" marker-end="url(#a1)"/>
+<text x="864" y="304" class="m">wraps</text>
+<!-- legend -->
+<rect x="900" y="632" width="22" height="14" rx="3" class="harness"/>
+<text x="932" y="644" class="m">inside the harness process</text>
+<rect x="900" y="658" width="22" height="14" rx="3" class="ext"/>
+<text x="932" y="670" class="m">outside the process</text>
+</svg>

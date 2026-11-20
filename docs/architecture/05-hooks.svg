@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 750" role="img" aria-label="The loop drawn as a flow with nine numbered hook points: before the run, before each model call, on an error or retry, after each reply, before a tool, around a subagent, after a tool, when the model says it is done, and when the run ends. A card beside the flow lists what plugs in at each point.">
+<style>
+svg { --panel: #ffffff; --tint: #e3f0ef; --fg: #15212b; --muted: #566572; --line: #9aa8b3; --accent: #0b6b6b; --ext: #9a5a0a;
+--sans: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif; --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+@media (prefers-color-scheme: dark) { svg { --panel: #172028; --tint: #14302f; --fg: #e3e9ed; --muted: #9babb6; --line: #5b6a75; --accent: #55c4c0; --ext: #e2a658; } }
+svg .bgr { fill: var(--panel); }
+/* diagram marks */
+svg text { fill: var(--fg); font-family: var(--sans); font-size: 12px; }
+svg .h { font-weight: 600; font-size: 13px; }
+svg .c { font-family: var(--mono); font-size: 11.5px; }
+svg .ch { font-family: var(--mono); font-size: 13px; font-weight: 500; }
+svg .m { fill: var(--muted); font-size: 11.5px; }
+svg .lab { font-size: 11.5px; paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
+svg .cap { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; fill: var(--accent); }
+svg .cap-m { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; fill: var(--muted); paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
+svg .box { fill: var(--panel); stroke: var(--line); stroke-width: 1.2; }
+svg .harness { fill: var(--tint); stroke: var(--accent); stroke-width: 1.5; }
+svg .ext { fill: var(--panel); stroke: var(--ext); stroke-width: 1.6; }
+svg .plan { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 4; }
+svg .arrow { fill: none; stroke: var(--fg); stroke-width: 1.3; }
+svg .arrow-p { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; }
+svg .head { fill: var(--fg); }
+svg .head-p { fill: var(--muted); }
+svg .life { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
+svg .pill { fill: var(--tint); stroke: var(--accent); stroke-width: 1; }
+svg .stn { fill: var(--accent); }
+svg .stn-t { fill: var(--panel); font-family: var(--mono); font-size: 12px; font-weight: 500; }
+svg .seg { fill: var(--accent); }
+svg .wait { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 4; }
+svg .brace { fill: none; stroke: var(--muted); stroke-width: 1.2; }
+</style>
+<rect width="100%" height="100%" class="bgr"/>
+<defs><marker id="c1" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" class="head"/></marker></defs>
+<line x1="165" y1="70" x2="165" y2="116" class="arrow" marker-end="url(#c1)"/>
+<line x1="165" y1="158" x2="165" y2="204" class="arrow" marker-end="url(#c1)"/>
+<line x1="165" y1="246" x2="165" y2="292" class="arrow" marker-end="url(#c1)"/>
+<line x1="165" y1="334" x2="165" y2="384" class="arrow" marker-end="url(#c1)"/>
+<line x1="165" y1="426" x2="165" y2="472" class="arrow" marker-end="url(#c1)"/>
+<line x1="165" y1="571" x2="165" y2="582" class="arrow" marker-end="url(#c1)"/>
+<line x1="165" y1="624" x2="165" y2="670" class="arrow" marker-end="url(#c1)"/>
+<rect x="60" y="30" width="210" height="40" rx="5" class="box"/>
+<text x="165" y="55" text-anchor="middle" class="h">Question arrives</text>
+<rect x="60" y="118" width="210" height="40" rx="5" class="box"/>
+<text x="165" y="135" text-anchor="middle" class="h">Request is built</text><text x="165" y="151" text-anchor="middle" class="m">history + tools + system</text>
+<rect x="60" y="206" width="210" height="40" rx="5" class="box"/>
+<text x="165" y="231" text-anchor="middle" class="h">Model call</text>
+<rect x="60" y="294" width="210" height="40" rx="5" class="box"/>
+<text x="165" y="319" text-anchor="middle" class="h">Read stop_reason</text>
+<rect x="60" y="386" width="210" height="40" rx="5" class="box"/>
+<text x="165" y="411" text-anchor="middle" class="h">Tool function runs</text>
+<rect x="60" y="474" width="210" height="40" rx="5" class="box"/>
+<text x="165" y="499" text-anchor="middle" class="h">Result joins the history</text>
+<rect x="60" y="584" width="210" height="40" rx="5" class="box"/>
+<text x="165" y="609" text-anchor="middle" class="h">Answer returned</text>
+<rect x="60" y="672" width="210" height="40" rx="5" class="box"/>
+<text x="165" y="697" text-anchor="middle" class="h">Run ends</text>
+<text x="177" y="364" class="m">tool_use</text>
+<path d="M 60 494 H 16 V 138 H 58" class="arrow" marker-end="url(#c1)"/>
+<text x="10" y="316" text-anchor="middle" class="m" transform="rotate(-90 10 316)">next pass</text>
+<path d="M 60 314 H 36 V 560 H 152" class="arrow" marker-end="url(#c1)"/>
+<text x="46" y="552" class="m">end_turn</text>
+<circle cx="165" cy="94" r="11" class="stn"/><text x="165" y="98" text-anchor="middle" class="stn-t">1</text>
+<circle cx="165" cy="182" r="11" class="stn"/><text x="165" y="186" text-anchor="middle" class="stn-t">2</text>
+<circle cx="270" cy="226" r="11" class="stn"/><text x="270" y="230" text-anchor="middle" class="stn-t">3</text>
+<circle cx="165" cy="270" r="11" class="stn"/><text x="165" y="274" text-anchor="middle" class="stn-t">4</text>
+<circle cx="165" cy="360" r="11" class="stn"/><text x="165" y="364" text-anchor="middle" class="stn-t">5</text>
+<circle cx="270" cy="406" r="11" class="stn"/><text x="270" y="410" text-anchor="middle" class="stn-t">6</text>
+<circle cx="165" cy="450" r="11" class="stn"/><text x="165" y="454" text-anchor="middle" class="stn-t">7</text>
+<circle cx="165" cy="560" r="11" class="stn"/><text x="165" y="564" text-anchor="middle" class="stn-t">8</text>
+<circle cx="165" cy="648" r="11" class="stn"/><text x="165" y="652" text-anchor="middle" class="stn-t">9</text>
+<rect x="320" y="30" width="840" height="70" rx="5" class="box"/>
+<circle cx="344" cy="51" r="11" class="stn"/><text x="344" y="55" text-anchor="middle" class="stn-t">1</text>
+<text x="364" y="56" class="h">Before the run starts</text><text x="1146" y="56" text-anchor="end" class="m">once, before the first model call</text>
+<text x="364" y="75">Check or rewrite the question · redact secrets and personal data in it · add standing context</text><text x="364" y="92">Start the trace and give the run an id</text>
+<rect x="320" y="108" width="840" height="70" rx="5" class="box"/>
+<circle cx="344" cy="129" r="11" class="stn"/><text x="344" y="133" text-anchor="middle" class="stn-t">2</text>
+<text x="364" y="134" class="h">Before each model call</text><text x="1146" y="134" text-anchor="end" class="m">every pass, just before the request is sent</text>
+<text x="364" y="153">Trim or summarise old history, keeping every tool_use with its tool_result · restate the goal on a long task</text><text x="364" y="170">Mark the stable prefix for prompt caching · count tokens and refuse a call the budget can't cover</text>
+<rect x="320" y="186" width="840" height="70" rx="5" class="box"/>
+<circle cx="344" cy="207" r="11" class="stn"/><text x="344" y="211" text-anchor="middle" class="stn-t">3</text>
+<text x="364" y="212" class="h">On an error or a retry</text><text x="1146" y="212" text-anchor="end" class="m">around the model call</text>
+<text x="364" y="231">Sort the failure: retry a timeout, a connection error, a 429 or a 5xx; never retry a 400</text><text x="364" y="248">Back off with jitter and cap the attempts · fall back to another model · if it still fails, end the run with the reason</text>
+<rect x="320" y="264" width="840" height="70" rx="5" class="box"/>
+<circle cx="344" cy="285" r="11" class="stn"/><text x="344" y="289" text-anchor="middle" class="stn-t">4</text>
+<text x="364" y="290" class="h">After each model reply</text><text x="1146" y="290" text-anchor="end" class="m">every pass, as soon as the reply arrives</text>
+<text x="364" y="309">Record tokens, time and stop_reason for the trace · spot a refusal or a cut-off reply</text><text x="364" y="326">Check the reply before acting on it: a cut-off tool request is never run</text>
+<rect x="320" y="342" width="840" height="70" rx="5" class="box"/>
+<circle cx="344" cy="363" r="11" class="stn"/><text x="344" y="367" text-anchor="middle" class="stn-t">5</text>
+<text x="364" y="368" class="h">Before a tool runs</text><text x="1146" y="368" text-anchor="end" class="m">every tool call, the model's request in hand</text>
+<text x="364" y="387">Log the call · scope: only tools this agent was given · block file paths outside data/ and secret-looking names</text><text x="364" y="404">Ask a person before a tool that writes, deletes or sends · cap how many workers one turn may start</text>
+<rect x="320" y="420" width="840" height="70" rx="5" class="box"/>
+<circle cx="344" cy="441" r="11" class="stn"/><text x="344" y="445" text-anchor="middle" class="stn-t">6</text>
+<text x="364" y="446" class="h">Around a subagent</text><text x="1146" y="446" text-anchor="end" class="m">when the tool is delegate</text>
+<text x="364" y="465">Give the worker its own tools, system prompt and limits · tag its records with the parent's id so the trace links them</text><text x="364" y="482">Turn a worker that can't finish into a flagged error, with advice the orchestrator can act on</text>
+<rect x="320" y="498" width="840" height="70" rx="5" class="box"/>
+<circle cx="344" cy="519" r="11" class="stn"/><text x="344" y="523" text-anchor="middle" class="stn-t">7</text>
+<text x="364" y="524" class="h">After a tool runs</text><text x="1146" y="524" text-anchor="end" class="m">every tool call, before the result enters the history</text>
+<text x="364" y="543">Cut a result over 4,000 characters and say so · redact secrets and personal data · record it for the trace</text><text x="364" y="560">Wrap the result as untrusted data, so instructions hidden in a file are not obeyed</text>
+<rect x="320" y="576" width="840" height="70" rx="5" class="box"/>
+<circle cx="344" cy="597" r="11" class="stn"/><text x="344" y="601" text-anchor="middle" class="stn-t">8</text>
+<text x="364" y="602" class="h">When the model says it's done</text><text x="1146" y="602" text-anchor="end" class="m">the end_turn branch, before the answer is returned</text>
+<text x="364" y="621">Validate the answer against the output schema; on failure send the error back once</text><text x="364" y="638">Check its length and that nothing in it looks like a secret · on a long task, check it against the goal</text>
+<rect x="320" y="654" width="840" height="70" rx="5" class="box"/>
+<circle cx="344" cy="675" r="11" class="stn"/><text x="344" y="679" text-anchor="middle" class="stn-t">9</text>
+<text x="364" y="680" class="h">When the run ends</text><text x="1146" y="680" text-anchor="end" class="m">once, however the run ended</text>
+<text x="364" y="699">Write the trace and the full trajectory log · report tokens, cost and time</text><text x="364" y="716">Record how it ended: answered, cut off, refused, out of passes, rate limited, timed out or out of budget</text>
+</svg>
